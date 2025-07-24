@@ -40,7 +40,7 @@ export class EventRegistrationService {
     }
   }
 
-  async deleteAttendee(userId: string, eventId: string) {
+  async deleteAttendee(userId: string, eventId: string): Promise<{ deletedCount?: number }> {
     try {
       const result = await this.registrationModel.deleteOne({
         userId,
