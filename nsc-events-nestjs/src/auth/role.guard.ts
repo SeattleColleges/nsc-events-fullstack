@@ -1,6 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
+// Remove the Observable import and rely on the interface type
+// import { Observable } from 'rxjs';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -12,7 +13,7 @@ export class RoleGuard implements CanActivate {
 
   canActivate(
     context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  ): boolean | Promise<boolean> {
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
     console.log(roles);
     if (!roles) {
