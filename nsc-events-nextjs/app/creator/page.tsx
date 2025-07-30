@@ -47,38 +47,33 @@ const Creator = () => {
                 >
                     <Grid container spacing={2} justifyContent="center" alignItems="center">
                         <Grid
-                            size={{
-                                xs: 12,
-                                sm: "auto"
-                            }}>
+                            item
+                            xs={12}
+                            sm="auto">
                             <CreatorButton path={"/create-event"} text={"Create Event"}/>
                         </Grid>
                         <Grid
-                            size={{
-                                xs: 12,
-                                sm: "auto"
-                            }}>
+                            item
+                            xs={12}
+                            sm="auto">
                             <CreatorButton path={"/my-events"} text={"View My Events"}/>
                         </Grid>
                         <Grid
-                            size={{
-                                xs: 12,
-                                sm: "auto"
-                            }}>
+                            item
+                            xs={12}
+                            sm="auto">
                             <CreatorButton path={"/archived-events"} text={"View Archived Events"}/>
                         </Grid>
                         <Grid
-                            size={{
-                                xs: 12,
-                                sm: "auto"
-                            }}>
+                            item
+                            xs={12}
+                            sm="auto">
                             <CreatorButton path={"/"} text={"View All Events"}/>
                         </Grid>
                         <Grid
-                            size={{
-                                xs: 12,
-                                sm: "auto"
-                            }}>
+                            item
+                            xs={12}
+                            sm="auto">
                             <CreatorButton path={'/my-created-events'} text={"View My Created Events (figma page)"} />
                         </Grid>
                     </Grid>
