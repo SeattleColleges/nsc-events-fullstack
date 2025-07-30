@@ -2,7 +2,7 @@ import React from "react";
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { useTheme } from "@mui/material";
-import { Pallet } from "@mui/icons-material";
+import { Palette } from "@mui/icons-material";
 
 
 type TagSelectorProps = {
