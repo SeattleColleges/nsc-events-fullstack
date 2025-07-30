@@ -3,18 +3,29 @@ import TagSelector from "@/components/TagSelector";
 import { activity } from "@/models/activity";
 import { useEventForm } from "@/hooks/useEventForm";
 import ImagePicker from "@/components/ImagePicker";
-import { LocalizationProvider, TimePicker, DatePicker } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import TextField, { TextFieldProps } from '@mui/material/TextField';
-import { format, parse } from 'date-fns';
-import { Box, Button, Typography, Stack, useTheme, useMediaQuery, Paper } from '@mui/material';
-import { textFieldStyle } from "@/components/InputFields"
+import {
+  LocalizationProvider,
+  TimePicker,
+  DatePicker,
+} from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import TextField, { TextFieldProps } from "@mui/material/TextField";
+import { format, parse } from "date-fns";
+import {
+  Box,
+  Button,
+  Typography,
+  Stack,
+  useTheme,
+  useMediaQuery,
+  Paper,
+} from "@mui/material";
+import { textFieldStyle } from "@/components/InputFields";
 import { MouseEvent, ChangeEvent, useState, FormEvent } from "react";
 import useAuth from "@/hooks/useAuth";
 import UnauthorizedPageMessage from "@/components/UnauthorizedPageMessage";
 import { EventTags } from "@/utility/tags";
 import { useThemeContext } from "../theme/providers";
-
 
 const CreateEvent: React.FC = () => {
   const {
@@ -31,9 +42,8 @@ const CreateEvent: React.FC = () => {
     endTime,
     handleEndTimeChange,
     timeError,
-    successMessage
+    successMessage,
   } = useEventForm(activity);
-
 
   // Get the current theme mode for current page
   // can use the mode variable for chaning non MUI componenets that goes with light or dark mode
@@ -43,10 +53,12 @@ const CreateEvent: React.FC = () => {
   };
 
   // Convert startTime and endTime from string to Date for TimePicker
-  const startTimeDate = startTime ? parse(startTime, 'HH:mm', new Date()) : null;
-  const endTimeDate = endTime ? parse(endTime, 'HH:mm', new Date()) : null;
+  const startTimeDate = startTime
+    ? parse(startTime, "HH:mm", new Date())
+    : null;
+  const endTimeDate = endTime ? parse(endTime, "HH:mm", new Date()) : null;
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.between('xs', 'sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.between("xs", "sm"));
 
   const handleDateChange = (newDate: Date | null) => {
     setSelectedDate(newDate);
@@ -54,12 +66,12 @@ const CreateEvent: React.FC = () => {
 
   // Handlers for TimePicker changes, converting Date back to string
   const onStartTimeChange = (date: Date | null) => {
-    const timeStr = date ? format(date, 'HH:mm') : '';
+    const timeStr = date ? format(date, "HH:mm") : "";
     handleStartTimeChange(timeStr);
   };
 
   const onEndTimeChange = (date: Date | null) => {
-    const timeStr = date ? format(date, 'HH:mm') : '';
+    const timeStr = date ? format(date, "HH:mm") : "";
     handleEndTimeChange(timeStr);
   };
 
@@ -72,7 +84,7 @@ const CreateEvent: React.FC = () => {
     e.preventDefault();
     if (newTag && !customTags.includes(normalizedNewTag)) {
       setCustomTags([...customTags, normalizedNewTag]);
-      handleTagClick(normalizedNewTag)
+      handleTagClick(normalizedNewTag);
       setNewTag("");
     }
   };
@@ -83,79 +95,76 @@ const CreateEvent: React.FC = () => {
 
   const { isAuth, user } = useAuth();
 
-  if (isAuth && (user?.role === 'admin' || user?.role === 'creator')) {
+  if (isAuth && (user?.role === "admin" || user?.role === "creator")) {
     return (
       <LocalizationProvider dateAdapter={AdapterDateFns}>
-
         {/* start of the create events form */}
-        <Box component="form"
+        <Box
+          component="form"
           onSubmit={handleSubmit}
-          noValidate autoComplete="off"
+          noValidate
+          autoComplete="off"
           sx={{
             paddingTop: 3,
-            width: isMobile ? '100%' : '75%', mx: 'auto'
-          }}>
-
+            width: isMobile ? "100%" : "75%",
+            mx: "auto",
+          }}
+        >
           <Stack spacing={2}>
-
             {/* page title */}
-            <Box sx={{
-              backgroundColor: '#114FA2',
-              boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.3)',
-              borderRadius: 1,
-            }}>
-
+            <Box
+              sx={{
+                backgroundColor: "#114FA2",
+                boxShadow: "3px 3px 5px 0px rgba(0,0,0,0.3)",
+                borderRadius: 1,
+              }}
+            >
               <Typography
                 fontSize={isMobile ? "1.75rem" : "2.25rem"}
                 textAlign={"center"}
                 marginTop={"0.5rem"}
                 marginBottom={"1rem"}
-                sx={{ color: 'white' }}
-
-              >Add Event
+                sx={{ color: "white" }}
+              >
+                Add Event
               </Typography>
             </Box>
-
             <Box>
               <Typography
                 fontSize={isMobile ? "1rem" : "1rem"}
                 textAlign={"center"}
                 marginTop={"0.5rem"}
                 marginBottom={"1rem"}
-                sx={{ color: 'red' }}
+                sx={{ color: "red" }}
               >
                 REQUIRED FIELDS*
               </Typography>
             </Box>
-
             {/* start of row 1 */}
-            <Box sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              flexDirection: isMobile ? 'column' : 'row',
-              backgroundColor: '#114FA2',
-              boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.3)',
-              width: '100%',
-              borderRadius: 1
-            }}>
-
-
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                flexDirection: isMobile ? "column" : "row",
+                backgroundColor: "#114FA2",
+                boxShadow: "3px 3px 5px 0px rgba(0,0,0,0.3)",
+                width: "100%",
+                borderRadius: 1,
+              }}
+            >
               {/* start of box 1 row 1 */}
-              <Box sx={{
-                margin: isMobile ? 0 : 4,
-                marginTop: isMobile ? 2 : 4,
-                width: isMobile ? '100%' : '33%',
-                backgroundColor: mode === 'light' ? 'white' : 'black',
-                boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.3)',
-                borderRadius: 1
-              }}>
-
+              <Box
+                sx={{
+                  margin: isMobile ? 0 : 4,
+                  marginTop: isMobile ? 2 : 4,
+                  width: isMobile ? "100%" : "33%",
+                  backgroundColor: mode === "light" ? "white" : "black",
+                  boxShadow: "3px 3px 5px 0px rgba(0,0,0,0.3)",
+                  borderRadius: 1,
+                }}
+              >
                 {/* stack tag for vertical alignment of text fields */}
-                <Stack
-                  sx={{ width: '100%', padding: 5 }}
-                  spacing={2}
-                >
-
+                <Stack sx={{ width: "100%", padding: 5 }} spacing={2}>
                   <TextField
                     id="event-title"
                     label="Event Title *"
@@ -168,7 +177,9 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the title of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -183,7 +194,9 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the host of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -193,12 +206,14 @@ const CreateEvent: React.FC = () => {
                     name="eventRegistration"
                     value={eventData.eventRegistration}
                     onChange={handleInputChange}
-                    // error={!!errors.eventRegistration} lifted requirements 
+                    // error={!!errors.eventRegistration} lifted requirements
                     // helperText={errors.eventRegistration}
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the registration of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -216,11 +231,13 @@ const CreateEvent: React.FC = () => {
                     inputProps={{ maxLength: 300 }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the description of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
                 </Stack>
-              </Box> {/* end of box 1 */}
-
+              </Box>{" "}
+              {/* end of box 1 */}
               {/* Decision to get rid of event category but comment out just incase for future use */}
               {/* <TextField
                 id="event-category"
@@ -235,71 +252,75 @@ const CreateEvent: React.FC = () => {
                 InputLabelProps={{ style: textFieldStyle.label }} 
                 placeholder="Enter the category of the event"
               /> */}
-
               {/* start of box 2 row 1 */}
-              <Box sx={{
-                margin: isMobile ? 0 : 4,
-                marginTop: isMobile ? 2 : 4,
-                width: isMobile ? '100%' : '33%',
-                backgroundColor: mode === 'light' ? 'white' : 'black',
-                boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.3)',
-                borderRadius: 1
-              }}>
-
+              <Box
+                sx={{
+                  margin: isMobile ? 0 : 4,
+                  marginTop: isMobile ? 2 : 4,
+                  width: isMobile ? "100%" : "33%",
+                  backgroundColor: mode === "light" ? "white" : "black",
+                  boxShadow: "3px 3px 5px 0px rgba(0,0,0,0.3)",
+                  borderRadius: 1,
+                }}
+              >
                 {/* stack tag for vertical alignment */}
-                <Stack
-                  sx={{ width: '100%', padding: 5 }}
-                  spacing={2}
-                >
+                <Stack sx={{ width: "100%", padding: 5 }} spacing={2}>
+                  <Box sx={{
+                    backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                  }}>
+                    <DatePicker
+                      label="Event Date"
+                      value={selectedDate}
+                      onChange={handleDateChange}
+                      minDate={new Date()}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
+                  </Box>
 
-                  <DatePicker
-                    label="Event Date"
-                    value={selectedDate}
-                    onChange={handleDateChange}
-                    minDate={new Date()}
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
-                  />
-                  <TimePicker
-                    label="Start Time"
-                    value={startTimeDate}
-                    onChange={onStartTimeChange}
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
-                  />
-                  <TimePicker
-                    label="End Time"
-                    value={endTimeDate}
-                    onChange={onEndTimeChange}
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
-                  />
+                  <Box sx={{
+                    backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                  }}>
+                    <TimePicker
+                      label="Start Time"
+                      value={startTimeDate}
+                      onChange={(value) => onStartTimeChange(value as Date | null)}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
+                  </Box>
+                  <Box sx={{
+                    backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                  }}>
+                    <TimePicker
+                      label="End Time"
+                      value={endTimeDate}
+                      onChange={(value) => onEndTimeChange(value as Date | null)}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
+                  </Box>
                   {/* Time Error Message */}
                   {timeError && (
                     <div className="text-red-500 text-sm mt-2">{timeError}</div>
                   )}
-
                 </Stack>
-              </Box> {/* end of box 2 row 1 */}
-
+              </Box>{" "}
+              {/* end of box 2 row 1 */}
               {/* <label>
             Event Cover Photo
           <ImagePicker />
           </label> */}
-
               {/* start of box 3 row 1 */}
-              <Box sx={{
-                margin: isMobile ? 0 : 4,
-                marginTop: isMobile ? 2 : 4,
-                width: isMobile ? '100%' : '33%',
-                backgroundColor: mode === 'light' ? 'white' : 'black',
-                boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.3)',
-                borderRadius: 1
-              }}>
-
+              <Box
+                sx={{
+                  margin: isMobile ? 0 : 4,
+                  marginTop: isMobile ? 2 : 4,
+                  width: isMobile ? "100%" : "33%",
+                  backgroundColor: mode === "light" ? "white" : "black",
+                  boxShadow: "3px 3px 5px 0px rgba(0,0,0,0.3)",
+                  borderRadius: 1,
+                }}
+              >
                 {/* stack tag for vertical alignment */}
-                <Stack
-                  sx={{ width: '100%', padding: 5 }}
-                  spacing={2}
-                >
-
+                <Stack sx={{ width: "100%", padding: 5 }} spacing={2}>
                   {/* commented out below due to not needing the cover photo and document fields. */}
                   {/* <TextField
                     id="event-cover-photo"
@@ -341,9 +362,10 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the capacity of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
-
 
                   <TextField
                     id="event-meeting-url"
@@ -356,7 +378,9 @@ const CreateEvent: React.FC = () => {
                     // helperText={errors.eventMeetingURL}
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -371,33 +395,31 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the location of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
-
                 </Stack>
-              </Box> {/* End of box 3 row 1*/}
-
-            </Box> {/* End of row 1*/}
-
+              </Box>{" "}
+              {/* End of box 3 row 1*/}
+            </Box>{" "}
+            {/* End of row 1*/}
             {/* Begining of tag selector section */}
-            <Box sx={{
-              backgroundColor: '#42A5F5',
-              padding: 2,
-              boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.3)',
-              borderRadius: 1
-            }}>
-
+            <Box
+              sx={{
+                backgroundColor: "#42A5F5",
+                padding: 2,
+                boxShadow: "3px 3px 5px 0px rgba(0,0,0,0.3)",
+                borderRadius: 1,
+              }}
+            >
               <TagSelector
                 selectedTags={eventData.eventTags}
-                allTags={[
-                  ...EventTags,
-                  ...customTags
-                ]}
+                allTags={[...EventTags, ...customTags]}
                 onTagClick={handleTagClick}
               />
 
-              <Box sx={{ backgroundColor: 'none', padding: 2 }}>
-
+              <Box sx={{ backgroundColor: "none", padding: 2 }}>
                 <TextField
                   id="add-custom-tag"
                   label="Add Tag *"
@@ -405,7 +427,7 @@ const CreateEvent: React.FC = () => {
                   name="addedTag"
                   value={newTag}
                   onChange={handleNewTagChange}
-                  // Need to figure out what can go in the following values, 
+                  // Need to figure out what can go in the following values,
                   // I commented out from other text-fields
                   error={!!errors.eventTags}
                   helperText={errors.eventTags}
@@ -413,7 +435,9 @@ const CreateEvent: React.FC = () => {
                   InputLabelProps={{ style: textFieldStyle.label }}
                   placeholder="Enter the tag of the event"
                   sx={{
-                    backgroundColor: mode === 'light' ? 'white' : 'black', borderRadius: 1 }} // change border radius as needed
+                    backgroundColor: mode === "light" ? "white" : "black",
+                    borderRadius: 1,
+                  }} // change border radius as needed
                 />
 
                 <Button
@@ -423,43 +447,40 @@ const CreateEvent: React.FC = () => {
                   onClick={addCustomTag}
                   style={{ textTransform: "none", margin: 10 }}
                   sx={{
-                    '&:hover': {
-                      backgroundColor: '#114FA2',
-                      color: 'white'
+                    "&:hover": {
+                      backgroundColor: "#114FA2",
+                      color: "white",
                     },
-                    } }
+                  }}
                 >
                   Add Tag
                 </Button>
               </Box>
             </Box>
             {/* end of tag selection section */}
-
             {/* Start of row 2 */}
-            <Box sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              flexDirection: isMobile ? 'column' : 'row',
-              backgroundColor: '#114FA2',
-              boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.3)',
-              borderRadius: 1,
-            }}>
-
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                flexDirection: isMobile ? "column" : "row",
+                backgroundColor: "#114FA2",
+                boxShadow: "3px 3px 5px 0px rgba(0,0,0,0.3)",
+                borderRadius: 1,
+              }}
+            >
               {/* start of seciton 1 row 2 */}
-              <Box sx={{
-                margin: isMobile ? 0 : 4,
-                marginTop: isMobile ? 2 : 4,
-                width: isMobile ? '100%' : '33%',
-                backgroundColor: mode === 'light' ? 'white' : 'black',
-                boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.3)',
-                borderRadius: 1
-              }}>
-
-                <Stack
-                  sx={{ width: '100%', padding: 5 }}
-                  spacing={2}
-                >
-
+              <Box
+                sx={{
+                  margin: isMobile ? 0 : 4,
+                  marginTop: isMobile ? 2 : 4,
+                  width: isMobile ? "100%" : "33%",
+                  backgroundColor: mode === "light" ? "white" : "black",
+                  boxShadow: "3px 3px 5px 0px rgba(0,0,0,0.3)",
+                  borderRadius: 1,
+                }}
+              >
+                <Stack sx={{ width: "100%", padding: 5 }} spacing={2}>
                   <TextField
                     id="event-schedule"
                     label="Event Schedule"
@@ -472,7 +493,9 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the schedule of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -487,7 +510,9 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the speaker(s) of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -502,7 +527,9 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the prerequisites of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -517,26 +544,25 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the cancellation policy of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
                 </Stack>
-              </Box>  {/* END of box 2 of row 2 */}
-
+              </Box>{" "}
+              {/* END of box 2 of row 2 */}
               {/* start of box 2 of row 2 */}
-              <Box sx={{
-                margin: isMobile ? 0 : 4,
-                marginTop: isMobile ? 2 : 4,
-                width: isMobile ? '100%' : '33%',
-                backgroundColor: mode === 'light' ? 'white' : 'black',
-                boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.3)',
-                borderRadius: 1
-              }}>
-
-                <Stack
-                  sx={{ width: '100%', padding: 5 }}
-                  spacing={2}
-                >
-
+              <Box
+                sx={{
+                  margin: isMobile ? 0 : 4,
+                  marginTop: isMobile ? 2 : 4,
+                  width: isMobile ? "100%" : "33%",
+                  backgroundColor: mode === "light" ? "white" : "black",
+                  boxShadow: "3px 3px 5px 0px rgba(0,0,0,0.3)",
+                  borderRadius: 1,
+                }}
+              >
+                <Stack sx={{ width: "100%", padding: 5 }} spacing={2}>
                   <TextField
                     id="event-contact"
                     label="Event Contact *"
@@ -549,7 +575,9 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the contact of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -557,14 +585,18 @@ const CreateEvent: React.FC = () => {
                     label="Facebook"
                     variant="outlined"
                     name="facebook"
-                    value={eventData.eventSocialMedia.facebook || ''}
-                    onChange={(e) => handleSocialMediaChange('facebook', e.target.value)}
+                    value={eventData.eventSocialMedia.facebook || ""}
+                    onChange={(e) =>
+                      handleSocialMediaChange("facebook", e.target.value)
+                    }
                     // error={!!errors.eventSocialMedia?.facebook}
                     // helperText={errors.eventSocialMedia?.facebook}
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the Facebook link of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -572,14 +604,18 @@ const CreateEvent: React.FC = () => {
                     label="Twitter"
                     variant="outlined"
                     name="twitter"
-                    value={eventData.eventSocialMedia.twitter || ''}
-                    onChange={(e) => handleSocialMediaChange('twitter', e.target.value)}
+                    value={eventData.eventSocialMedia.twitter || ""}
+                    onChange={(e) =>
+                      handleSocialMediaChange("twitter", e.target.value)
+                    }
                     // error={!!errors.eventSocialMedia?.twitter}
                     // helperText={errors.eventSocialMedia?.twitter}
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the Twitter link of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -587,46 +623,50 @@ const CreateEvent: React.FC = () => {
                     label="Instagram"
                     variant="outlined"
                     name="instagram"
-                    value={eventData.eventSocialMedia.instagram || ''}
-                    onChange={(e) => handleSocialMediaChange('instagram', e.target.value)}
+                    value={eventData.eventSocialMedia.instagram || ""}
+                    onChange={(e) =>
+                      handleSocialMediaChange("instagram", e.target.value)
+                    }
                     // error={!!errors.eventSocialMedia?.instagram}
                     // helperText={errors.eventSocialMedia?.instagram}
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the Instagram link of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
                 </Stack>
               </Box>
-
               {/* start of section 3 row 2 */}
-              <Box sx={{
-                margin: isMobile ? 0 : 4,
-                marginTop: isMobile ? 2 : 4,
-                width: isMobile ? '100%' : '33%',
-                backgroundColor: mode === 'light' ? 'white' : 'black',
-                boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.3)',
-                borderRadius: 1
-              }}>
-
-                <Stack
-                  sx={{ width: '100%', padding: 5 }}
-                  spacing={2}
-                >
-
+              <Box
+                sx={{
+                  margin: isMobile ? 0 : 4,
+                  marginTop: isMobile ? 2 : 4,
+                  width: isMobile ? "100%" : "33%",
+                  backgroundColor: mode === "light" ? "white" : "black",
+                  boxShadow: "3px 3px 5px 0px rgba(0,0,0,0.3)",
+                  borderRadius: 1,
+                }}
+              >
+                <Stack sx={{ width: "100%", padding: 5 }} spacing={2}>
                   <TextField
                     id="hashtag"
                     label="Hashtag"
                     variant="outlined"
                     name="hashtag"
-                    value={eventData.eventSocialMedia.hashtag || ''}
-                    onChange={(e) => handleSocialMediaChange('hashtag', e.target.value)}
+                    value={eventData.eventSocialMedia.hashtag || ""}
+                    onChange={(e) =>
+                      handleSocialMediaChange("hashtag", e.target.value)
+                    }
                     // error={!!errors.eventSocialMedia?.hashtag}
                     // helperText={errors.eventSocialMedia?.hashtag}
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the hashtag of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -641,7 +681,9 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the privacy of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -656,7 +698,9 @@ const CreateEvent: React.FC = () => {
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
                     placeholder="Enter the accessibility of the event"
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
 
                   <TextField
@@ -670,29 +714,29 @@ const CreateEvent: React.FC = () => {
                     // helperText={errors.eventNote}
                     InputProps={{ style: textFieldStyle.input }}
                     InputLabelProps={{ style: textFieldStyle.label }}
-                    sx={{ backgroundColor: mode === 'light' ? 'white' : '#f5f1f11a' }}
+                    sx={{
+                      backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                    }}
                   />
-
                 </Stack>
-              </Box> {/* END of section 3 row 2 */}
-            </Box> {/* END of row 2 */}
-
+              </Box>{" "}
+              {/* END of section 3 row 2 */}
+            </Box>{" "}
+            {/* END of row 2 */}
             {/* start of submit button */}
-            <Box
-              sx={{ display: 'flex', justifyContent: 'flex-end' }}
-            >
-
+            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
                 style={{ textTransform: "none" }}
-                sx={{ margin: 1,
-                  '&:hover': {
-                    backgroundColor: '#114FA2',
-                      color: 'white'
-                   },
-                    }}
+                sx={{
+                  margin: 1,
+                  "&:hover": {
+                    backgroundColor: "#114FA2",
+                    color: "white",
+                  },
+                }}
               >
                 Create Event
               </Button>
@@ -703,8 +747,7 @@ const CreateEvent: React.FC = () => {
             <Typography color="green" sx={{ mb: 2 }}>
               {successMessage}
             </Typography>
-          )
-          }
+          )}
         </Box>
       </LocalizationProvider>
     );
