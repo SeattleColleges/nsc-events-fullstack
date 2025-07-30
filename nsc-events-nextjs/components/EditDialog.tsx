@@ -90,22 +90,31 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
                                 InputLabelProps={{ style: textFieldStyle.label }}
                                 placeholder="Enter the description of the event"
                             />
-                            <DatePicker
-                                label="Event Date"
-                                value={selectedDate}
-                                onChange={handleDateChange}
-                                minDate={new Date()}
-                            />
-                            <TimePicker
-                                label="Start Time"
-                                value={startTimeDate}
-                                onChange={onStartTimeChange}
-                            />
-                            <TimePicker
-                                label="End Time"
-                                value={endTimeDate}
-                                onChange={onEndTimeChange}
-                            />
+                            <Box sx={{ backgroundColor: 'inherit' }}>
+                                <DatePicker
+                                    label="Event Date"
+                                    value={selectedDate}
+                                    onChange={handleDateChange}
+                                    minDate={new Date()}
+                                    renderInput={(params) => <TextField {...params} />}
+                                />
+                            </Box>
+                            <Box sx={{ backgroundColor: 'inherit' }}>
+                                <TimePicker
+                                    label="Start Time"
+                                    value={startTimeDate}
+                                    onChange={(value) => onStartTimeChange(value as Date | null)}
+                                    renderInput={(params) => <TextField {...params} />}
+                                />
+                            </Box>
+                            <Box sx={{ backgroundColor: 'inherit' }}>
+                                <TimePicker
+                                    label="End Time"
+                                    value={endTimeDate}
+                                    onChange={(value) => onEndTimeChange(value as Date | null)}
+                                    renderInput={(params) => <TextField {...params} />}
+                                />
+                            </Box>
                             {/* Time Error Message */}
                             {timeError && (
                                 <div className="text-red-500 text-sm mt-2">{timeError}</div>
