@@ -145,8 +145,8 @@ const ArchivedEvents = () => {
                                             </IconButton>
                                             <Menu
                                                 id="long-menu"
-                                                slots={{
-                                                    list: { 'aria-labelledby': 'long-button' } as any,
+                                                MenuListProps={{
+                                                    'aria-labelledby': 'long-button',
                                                 }}
                                                 anchorEl={anchorEl}
                                                 open={open}
