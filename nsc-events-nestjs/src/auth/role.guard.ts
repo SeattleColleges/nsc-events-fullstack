@@ -11,9 +11,7 @@ export class RoleGuard implements CanActivate {
     return roles.some((role) => role === userRole);
   }
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const roles = this.reflector.get<string[]>('roles', context.getHandler());
     console.log(roles);
     if (!roles) {
