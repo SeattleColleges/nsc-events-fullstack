@@ -32,7 +32,7 @@ const styles = {
 export default function Footer() {
   return (
     <Grid container sx={styles.root}>
-      <Grid size={{ xs: 12, sm: 10, md: 8 }}>
+      <Grid item xs={12} sm={10} md={8}>
         <Grid container sx={styles.div}>
           <Typography variant="h5" color="white">
             Find out what North Seattle College can offer you.
@@ -160,7 +160,7 @@ export default function Footer() {
           </Breadcrumbs>
         </Grid>
       </Grid>
-      <Grid size={{ xs: 0, sm: 2, md: 4 }} sx={styles.image}>
+      <Grid item xs={0} sm={2} md={4} sx={styles.image}>
         <Image src={white_nsc_logo} alt="north seattle college logo" />
       </Grid>
     </Grid>
