@@ -513,10 +513,9 @@ const EventDetail = () => {
                     (userRole === "creator" && event?.createdByUser === userId)) && (
                       <>
                         <Grid
-                          size={{
-                            xs: 2,
-                            sm: "auto"
-                          }}>
+                          item
+                          xs={2}
+                          sm="auto">
                           <Button
                             variant="contained"
                             sx={{
@@ -535,10 +534,9 @@ const EventDetail = () => {
                           </Button>
                         </Grid>
                         <Grid
-                          size={{
-                            xs: 2,
-                            sm: "auto"
-                          }}>
+                          item
+                          xs={2}
+                          sm="auto">
                           <Button
                             variant="contained"
                             sx={{
@@ -556,10 +554,9 @@ const EventDetail = () => {
                           </Button>
                         </Grid>
                         <Grid
-                          size={{
-                            xs: 2,
-                            sm: "auto"
-                          }}>
+                          item
+                          xs={2}
+                          sm="auto">
                           <Button
                             variant="contained"
                             sx={{
@@ -589,10 +586,9 @@ const EventDetail = () => {
                     )}
                 </Grid>
                 <Grid
-                  size={{
-                    xs: 12,
-                    sm: "auto"
-                  }}>
+                  item
+                  xs={12}
+                  sm="auto">
                   <Button
                     variant="contained"
                     sx={{
@@ -612,10 +608,9 @@ const EventDetail = () => {
                   </Button>
                 </Grid>
                 <Grid
-                  size={{
-                    xs: 12,
-                    sm: "auto"
-                  }}>
+                  item
+                  xs={12}
+                  sm="auto">
                   <Button
                     variant="contained"
                     sx={{
