@@ -32,12 +32,11 @@ export function EventsList(){
                 {data?.map((event: ActivityDatabase) => (
                     <Grid
                         key={event._id}
-                        size={{
-                            xs: 12,
-                            sm: 6,
-                            md: 4,
-                            lg: 3
-                        }}>
+                        item
+                        xs={12}
+                        sm={6}
+                        md={4}
+                        lg={3}>
                         <Box sx={{ width: 450, height: 400 }}>
                             <Card sx={{ display: 'flex', flexDirection: 'column' }}>
                                 <CardMedia
