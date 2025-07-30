@@ -133,7 +133,7 @@ const Home = () => {
         {/* Display the events */}
         {events && events.length > 0 ? (
           events.map((event: ActivityDatabase) => (
-            <Grid size={{ xs: 12, md: 12, lg: 6 }} display="flex" key={event._id} sx={{}}>
+            <Grid item xs={12} md={12} lg={6} display="flex" key={event._id} sx={{}}>
               <HomeEventsCard event={event} />
             </Grid>
           ))
