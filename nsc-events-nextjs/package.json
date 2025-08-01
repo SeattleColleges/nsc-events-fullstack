@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "6.6.3",
-    "@testing-library/react": "16.2.0",
+    "@testing-library/react": "^14.0.0",
     "@types/jest": "29.5.14",
     "@types/node": "22.14.1",
     "@types/react-datepicker": "7.0.0",
