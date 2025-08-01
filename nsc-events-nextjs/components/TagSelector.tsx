@@ -2,8 +2,6 @@ import React from "react";
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { useTheme } from "@mui/material";
-import { Palette } from "@mui/icons-material";
-
 
 type TagSelectorProps = {
     selectedTags: string[];
