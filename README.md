@@ -24,7 +24,7 @@ To get started, you can use the automated setup script for your operating system
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/SeattleColleges/nsc-events-fullstack
 cd nsc-events-fullstack
 
 # Run the setup script
