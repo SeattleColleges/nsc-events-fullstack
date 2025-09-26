@@ -1,0 +1,51 @@
+name: Frontend CI
+run-name: NextJS CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'nsc-events-nextjs/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'nsc-events-nextjs/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 22
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22.x"
+          cache: "npm"
+          cache-dependency-path: 'nsc-events-nextjs/package-lock.json'
+      - name: Clean install
+        run: npm ci
+        working-directory: ./nsc-events-nextjs
+      - name: Run linter
+        run: npm run lint
+        working-directory: ./nsc-events-nextjs
+      - name: Compile typescript
+        run: npm run compile
+        working-directory: ./nsc-events-nextjs
+      - name: Jest unit tests
+        run: npm run test
+        working-directory: ./nsc-events-nextjs
+      - name: Test coverage
+        run: npm run test:coverage
+        working-directory: ./nsc-events-nextjs
+      - name: Build App
+        run: npm run build
+        working-directory: ./nsc-events-nextjs
+
+      # https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts
+      - name: Archive NextJS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build
+          path: nsc-events-nextjs/.next/
+          retention-days: 14

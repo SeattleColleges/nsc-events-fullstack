@@ -1,0 +1,55 @@
+name: Backend CI
+run-name: NestJS CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'nsc-events-nestjs/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'nsc-events-nestjs/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 22
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+          cache-dependency-path: 'nsc-events-nestjs/package-lock.json'
+      - name: Clean install
+        run: npm ci
+        working-directory: ./nsc-events-nestjs
+      - name: Run linter
+        run: npm run lint
+        working-directory: ./nsc-events-nestjs
+      - name: Compile typescript
+        run: npm run compile
+        working-directory: ./nsc-events-nestjs
+      - name: Test coverage
+        run: npm run test:cov
+        working-directory: ./nsc-events-nestjs
+      - name: Build App
+        run: npm run build --if-present
+        working-directory: ./nsc-events-nestjs
+
+      # https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts
+      - name: Archive NestJS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: nestjs-build
+          path: nsc-events-nestjs/dist/
+          retention-days: 14
+
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v4
+        with:
+          name: nestjs-code-coverage-report
+          path: nsc-events-nestjs/docs/coverage/index.html
+          retention-days: 14
