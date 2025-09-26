@@ -35,7 +35,7 @@ bash setup.sh
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/SeattleColleges/nsc-events-fullstack
 cd nsc-events-fullstack
 
 # Run the setup script
@@ -53,7 +53,7 @@ Alternatively, you can follow the manual installation steps below.
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/SeattleColleges/nsc-events-fullstack
 cd nsc-events-fullstack
 
 # Install PostgreSQL and remember your password
