@@ -134,6 +134,21 @@ export class EventRegistrationController {
     return { isRegistered };
   }
 
+  // Check if user is attending an event (alias for frontend compatibility)
+  @UseGuards(JwtAuthGuard)
+  @Get('is-attending/:activityId/:userId')
+  async isUserAttending(
+    @Param('activityId') activityId: string,
+    @Param('userId') userId: string,
+  ): Promise<boolean> {
+    const registrations =
+      await this.registrationService.getEventRegistrationsByActivityId(
+        activityId,
+      );
+    const isAttending = registrations.some((reg) => reg.userId === userId);
+    return isAttending;
+  }
+
   // Unregister from an event
   @UseGuards(JwtAuthGuard)
   @Delete('unregister/:id')

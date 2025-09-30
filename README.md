@@ -28,7 +28,8 @@ git clone https://github.com/SeattleColleges/nsc-events-fullstack
 cd nsc-events-fullstack
 
 # Run the setup script
-bash setup.sh
+bash setup-macos-linux.sh
+or ./setup-macos-linux.sh
 ```
 
 #### For Windows users:
@@ -39,7 +40,7 @@ git clone https://github.com/SeattleColleges/nsc-events-fullstack
 cd nsc-events-fullstack
 
 # Run the setup script
-setup.bat
+./setup-windows.bat
 ```
 
 After running the script, you will need to:

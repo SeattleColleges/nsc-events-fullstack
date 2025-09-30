@@ -93,7 +93,7 @@ export function useIsAttending(eventId: string | undefined, userId: string | und
         queryFn: async () => {
             if (!eventId || !userId) throw new Error("Missing eventId or userId");
             const token = localStorage.getItem("token");
-            const response = await fetch(`${apiUrl}/event-registration/is-attending/${eventId}/${userId}`, {
+            const response = await fetch(`${apiUrl}/event-registration/check/${eventId}/${userId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -102,7 +102,8 @@ export function useIsAttending(eventId: string | undefined, userId: string | und
             if (!response.ok) {
                 throw new Error("Network response was not ok");
             }
-            return response.json();
+            const data = await response.json();
+            return data.isRegistered; // Extract the boolean from the response object
         }
     })
 }
