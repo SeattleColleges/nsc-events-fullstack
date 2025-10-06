@@ -30,25 +30,29 @@ echo Root dependencies installed.
 REM --- Backend Setup ---
 echo Setting up backend (nsc-events-nestjs)...
 cd nsc-events-nestjs
-if exist ".env.sample" (
-    copy .env.sample .env >nul
-    echo Created .env file from .env.sample
-    echo ACTION REQUIRED: Please configure your backend .env file with your database credentials and JWT secret.
+if exist ".env.example" (
+    copy .env.example .env >nul
+    echo Created .env file from .env.example
+    echo ACTION REQUIRED: Please configure your backend .env file with your database credentials and other secrets.
 ) else (
-    echo Warning: nsc-events-nestjs\.env.sample not found. Skipping .env creation.
+    echo Warning: nsc-events-nestjs\.env.example not found. Please create .env file manually.
 )
+echo Installing backend dependencies...
+call npm install
 cd ..
 
 REM --- Frontend Setup ---
 echo Setting up frontend (nsc-events-nextjs)...
 cd nsc-events-nextjs
-if exist ".env.sample" (
-    copy .env.sample .env.local >nul
-    echo Created .env.local file from .env.sample
-    echo ACTION REQUIRED: Please configure your frontend .env.local file if needed.
+if exist ".env.example" (
+    copy .env.example .env >nul
+    echo Created .env file from .env.example
+    echo ACTION REQUIRED: Please configure your frontend .env file if needed.
 ) else (
-    echo Warning: nsc-events-nextjs\.env.sample not found. Skipping .env.local creation.
+    echo Warning: nsc-events-nextjs\.env.example not found. Please create .env file manually.
 )
+echo Installing frontend dependencies...
+call npm install
 cd ..
 
 echo.
