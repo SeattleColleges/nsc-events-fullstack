@@ -39,25 +39,31 @@ echo "Root dependencies installed."
 echo "Setting up backend (nsc-events-nestjs)..."
 cd "$PROJECT_ROOT/nsc-events-nestjs"
 
-if [ -f ".env.sample" ]; then
-    cp .env.sample .env
-    echo "Created .env file from .env.sample"
-    echo "ACTION REQUIRED: Please configure your backend .env file with your database credentials and JWT secret."
+if [ -f ".env.example" ]; then
+    cp .env.example .env
+    echo "Created .env file from .env.example"
+    echo "ACTION REQUIRED: Please configure your backend .env file with your database credentials and other secrets."
 else
-    echo "Warning: nsc-events-nestjs/.env.sample not found. Skipping .env creation."
+    echo "Warning: nsc-events-nestjs/.env.example not found. Please create .env file manually."
 fi
+
+echo "Installing backend dependencies..."
+npm install
 
 # --- Frontend Setup ---
 echo "Setting up frontend (nsc-events-nextjs)..."
 cd "$PROJECT_ROOT/nsc-events-nextjs"
 
-if [ -f ".env.sample" ]; then
-    cp .env.sample .env.local
-    echo "Created .env.local file from .env.sample"
-    echo "ACTION REQUIRED: Please configure your frontend .env.local file if needed."
+if [ -f ".env.example" ]; then
+    cp .env.example .env
+    echo "Created .env file from .env.example"
+    echo "ACTION REQUIRED: Please configure your frontend .env file if needed."
 else
-    echo "Warning: nsc-events-nextjs/.env.sample not found. Skipping .env.local creation."
+    echo "Warning: nsc-events-nextjs/.env.example not found. Please create .env file manually."
 fi
+
+echo "Installing frontend dependencies..."
+npm install
 
 cd "$PROJECT_ROOT"
 
