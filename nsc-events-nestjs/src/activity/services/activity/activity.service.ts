@@ -44,24 +44,46 @@ export class ActivityService {
   // ----------------- Get All Activities ----------------- \\
   async getAllActivities(queryParams?: any): Promise<Activity[]> {
     try {
-      // Build where conditions based on query parameters
-      const whereConditions: any = {};
+      // derive basic flags/pagination from incoming query-like shape
+      const page = Number(queryParams?.page ?? 1);
+      const take = Number(queryParams?.numberOfEventsToGet ?? 12);
+      const isArchived =
+        (queryParams?.isArchived ?? 'false') === 'true' ? true : false;
 
-      // Handle isArchived parameter
-      if (queryParams?.isArchived !== undefined) {
-        whereConditions.isArchived = queryParams.isArchived === 'true';
-      } else {
-        // Default behavior: only show non-archived events
-        whereConditions.isArchived = false;
+      // tags can arrive as an array (from controller) or comma string (direct call)
+      const tagsArray: string[] = Array.isArray(queryParams?.tags)
+        ? (queryParams.tags as string[])
+        : String(queryParams?.tags ?? '')
+            .split(',')
+            .map((t) => t.trim().toLowerCase())
+            .filter(Boolean);
+
+      // switch to QueryBuilder so we can filter by tags safely
+      const qb = this.activityRepository
+        .createQueryBuilder('activity')
+        .where('activity."isHidden" = false')
+        .andWhere('activity."isArchived" = :isArchived', { isArchived });
+
+      // Tag filter: activity."eventTags" is a comma-separated text field.
+      // Match ANY selected tag using a case-insensitive regex with token boundaries:
+      // (^|,\s*)tag(,|$)
+      if (tagsArray.length > 0) {
+        const orClauses: string[] = [];
+        const params: Record<string, any> = {};
+
+        tagsArray.forEach((t, i) => {
+          orClauses.push(`activity."eventTags" ~* :tag${i}`);
+          params[`tag${i}`] = `(^|,\\s*)${this.escapeRegex(t)}(,|$)`;
+        });
+
+        qb.andWhere(orClauses.map((c) => `(${c})`).join(' OR '), params);
       }
 
-      // Always exclude hidden events
-      whereConditions.isHidden = false;
+      qb.orderBy('activity."eventDate"', 'ASC')
+        .take(take)
+        .skip((page - 1) * take);
 
-      return await this.activityRepository.find({
-        where: whereConditions,
-        order: { eventDate: 'ASC' },
-      });
+      return await qb.getMany();
     } catch (error) {
       throw new HttpException(
         'Error retrieving activities',
@@ -199,10 +221,6 @@ export class ActivityService {
   async archiveActivity(id: string): Promise<Activity> {
     try {
       const activity = await this.getActivityById(id);
-
-      // Check if user owns the activity or is an admin (permission check for non-admins is done in controller)
-      // Admin permissions are checked in the controller, so we don't need to check again here
-      // This allows both creators and admins to archive activities
 
       activity.isArchived = true;
       return await this.activityRepository.save(activity);
@@ -365,5 +383,10 @@ export class ActivityService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  /** Escape user-provided tag text for regex safety */
+  private escapeRegex(s: string): string {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 }
