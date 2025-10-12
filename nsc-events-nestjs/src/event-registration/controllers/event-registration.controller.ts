@@ -16,7 +16,7 @@ import { CreateEventRegistrationDto } from '../dto/create-event-registration.dto
 import { AttendEventDto } from '../dto/attend-event.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { EventRegistration } from '../entities/event-registration.entity';
-import { ActivityService } from '../../activity/services/activity/activity.service'; // ✅ fixed import path if needed
+import { ActivityService } from '../../activity/services/activity/activity.service';
 
 @Controller('event-registration')
 export class EventRegistrationController {
@@ -24,7 +24,7 @@ export class EventRegistrationController {
 
   constructor(
     private readonly registrationService: EventRegistrationService,
-    private readonly activityService: ActivityService, // ✅ Inject ActivityService
+    private readonly activityService: ActivityService, // Inject ActivityService
   ) {}
 
   // Register a user for an event
@@ -38,21 +38,22 @@ export class EventRegistrationController {
     );
   }
 
-  // Attend an event (auto-mark attended)
+  // New endpoint for attending an event
   @Post('attend')
   async attendEvent(
     @Body() attendDto: AttendEventDto,
   ): Promise<EventRegistration> {
     try {
+      // Create registration data from the attend DTO
       const registrationDto: CreateEventRegistrationDto = {
         activityId: attendDto.eventId,
         userId: attendDto.userId,
         firstName: attendDto.firstName || '',
         lastName: attendDto.lastName || '',
-        email: '',
+        email: '', // This would ideally be fetched from the user service
         college: '',
         yearOfStudy: '',
-        isAttended: true,
+        isAttended: true, // Mark as attended automatically
       };
 
       return await this.registrationService.createEventRegistration(
@@ -80,17 +81,21 @@ export class EventRegistrationController {
       await this.registrationService.getEventRegistrationsByActivityId(
         activityId,
       );
-
+    // Always return counts for all users
     const count = registrations.length;
+    // Since we don't have an iAnonymous field, we'll set anonymouseCount to 0
     const anonymousCount = 0;
 
+    // Generate attendee names from firstName and lastName
     const attendeeNames = registrations.map((reg) => {
+      // If both firstName and lastName are empty or null, return "Anonymous"
       if (
         (!reg.firstName || reg.firstName.trim() === '') &&
         (!reg.lastName || reg.lastName.trim() === '')
       ) {
         return 'Anonymous';
       }
+      // Otherwise, return the concatenated name
       return `${reg.firstName || ''} ${reg.lastName || ''}`.trim();
     });
 
@@ -102,7 +107,7 @@ export class EventRegistrationController {
     };
   }
 
-  // ✅ FIXED: Get all events a user is registered for (fetch real event details)
+  // Get all events a user is registered for (fetch real event details)
   @UseGuards(JwtAuthGuard)
   @Get('user/:userId')
   async getEventsForUser(@Param('userId') userId: string): Promise<any[]> {
@@ -138,7 +143,7 @@ export class EventRegistrationController {
     return validEvents;
   }
 
-  // Check if user is registered for an event
+  // Check if user is registered for an event (alias for frontend compatibility)
   @UseGuards(JwtAuthGuard)
   @Get('check/:activityId/:userId')
   async isUserRegistered(
@@ -178,7 +183,7 @@ export class EventRegistrationController {
     return { message: 'Successfully unregistered from event' };
   }
 
-  // Mark attendance
+  // Mark attendance for a registration
   @UseGuards(JwtAuthGuard)
   @Patch('attendance/:id')
   async markAttendance(
@@ -188,7 +193,7 @@ export class EventRegistrationController {
     return this.registrationService.markAttendance(id, body.isAttended);
   }
 
-  // Get attendees for an event
+  // Get attendees for an event (who actually attended)
   @Get('attendees/:activityId')
   async getAttendeesForEvent(
     @Param('activityId') activityId: string,
@@ -196,7 +201,7 @@ export class EventRegistrationController {
     return this.registrationService.getAttendeesForActivity(activityId);
   }
 
-  // Get registration stats
+  // Get registration statistics for an event
   @Get('stats/:activityId')
   async getRegistrationStats(@Param('activityId') activityId: string): Promise<{
     totalRegistrations: number;
