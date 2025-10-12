@@ -83,7 +83,7 @@ export class EventRegistrationController {
       );
     // Always return counts for all users
     const count = registrations.length;
-    // Since we don't have an iAnonymous field, we'll set anonymouseCount to 0
+    // Since we don't have an isAnonymous field, we'll set anonymousCount to 0
     const anonymousCount = 0;
 
     // Generate attendee names from firstName and lastName
@@ -158,7 +158,7 @@ export class EventRegistrationController {
     return { isRegistered };
   }
 
-  // Check if user is attending an event
+  // Check if user is attending an event (alias for frontend compatability)
   @UseGuards(JwtAuthGuard)
   @Get('is-attending/:activityId/:userId')
   async isUserAttending(
@@ -193,7 +193,7 @@ export class EventRegistrationController {
     return this.registrationService.markAttendance(id, body.isAttended);
   }
 
-  // Get attendees for an event (who actually attended)
+  // Get attendees for an event
   @Get('attendees/:activityId')
   async getAttendeesForEvent(
     @Param('activityId') activityId: string,
