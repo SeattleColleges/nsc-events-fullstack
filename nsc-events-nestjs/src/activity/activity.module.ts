@@ -10,6 +10,6 @@ import { S3Service } from '../activity/services/activity/s3.service';
   imports: [AuthModule, TypeOrmModule.forFeature([Activity])],
   controllers: [ActivityController],
   providers: [ActivityService, S3Service],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, ActivityService],
 })
 export class ActivityModule {}
