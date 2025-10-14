@@ -9,16 +9,23 @@ import {
   Patch,
   HttpStatus,
   HttpException,
+  Logger,
 } from '@nestjs/common';
 import { EventRegistrationService } from '../services/event-registration.service';
 import { CreateEventRegistrationDto } from '../dto/create-event-registration.dto';
 import { AttendEventDto } from '../dto/attend-event.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { EventRegistration } from '../entities/event-registration.entity';
+import { ActivityService } from '../../activity/services/activity/activity.service';
 
 @Controller('event-registration')
 export class EventRegistrationController {
-  constructor(private readonly registrationService: EventRegistrationService) {}
+  private readonly logger = new Logger(EventRegistrationController.name);
+
+  constructor(
+    private readonly registrationService: EventRegistrationService,
+    private readonly activityService: ActivityService, // Inject ActivityService
+  ) {}
 
   // Register a user for an event
   @UseGuards(JwtAuthGuard)
@@ -74,7 +81,6 @@ export class EventRegistrationController {
       await this.registrationService.getEventRegistrationsByActivityId(
         activityId,
       );
-
     // Always return counts for all users
     const count = registrations.length;
     // Since we don't have an isAnonymous field, we'll set anonymousCount to 0
@@ -101,25 +107,43 @@ export class EventRegistrationController {
     };
   }
 
-  // Get all events a user is registered for
+  // Get all events a user is registered for (fetch real event details)
   @UseGuards(JwtAuthGuard)
   @Get('user/:userId')
   async getEventsForUser(@Param('userId') userId: string): Promise<any[]> {
     const registrations =
       await this.registrationService.getEventRegistrationsByUserId(userId);
 
-    // Return a simplified format with all required fields for the frontend
-    return registrations.map((registration) => ({
-      eventId: registration.activityId,
-      eventTitle: 'Event Title', // This should ideally be fetched from event service
-      eventDate: '2025-09-02', // Set default date to avoid errors
-      eventStartTime: '10:00 AM', // Set default time
-      registrationId: registration.id,
-      isAttended: registration.isAttended,
-    }));
+    const validEvents = [];
+
+    for (const registration of registrations) {
+      const event = await this.activityService.getActivityById(registration.activityId);
+
+      if (!event) {
+        // Log orphaned registration
+        this.logger.warn(
+          `Orphaned registration found for activityId=${registration.activityId}, userId=${userId}`,
+        );
+
+        // Auto-cleanup orphaned registration
+        await this.registrationService.deleteEventRegistration(registration.id);
+        continue; // Skip adding it to the list
+      }
+
+      validEvents.push({
+        eventId: event.id,
+        eventTitle: event.eventTitle || 'Untitled Event',
+        eventDate: event.eventDate || new Date('1970-01-01'), // Temporary fallback
+        eventStartTime: event.eventStartTime || 'TBA', // Optional fallback
+        registrationId: registration.id,
+        isAttended: registration.isAttended,
+      });
+    }
+
+    return validEvents;
   }
 
-  // Check if user is registered for an event
+  // Check if user is registered for an event (alias for frontend compatibility)
   @UseGuards(JwtAuthGuard)
   @Get('check/:activityId/:userId')
   async isUserRegistered(
@@ -134,7 +158,7 @@ export class EventRegistrationController {
     return { isRegistered };
   }
 
-  // Check if user is attending an event (alias for frontend compatibility)
+  // Check if user is attending an event (alias for frontend compatability)
   @UseGuards(JwtAuthGuard)
   @Get('is-attending/:activityId/:userId')
   async isUserAttending(
@@ -169,7 +193,7 @@ export class EventRegistrationController {
     return this.registrationService.markAttendance(id, body.isAttended);
   }
 
-  // Get attendees for an event (who actually attended)
+  // Get attendees for an event
   @Get('attendees/:activityId')
   async getAttendeesForEvent(
     @Param('activityId') activityId: string,
