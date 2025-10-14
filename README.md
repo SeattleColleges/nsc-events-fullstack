@@ -93,17 +93,7 @@ npm run start:dev
 cd nsc-events-nextjs
 npm run dev
 ```
-
-Example `.env` configuration:
-
-```
-# PostgreSQL Configuration
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DATABASE=nsc_events
-TYPEORM_SYNCHRONIZE=true
+RM_SYNCHRONIZE=true
 ```
 
 ### Building
