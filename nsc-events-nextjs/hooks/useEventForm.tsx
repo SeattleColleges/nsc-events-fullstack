@@ -1,4 +1,4 @@
-import {ChangeEventHandler, FormEvent, useEffect, useState} from "react";
+import { ChangeEventHandler, FormEvent, useEffect, useState } from "react";
 import { validateFormData } from "@/utility/validateFormData";
 import { Activity, FormErrors } from "@/models/activity";
 import useDateTimeSelection from "./useDateTimeSelection";
@@ -29,10 +29,10 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
     eventCancellationPolicy: "",
     eventContact: "",
     eventSocialMedia: {
-        facebook: "",
-        twitter: "",
-        instagram: "",
-        hashtag: ""
+      facebook: "",
+      twitter: "",
+      instagram: "",
+      hashtag: ""
     },
     eventPrivacy: "",
     eventAccessibility: "",
@@ -79,7 +79,7 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
       eventSocialMedia: {
         ...prev.eventSocialMedia,
         // update the correct social media field
-        [key]: value, 
+        [key]: value,
       },
     }));
   };
@@ -104,7 +104,7 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
 
   // converting time format to 12hr
   const to12HourTime = (time: string): string => {
-     // returning an empty string if no time given
+    // returning an empty string if no time given
     if (!time) {
       return '';
     }
@@ -120,6 +120,8 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Event Data: ", eventData);
+    const dataForValidation = { ...eventData };
+    if (selectedDate) { dataForValidation.eventDate = selectedDate.toISOString().split("T")[0] }
     const newErrors = validateFormData(eventData);
     const numNewErrors = Object.keys(newErrors).length;
     setFixingErrors(numNewErrors > 0);
@@ -146,7 +148,7 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
     if (!dataToSend.eventDocument?.trim()) {
       dataToSend.eventDocument = "";
     }
-    
+
     if (selectedDate) {
       dataToSend.eventDate = selectedDate.toISOString().split('T')[0];
     }
@@ -176,26 +178,26 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
       const data = await response.json();
       if (response.ok) {
         console.log("Activity created:", data);
-        await queryClient.refetchQueries({queryKey:['events', 'myEvents', 'archivedEvents']});
+        await queryClient.refetchQueries({ queryKey: ['events', 'myEvents', 'archivedEvents'] });
         setSuccessMessage(data.message || "Event successfully created!");
         setErrorMessage("");
-        
+
         // Import the utility for handling IDs
         const { normalizeActivityId } = await import('../utility/dbFieldMapper');
-        
+
         // Normalize the response data
         const normalizedData = normalizeActivityId(data);
-        
+
         setTimeout(() => {
           // Get the ID from the normalized data
           let activityId;
-          
+
           if (normalizedData.id) {
             activityId = normalizedData.id;
           } else if (normalizedData.activity && normalizedData.activity.id) {
             activityId = normalizedData.activity.id;
           }
-          
+
           if (activityId) {
             router.push(`/event-detail?id=${activityId}`);
           } else {
@@ -224,22 +226,22 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
     setEventData,
     setErrors,
     to12HourTime,
-    eventData, 
-    handleInputChange, 
+    eventData,
+    handleInputChange,
     handleSocialMediaChange,
-    handleTagClick, 
-    handleSubmit, 
-    errors, 
-    selectedDate, 
-    setSelectedDate, 
-    startTime, 
-    setStartTime, 
-    handleStartTimeChange, 
-    endTime, 
-    setEndTime, 
-    handleEndTimeChange, 
+    handleTagClick,
+    handleSubmit,
+    errors,
+    selectedDate,
+    setSelectedDate,
+    startTime,
+    setStartTime,
+    handleStartTimeChange,
+    endTime,
+    setEndTime,
+    handleEndTimeChange,
     timeError,
-    successMessage, 
+    successMessage,
     errorMessage,
     setErrorMessage,
     setSuccessMessage
