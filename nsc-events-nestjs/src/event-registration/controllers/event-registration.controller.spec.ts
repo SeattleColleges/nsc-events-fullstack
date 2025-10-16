@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventRegistrationController } from './event-registration.controller';
 import { EventRegistrationService } from '../services/event-registration.service';
+import { ActivityService } from '../../activity/services/activity/activity.service';
 
 const mockEventRegistrationService = {
   createEventRegistration: jest.fn(),
@@ -10,6 +11,10 @@ const mockEventRegistrationService = {
   markAttendance: jest.fn(),
   getAttendeesForActivity: jest.fn(),
   getRegistrationStats: jest.fn(),
+};
+
+const mockActivityService = {
+  getActivityById: jest.fn(),
 };
 
 describe('EventRegistrationController', () => {
@@ -24,6 +29,10 @@ describe('EventRegistrationController', () => {
         {
           provide: EventRegistrationService,
           useValue: mockEventRegistrationService,
+        },
+        {
+          provide: ActivityService,
+          useValue: mockActivityService,
         },
       ],
     }).compile();
@@ -51,6 +60,10 @@ describe('EventRegistrationController.registerForEvent', () => {
         {
           provide: EventRegistrationService,
           useValue: mockEventRegistrationService,
+        },
+        {
+          provide: ActivityService,
+          useValue: mockActivityService,
         },
       ],
     }).compile();
@@ -109,6 +122,10 @@ describe('EventRegistrationController.getRegistrationsForEvent', () => {
           provide: EventRegistrationService,
           useValue: mockEventRegistrationService,
         },
+        {
+          provide: ActivityService,
+          useValue: mockActivityService,
+        },
       ],
     }).compile();
 
@@ -156,6 +173,10 @@ describe('EventRegistrationController.getEventsForUser', () => {
           provide: EventRegistrationService,
           useValue: mockEventRegistrationService,
         },
+        {
+          provide: ActivityService,
+          useValue: mockActivityService,
+        },
       ],
     }).compile();
 
@@ -197,6 +218,10 @@ describe('EventRegistrationController.isUserRegistered', () => {
         {
           provide: EventRegistrationService,
           useValue: mockEventRegistrationService,
+        },
+        {
+          provide: ActivityService,
+          useValue: mockActivityService,
         },
       ],
     }).compile();
@@ -265,6 +290,10 @@ describe('EventRegistrationController.unregisterFromEvent', () => {
           provide: EventRegistrationService,
           useValue: mockEventRegistrationService,
         },
+        {
+          provide: ActivityService,
+          useValue: mockActivityService,
+        },
       ],
     }).compile();
 
@@ -305,6 +334,10 @@ describe('EventRegistrationController.markAttendance', () => {
         {
           provide: EventRegistrationService,
           useValue: mockEventRegistrationService,
+        },
+        {
+          provide: ActivityService,
+          useValue: mockActivityService,
         },
       ],
     }).compile();
@@ -364,6 +397,10 @@ describe('EventRegistrationController.getAttendeesForEvent', () => {
           provide: EventRegistrationService,
           useValue: mockEventRegistrationService,
         },
+        {
+          provide: ActivityService,
+          useValue: mockActivityService,
+        },
       ],
     }).compile();
 
@@ -405,6 +442,10 @@ describe('EventRegistrationController.getRegistrationStats', () => {
         {
           provide: EventRegistrationService,
           useValue: mockEventRegistrationService,
+        },
+        {
+          provide: ActivityService,
+          useValue: mockActivityService,
         },
       ],
     }).compile();
