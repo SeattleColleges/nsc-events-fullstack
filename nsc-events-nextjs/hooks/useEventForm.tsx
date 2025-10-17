@@ -122,7 +122,7 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
     console.log("Event Data: ", eventData);
     const dataForValidation = { ...eventData };
     if (selectedDate) { dataForValidation.eventDate = selectedDate.toISOString().split("T")[0] }
-    const newErrors = validateFormData(eventData);
+    const newErrors = validateFormData(dataForValidation);
     const numNewErrors = Object.keys(newErrors).length;
     setFixingErrors(numNewErrors > 0);
     if (numNewErrors > 0) {
