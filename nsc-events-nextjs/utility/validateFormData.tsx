@@ -4,17 +4,21 @@ import { ActivityDatabase, activityDatabase } from "@/models/activityDatabase";
 
 export const validateFormData = (data: Activity | ActivityDatabase): FormErrors => {
   let newErrors: FormErrors = {};
-  
+
   // basic validation rules, extend as needed
   if (!data.eventTitle) {
     newErrors = { ...newErrors, eventTitle: "Event title is required" };
   }
-  
+
   if (!data.eventDescription) {
     newErrors = {
       ...newErrors,
       eventDescription: "Event description is required",
     };
+  }
+
+  if (!data.eventDate) {
+    newErrors = { ...newErrors, eventDate: "Event date is required" };
   }
 
   if (!data.eventLocation) {
@@ -25,16 +29,16 @@ export const validateFormData = (data: Activity | ActivityDatabase): FormErrors 
   }
 
   if (!data.eventCapacity && data.eventCapacity !== 0) {
-    newErrors = { ...newErrors, eventCapacity: "Event capacity is required"  };
+    newErrors = { ...newErrors, eventCapacity: "Event capacity is required" };
   }
-  
+
   if (!data.eventContact) {
     newErrors = { ...newErrors, eventContact: "Event contact is required" };
   }
-  
+
   // Overrides previous eventCapacity error check
   if (data.eventCapacity && isNaN(data.eventCapacity) || data.eventCapacity < 1) {
-    newErrors = { ...newErrors, eventCapacity: "Event capacity should be a number greater than 0"  };
+    newErrors = { ...newErrors, eventCapacity: "Event capacity should be a number greater than 0" };
   }
 
   if (data.eventTags.length < 1) {
@@ -45,7 +49,7 @@ export const validateFormData = (data: Activity | ActivityDatabase): FormErrors 
   if (data.eventContact) {
     const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     if (!regex.test(data.eventContact)) {
-      newErrors = { ...newErrors, eventContact: "Must be a valid email address"  };
+      newErrors = { ...newErrors, eventContact: "Must be a valid email address" };
     }
   }
 
