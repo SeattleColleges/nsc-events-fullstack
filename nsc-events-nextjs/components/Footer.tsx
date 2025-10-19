@@ -6,7 +6,7 @@ import white_nsc_logo from "../public/images/white_vertical_nsc_logo.png";
 const styles = {
   root: {
     display: "flex",
-    marginTop: "100%",
+    marginTop: "2rem",
     backgroundColor: "primary.main",
     padding: "2rem",
     justifyContent: "space-between",
