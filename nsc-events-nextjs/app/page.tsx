@@ -89,7 +89,7 @@ const Home = () => {
         flexDirection: "column",
         alignItems: "center",
         m: 2,
-        minHeight: events.length <= 2 ? "calc(100vh - 200px)" : "auto", //this is to dynamically adjust min-height based on event count
+        minHeight: events.length <= 2 ? `calc(100vh - ${theme.spacing(25)})` : "auto", //this is to dynamically adjust min-height based on event count
       }}
     >
       <CardMedia>
