@@ -18,33 +18,54 @@ export const useEditForm = (initialData: ActivityDatabase) => {
     setErrorMessage,
     setSuccessMessage,
     eventData,
-    to12HourTime,
     handleInputChange,
     handleSocialMediaChange,
     handleTagClick,
+    createISODateTime,
+    timezoneMessage,
   } = useEventForm(initialData as ActivityDatabase);
 
   const [startTimeDate, setStartTimeDate] = useState<Date | null>(null);
   const [endTimeDate, setEndTimeDate] = useState<Date | null>(null);
 
-  // Sync initial string times to Date only once when initialData changes
+  // Initialize date and times from ISO timestamps
   useEffect(() => {
-    const trimmedStart = initialData.eventStartTime.replace(/\s+/g, '');
-    const trimmedEnd = initialData.eventEndTime.replace(/\s+/g, '');
-    setStartTimeDate(to24HourTime(trimmedStart));
-    setEndTimeDate(to24HourTime(trimmedEnd));
+    // Check if we have the new ISO fields
+    if (initialData.startDate && initialData.endDate) {
+      const start = new Date(initialData.startDate);
+      const end = new Date(initialData.endDate);
+      
+      // Set the date from startDate
+      setSelectedDate(start);
+      
+      // Set the time Date objects
+      setStartTimeDate(start);
+      setEndTimeDate(end);
+    } 
+    // Fallback for legacy data with separate fields
+    else if (initialData.eventDate && initialData.eventStartTime && initialData.eventEndTime) {
+      // Handle legacy date
+      const utcDateString = initialData.eventDate.split("T")[0]; 
+      const localDate = new Date(`${utcDateString}T00:00:00`);
+      setSelectedDate(localDate);
+      
+      // Handle legacy times
+      const trimmedStart = initialData.eventStartTime.replace(/\s+/g, '');
+      const trimmedEnd = initialData.eventEndTime.replace(/\s+/g, '');
+      setStartTimeDate(to24HourTime(trimmedStart));
+      setEndTimeDate(to24HourTime(trimmedEnd));
+    }
   }, [initialData]);
 
   useEffect(() => {
-    setEventData(initialData as ActivityDatabase)
-    if (eventData.eventDate) {
-      // Convert the eventDate from UTC to local date
-      const utcDateString = eventData.eventDate.split("T")[0]; 
-      // Convert to local date with time set to midnight
-      const localDate = new Date(`${utcDateString}T00:00:00`);
-      setSelectedDate(localDate);
-    }
-  }, [eventData.eventDate, initialData, setEventData]);
+    setEventData(initialData as ActivityDatabase);
+  }, [initialData, setEventData]);
+
+  // Extract hours and minutes for the time selection hook
+  const getTimeString = (date: Date | null): string => {
+    if (!date) return "10:00";
+    return format(date, 'HH:mm');
+  };
 
   const {
     timeError,
@@ -52,7 +73,10 @@ export const useEditForm = (initialData: ActivityDatabase) => {
     handleEndTimeChange,
     startTime,
     endTime
-  } = useDateTimeSelection(eventData.eventStartTime.slice(0, -2),  eventData.eventEndTime.slice(0, -2));
+  } = useDateTimeSelection(
+    getTimeString(startTimeDate),
+    getTimeString(endTimeDate)
+  );
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -76,8 +100,13 @@ export const useEditForm = (initialData: ActivityDatabase) => {
   };
 
   const to24HourTime = (time: string) => {
-    return parse(time, 'hh:mma', new Date());
-  }
+    try {
+      return parse(time, 'hh:mma', new Date());
+    } catch {
+      // Fallback if parsing fails
+      return new Date();
+    }
+  };
 
   // Handlers for TimePicker changes, converting Date back to string
   const onStartTimeChange = (date: Date | null) => {
@@ -96,43 +125,33 @@ export const useEditForm = (initialData: ActivityDatabase) => {
     // retrieving the token from localStorage
     const token = localStorage.getItem('token');
 
-    // applying necessary transformations for date, time, speaker fields
-    const dataToSend = { ...activityData };
-
-    if (selectedDate) {
-      // Convert selectedDate to UTC midnight
-      const utcMidnight = new Date(Date.UTC(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        selectedDate.getDate()
-      ));
-      // Set the eventDate to the UTC midnight date
-      dataToSend.eventDate = utcMidnight.toISOString();
-    }
-
-    if (startTime) {
-      dataToSend.eventStartTime = to12HourTime(startTime);
-    }
-    if (endTime) {
-      dataToSend.eventEndTime = to12HourTime(endTime);
-    }
-
-    if (typeof dataToSend.eventSpeakers === 'string') {
-      dataToSend.eventSpeakers = [dataToSend.eventSpeakers];
-    }
-
-
     try {
+      // applying necessary transformations for ISO timestamps
+      const dataToSend: any = { ...activityData };
+
+      // Remove old fields if they exist
+      delete dataToSend.eventDate;
+      delete dataToSend.eventStartTime;
+      delete dataToSend.eventEndTime;
+
+      // Create ISO 8601 timestamps with timezone
+      if (!selectedDate || !startTime || !endTime) {
+        throw new Error('Date and time are required');
+      }
+
+      dataToSend.startDate = createISODateTime(selectedDate, startTime);
+      dataToSend.endDate = createISODateTime(selectedDate, endTime);
+
+      // Handle speakers field
+      if (typeof dataToSend.eventSpeakers === 'string') {
+        dataToSend.eventSpeakers = [dataToSend.eventSpeakers];
+      }
+
+      console.log("Event data being sent for update:", dataToSend);
+
       const apiUrl = process.env.NSC_EVENTS_PUBLIC_API_URL;
-      // Use _id for the API endpoint
+      // Use id for the API endpoint
       const eventId = dataToSend.id;
-      
-      // Create a modified payload that can work with both MongoDB and PostgreSQL backends
-      const dataPayload = {
-        ...dataToSend,
-        // If the backend expects 'id' instead of '_id', we'll keep both for compatibility
-        id: eventId
-      };
       
       const response = await fetch(`${apiUrl}/events/update/${eventId}`, {
         method: "PUT",
@@ -140,34 +159,32 @@ export const useEditForm = (initialData: ActivityDatabase) => {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify(dataPayload),
+        body: JSON.stringify(dataToSend),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         console.log("Event updated:", data);
-        return response.status
+        return response.status;
       } else {
         throw new Error(data.message || "Failed to update event.");
       }
     } catch (error) {
-      console.error(error)
+      console.error(error);
       throw error;
     }
-  }
+  };
 
   const { mutate: editEventMutation }  = useMutation({
     mutationFn: editEvent,
     onSuccess: async () => {
       await queryClient.refetchQueries({queryKey:['events', 'myEvents', 'archivedEvents']});
-      setSuccessMessage( "Event successfully updated!");
-      setTimeout( () => {
-        window.location.reload()
-      }, 1200)
-
+      setSuccessMessage("Event successfully updated!");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
     },
-
     onError: (error: any) => {
       if (error instanceof Error) {
         console.error("Error updating event:", error);
@@ -176,7 +193,19 @@ export const useEditForm = (initialData: ActivityDatabase) => {
         setErrorMessage("An unexpected error occurred.");
       }
     }
-  })
+  });
+
+  // Convert time format to 12hr for display
+  const to12HourTime = (time: string): string => {
+    if (!time) return '';
+    
+    const [hour, minute] = time.split(':');
+    const hh = parseInt(hour, 10);
+    const suffix = hh >= 12 ? 'PM' : 'AM';
+    const adjustedHour = hh % 12 || 12;
+    const formattedHour = adjustedHour < 10 ? `0${adjustedHour}` : adjustedHour.toString();
+    return `${formattedHour}:${minute}${suffix}`;
+  };
 
   return {
     handleDateChange,
@@ -196,5 +225,6 @@ export const useEditForm = (initialData: ActivityDatabase) => {
     startTimeDate,
     endTimeDate,
     to12HourTime,
+    timezoneMessage,
   };
 }
