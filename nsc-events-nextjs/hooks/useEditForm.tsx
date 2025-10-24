@@ -2,9 +2,9 @@ import { FormEvent, useEffect, useState } from "react";
 import { validateFormData } from "@/utility/validateFormData";
 import useDateTimeSelection from "./useDateTimeSelection";
 import { ActivityDatabase } from "@/models/activityDatabase";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEventForm } from "@/hooks/useEventForm";
-import { format, parse } from "date-fns";
+import { format } from "date-fns";
 
 export const useEditForm = (initialData: ActivityDatabase) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -30,31 +30,27 @@ export const useEditForm = (initialData: ActivityDatabase) => {
 
   // Initialize date and times from ISO timestamps
   useEffect(() => {
-    // Check if we have the new ISO fields
+    // Check if we have valid ISO date strings
     if (initialData.startDate && initialData.endDate) {
-      const start = new Date(initialData.startDate);
-      const end = new Date(initialData.endDate);
-      
-      // Set the date from startDate
-      setSelectedDate(start);
-      
-      // Set the time Date objects
-      setStartTimeDate(start);
-      setEndTimeDate(end);
-    } 
-    // Fallback for legacy data with separate fields
-    else if (initialData.eventDate && initialData.eventStartTime && initialData.eventEndTime) {
-      // Handle legacy date
-      const utcDateString = initialData.eventDate.split("T")[0]; 
-      const localDate = new Date(`${utcDateString}T00:00:00`);
-      setSelectedDate(localDate);
-      
-      // Handle legacy times
-      const trimmedStart = initialData.eventStartTime.replace(/\s+/g, '');
-      const trimmedEnd = initialData.eventEndTime.replace(/\s+/g, '');
-      setStartTimeDate(to24HourTime(trimmedStart));
-      setEndTimeDate(to24HourTime(trimmedEnd));
+      try {
+        const start = new Date(initialData.startDate);
+        const end = new Date(initialData.endDate);
+        
+        // Set the date from startDate
+        setSelectedDate(start);
+        
+        // Set the time Date objects
+        setStartTimeDate(start);
+        setEndTimeDate(end);
+      } catch (error) {
+        console.error("Failed to parse initial dates:", error);
+        // Set to null or default if parsing fails
+        setSelectedDate(null);
+        setStartTimeDate(null);
+        setEndTimeDate(null);
+      }
     }
+
   }, [initialData]);
 
   useEffect(() => {
@@ -63,7 +59,7 @@ export const useEditForm = (initialData: ActivityDatabase) => {
 
   // Extract hours and minutes for the time selection hook
   const getTimeString = (date: Date | null): string => {
-    if (!date) return "10:00";
+    if (!date) return "10:00"; // Default value if null
     return format(date, 'HH:mm');
   };
 
@@ -83,9 +79,8 @@ export const useEditForm = (initialData: ActivityDatabase) => {
     let newErrors = validateFormData(eventData);
 
     // Add timeError if it exists
-    // timeError is being set in useDateTimeSelection hook if startTime is after endTime
     if (timeError) {
-      newErrors = { ...newErrors, eventStartTime: timeError };
+      newErrors = { ...newErrors, startDate: timeError };
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -97,15 +92,6 @@ export const useEditForm = (initialData: ActivityDatabase) => {
 
   const handleDateChange = (newDate: Date | null)  => {
     setSelectedDate(newDate);
-  };
-
-  const to24HourTime = (time: string) => {
-    try {
-      return parse(time, 'hh:mma', new Date());
-    } catch {
-      // Fallback if parsing fails
-      return new Date();
-    }
   };
 
   // Handlers for TimePicker changes, converting Date back to string
@@ -129,7 +115,7 @@ export const useEditForm = (initialData: ActivityDatabase) => {
       // applying necessary transformations for ISO timestamps
       const dataToSend: any = { ...activityData };
 
-      // Remove old fields if they exist
+      // Remove old fields if they exist (good practice)
       delete dataToSend.eventDate;
       delete dataToSend.eventStartTime;
       delete dataToSend.eventEndTime;
@@ -199,7 +185,12 @@ export const useEditForm = (initialData: ActivityDatabase) => {
   const to12HourTime = (time: string): string => {
     if (!time) return '';
     
+    // Check if time is in HH:mm format
+    if (!time.includes(':')) return ''; 
+
     const [hour, minute] = time.split(':');
+    if (isNaN(parseInt(hour)) || isNaN(parseInt(minute))) return '';
+
     const hh = parseInt(hour, 10);
     const suffix = hh >= 12 ? 'PM' : 'AM';
     const adjustedHour = hh % 12 || 12;
@@ -211,7 +202,7 @@ export const useEditForm = (initialData: ActivityDatabase) => {
     handleDateChange,
     onStartTimeChange,
     onEndTimeChange,
-    to24HourTime,
+    // to24HourTime is no longer needed
     eventData,
     handleInputChange,
     handleSocialMediaChange,

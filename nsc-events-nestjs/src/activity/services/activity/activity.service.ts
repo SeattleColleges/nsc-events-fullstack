@@ -85,7 +85,7 @@ export class ActivityService {
       }
 
       // Order by startDate instead of eventDate
-      qb.orderBy('activity."start_date"', 'ASC')
+      qb.orderBy('activity."startDate"', 'ASC')
         .take(take)
         .skip((page - 1) * take);
 
@@ -337,7 +337,7 @@ export class ActivityService {
           '(activity.eventTitle ILIKE :searchTerm OR activity.eventDescription ILIKE :searchTerm OR activity.eventLocation ILIKE :searchTerm)',
           { searchTerm: `%${searchTerm}%` },
         )
-        .orderBy('activity.start_date', 'ASC')
+        .orderBy('activity.startDate', 'ASC')
         .getMany();
     } catch (error) {
       throw new HttpException(
