@@ -37,7 +37,7 @@ export class CreateActivityDto {
   */
 
   @IsNotEmpty({ message: "Event date is required" })
-  @IsDateString({ message: 'Event date must be valid' })
+  @IsDateString({ message: 'Event date must be a valid ISO 8601 date string' })
   readonly eventDate: Date;
 
   @IsTime()
