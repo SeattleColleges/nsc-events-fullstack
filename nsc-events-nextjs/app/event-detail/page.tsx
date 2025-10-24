@@ -30,7 +30,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AttendDialog from "@/components/AttendDialog";
 import ArchiveDialog from "@/components/ArchiveDialog";
 import EditDialog from "@/components/EditDialog";
-import { formatDate } from "@/utility/dateUtils";
+import { formatDate, formatTimeWithTimezone } from "@/utility/dateUtils";
 import ViewMoreDetailsDialog from "@/components/ViewMoreDetailsDialog";
 import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
@@ -466,13 +466,13 @@ const EventDetail = () => {
                   {event.eventDescription}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Date: {formatDate(event.eventDate)}
+                  Date: {formatDate(event.startDate)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Start Time: {event.eventStartTime}
+                  Start Time: {formatTimeWithTimezone(event.startDate)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  End Time: {event.eventEndTime}
+                  End Time: {formatTimeWithTimezone(event.endDate)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Location: {event.eventLocation}

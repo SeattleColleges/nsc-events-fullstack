@@ -3,9 +3,8 @@ export interface FormErrors {
     eventTitle?: string;
     eventDescription?: string;
     eventCategory?: string;
-    eventDate?: string;
-    eventStartTime?: string;
-    eventEndTime?: string;
+    startDate?: string;
+    endDate?: string;
     eventSchedule?: string;
     eventLocation?: string;
     eventMeetingURL?: string;
@@ -48,9 +47,8 @@ export interface Activity {
     eventTitle: string;
     eventDescription: string;
     eventCategory: string;
-    eventDate: string;
-    eventStartTime: string;
-    eventEndTime: string;
+    startDate: string; 
+    endDate: string;
     eventLocation: string;
     eventMeetingURL: string;
     eventCoverPhoto: string;
@@ -75,9 +73,8 @@ export const activity: Activity = {
     eventTitle: "",
     eventDescription: "",
     eventCategory: "",
-    eventDate: "",
-    eventStartTime: "",
-    eventEndTime: "",
+    startDate: "", 
+    endDate: "",
     eventLocation: "",
     eventMeetingURL: "",
     eventCoverPhoto: "",

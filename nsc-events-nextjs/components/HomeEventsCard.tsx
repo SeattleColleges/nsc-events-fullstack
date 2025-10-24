@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import Link from "next/link";
-import { formatDate } from "@/utility/dateUtils";
+import { formatDate, formatTimeWithTimezone } from "@/utility/dateUtils";
 import { ActivityDatabase } from "@/models/activityDatabase";
 
 // declare the event prop that will get passed to the component
@@ -140,7 +140,7 @@ function HomeEventsCard({ event }: EventCardProps) {
                 flexShrink: 0, // prevents the date box from shrinking
               }}
             >
-              {new Date(event.eventDate).toLocaleDateString("en-US", {
+              {new Date(event.startDate).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
                 timeZone: "UTC",
@@ -154,16 +154,11 @@ function HomeEventsCard({ event }: EventCardProps) {
               </Typography>
                 <Typography fontFamily="font-serif">
                     <strong>Date:&nbsp;</strong>
-                    {new Date(event.eventDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'numeric',
-                        day: 'numeric',
-                        timeZone: 'UTC',
-                    })}
+                    {formatDate(event.startDate)}
                     <br/>
-                    <strong>Start Time:</strong> {event.eventStartTime}
+                    <strong>Start Time:</strong> {formatTimeWithTimezone(event.startDate)}
                     <br/>
-                    <strong>End Time:</strong> {event.eventEndTime}
+                    <strong>End Time:</strong> {formatTimeWithTimezone(event.endDate)}
                 </Typography>
 
                 <Typography
@@ -214,6 +209,3 @@ function HomeEventsCard({ event }: EventCardProps) {
 }
 
 export default HomeEventsCard;
-
-
-

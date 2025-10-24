@@ -1,13 +1,12 @@
 export interface ActivityDatabase {
+    startDate: string;
+    endDate: string;
     id: string; // Primary identifier in PostgreSQL
     _id?: string; // Optional MongoDB-style identifier for backward compatibility
     createdByUserId: string;
     eventTitle: string;
     eventDescription: string;
     eventCategory: string;
-    eventDate: string;
-    eventStartTime: string;
-    eventEndTime: string;
     eventLocation: string;
     eventCoverPhoto: string;
     eventDocument: string;
@@ -42,9 +41,8 @@ export const activityDatabase: ActivityDatabase = {
     eventTitle: "",
     eventDescription: "",
     eventCategory: "",
-    eventDate: "",
-    eventStartTime: "",
-    eventEndTime: "",
+    startDate: "", 
+    endDate: "",
     eventLocation: "",
     eventMeetingURL: "",
     eventCoverPhoto: "",

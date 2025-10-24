@@ -2,9 +2,9 @@ import { SocialMedia } from '../entities/activity.entity';
 import {
   ArrayNotEmpty,
   IsArray,
-  IsDateString,
   IsEmail,
   IsEmpty,
+  IsISO8601,
   IsNotEmpty,
   IsNumberString,
   IsOptional,
@@ -12,8 +12,9 @@ import {
   IsUrl,
   IsBoolean,
   ValidateIf,
+  Validate,
 } from 'class-validator';
-import { IsTime } from '../../../custom-validators/is-time';
+import { IsAfterStartDate } from '../../../custom-validators/is-after-start-date';
 import { IsSocialMedia } from '../../../custom-validators/is-social-media';
 import { User } from '../../user/entities/user.entity';
 
@@ -31,25 +32,14 @@ export class UpdateActivityDto {
   @IsString()
   readonly eventDescription: string;
 
-  // NO LONGER NEEDED
-  /*
   @IsOptional()
-  @IsNotEmpty()
-  @IsString() //TODO: lead dev talk to PO and turn this into enum
-  readonly eventCategory: string;
-  */
+  @IsISO8601({ strict: true }, { message: 'startDate must be a valid ISO 8601 datetime string' })
+  readonly startDate: string;
 
   @IsOptional()
-  @IsDateString()
-  readonly eventDate: Date;
-
-  @IsOptional()
-  @IsTime()
-  readonly eventStartTime: string;
-
-  @IsOptional()
-  @IsTime()
-  readonly eventEndTime: string;
+  @IsISO8601({ strict: true }, { message: 'endDate must be a valid ISO 8601 datetime string' })
+  @Validate(IsAfterStartDate, { message: 'endDate must be after startDate' })
+  readonly endDate: string;
 
   @IsOptional()
   @IsNotEmpty()

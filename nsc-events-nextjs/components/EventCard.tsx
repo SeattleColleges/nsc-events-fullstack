@@ -31,7 +31,7 @@ function EventCard({ event }: EventCardProps) {
                               {event.eventTitle}
                           </Typography>
                           <Typography variant="body2" align={(isMobile || isTablet) ? "center" : "right"} color="text.secondary">
-                              Date: { formatDate(event.eventDate) }
+                              Date: { formatDate(event.startDate) }
                           </Typography>
                       </CardContent>
                   </Card>
