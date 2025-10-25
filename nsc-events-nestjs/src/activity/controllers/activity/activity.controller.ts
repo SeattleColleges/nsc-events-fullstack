@@ -18,23 +18,44 @@ import { ActivityService } from '../../../activity/services/activity/activity.se
 import { Activity, Attendee } from '../../entities/activity.entity';
 import { CreateActivityDto } from '../../dto/create-activity.dto';
 import { UpdateActivityDto } from '../../dto/update-activity.dto';
-import { Query as ExpressQuery } from 'express-serve-static-core';
+// Removed unused: import { Query as ExpressQuery } from 'express-serve-static-core';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { Role } from '../../../user/entities/user.entity';
 import { AttendEventDto } from '../../dto/attend-event.dto';
-@Controller('events')
+
+@Controller('events') // final path is /api/events (global prefix 'api')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) {}
+
+  // LIST with optional tag filtering: ?tags=club,study
   @Get('')
-  async getAllActivities(@Query() query: ExpressQuery): Promise<Activity[]> {
-    return await this.activityService.getAllActivities(query);
+  async getAllActivities(
+    @Query('page') page = '1',
+    @Query('numberOfEventsToGet') take = '12',
+    @Query('isArchived') isArchived = 'false',
+    @Query('tags') tagsParam?: string,
+  ): Promise<Activity[]> {
+    const tags = (tagsParam ?? '')
+      .split(',')
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean);
+
+    // Keep the service signature flexible by passing an object of query-like params
+    return await this.activityService.getAllActivities({
+      page,
+      numberOfEventsToGet: take,
+      isArchived,
+      tags, // array of normalized tags
+    });
   }
+
   @Get('find/:id')
   async findActivityById(@Param('id') id: string): Promise<Activity> {
     return this.activityService.getActivityById(id);
   }
+
   // request all events created by a specific user
   @Get('user/:userId')
   async getActivitiesByUserId(
