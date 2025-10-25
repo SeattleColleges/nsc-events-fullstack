@@ -117,7 +117,9 @@ export class EventRegistrationController {
     const validEvents = [];
 
     for (const registration of registrations) {
-      const event = await this.activityService.getActivityById(registration.activityId);
+      const event = await this.activityService.getActivityById(
+        registration.activityId,
+      );
 
       if (!event) {
         // Log orphaned registration

@@ -26,10 +26,19 @@ export default function RootLayout({
         <ThemeContextProvider>
           <AppRouterCacheProvider>
             <ReactQueryProvider>
-              <Navbar />
               <CssBaseline /> {/* Ensures consistent baseline styles */}
-              {children} {/* TODO: Add Wrapper Div component after replacing CSS with MUI for consistency */}
-              <Footer />
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                minHeight: "100vh",
+              }}>
+                <Navbar />
+                {/* {main content should grow to take available space} */}
+              <main style={{ flex: 1 }}>
+                {children}
+                </main>
+                <Footer />
+              </div>
             </ReactQueryProvider>
           </AppRouterCacheProvider>
         </ThemeContextProvider>
