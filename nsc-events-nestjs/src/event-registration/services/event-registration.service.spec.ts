@@ -1,22 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import {
+  BadRequestException,
+  NotFoundException,
+  HttpException,
+} from '@nestjs/common';
 import { EventRegistrationService } from './event-registration.service';
-import { HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
+import { EventRegistration } from '../entities/event-registration.entity';
 
-// Inline mock repository
-const mockRepository = {
+// ---- Typed mock for repository ----
+type MockRepo = Partial<Record<keyof Repository<EventRegistration>, jest.Mock>>;
+const createMockRepo = (): MockRepo => ({
   create: jest.fn(),
   save: jest.fn(),
   findOne: jest.fn(),
   find: jest.fn(),
-  count: jest.fn(),
   remove: jest.fn(),
-};
+  count: jest.fn(),
+});
 
-// Sample mock data
-const mockRegistration = {
-  id: 'uuid-1',
-  activityId: 'activity-10',
-  userId: 'user-5',
+// ---- Mock data ----
+const mockReg: EventRegistration = {
+  id: 'r1',
+  activityId: 'a1',
+  userId: 'u1',
   firstName: 'Beimnet',
   lastName: 'Tesfaye',
   email: 'beimnet@example.com',
@@ -27,16 +35,19 @@ const mockRegistration = {
   updatedAt: new Date(),
 };
 
-describe('EventRegistrationService (User-focused)', () => {
+describe('EventRegistrationService', () => {
   let service: EventRegistrationService;
+  let repo: MockRepo;
 
   beforeEach(async () => {
+    repo = createMockRepo();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EventRegistrationService,
         {
-          provide: 'EventRegistrationRepository',
-          useValue: mockRepository,
+          provide: getRepositoryToken(EventRegistration),
+          useValue: repo,
         },
       ],
     }).compile();
@@ -46,103 +57,165 @@ describe('EventRegistrationService (User-focused)', () => {
 
   afterEach(() => jest.clearAllMocks());
 
-  // 1️⃣ Definition
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  // --- CREATE ---
+  it('should create a registration successfully', async () => {
+    (repo.findOne as jest.Mock).mockResolvedValue(null);
+    (repo.create as jest.Mock).mockReturnValue(mockReg);
+    (repo.save as jest.Mock).mockResolvedValue(mockReg);
+
+    const result = await service.createEventRegistration(mockReg);
+    expect(result).toEqual(mockReg);
   });
 
-  // 2️⃣ Create
-  it('should create a new registration', async () => {
-    mockRepository.findOne.mockResolvedValue(null);
-    mockRepository.create.mockReturnValue(mockRegistration);
-    mockRepository.save.mockResolvedValue(mockRegistration);
+  it('should throw BadRequest if user already registered', async () => {
+    (repo.findOne as jest.Mock).mockResolvedValue(mockReg);
 
-    const result = await service.createEventRegistration(mockRegistration);
-    expect(result).toEqual(mockRegistration);
-    expect(mockRepository.save).toHaveBeenCalled();
+    await expect(service.createEventRegistration(mockReg)).rejects.toThrow(
+      BadRequestException,
+    );
   });
 
-  // 3️⃣ Get by ID
-  it('should return registration by id', async () => {
-    mockRepository.findOne.mockResolvedValue(mockRegistration);
-    const result = await service.getEventRegistrationById('uuid-1');
-    expect(result).toEqual(mockRegistration);
+  it('should wrap unexpected errors during create', async () => {
+    (repo.findOne as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+    await expect(service.createEventRegistration(mockReg)).rejects.toThrow(
+      HttpException,
+    );
   });
 
-  // 4️⃣ Handle not found
-  it('should throw NotFoundException if registration not found', async () => {
-    mockRepository.findOne.mockResolvedValue(null);
+  // --- GET ALL ---
+  it('should get all registrations', async () => {
+    (repo.find as jest.Mock).mockResolvedValue([mockReg]);
+    const result = await service.getAllEventRegistrations();
+    expect(result).toEqual([mockReg]);
+  });
+
+  it('should handle DB errors on getAll', async () => {
+    (repo.find as jest.Mock).mockRejectedValue(new Error('fail'));
+    await expect(service.getAllEventRegistrations()).rejects.toThrow(
+      HttpException,
+    );
+  });
+
+  // --- GET BY ID ---
+  it('should get registration by id', async () => {
+    (repo.findOne as jest.Mock).mockResolvedValue(mockReg);
+    const result = await service.getEventRegistrationById('r1');
+    expect(result).toEqual(mockReg);
+  });
+
+  it('should throw NotFound when registration not found', async () => {
+    (repo.findOne as jest.Mock).mockResolvedValue(null);
+    await expect(service.getEventRegistrationById('x')).rejects.toThrow(
+      NotFoundException,
+    );
+  });
+
+  // --- GET BY ACTIVITY ---
+  it('should get registrations by activityId', async () => {
+    (repo.find as jest.Mock).mockResolvedValue([mockReg]);
+    const result = await service.getEventRegistrationsByActivityId('a1');
+    expect(result).toEqual([mockReg]);
+  });
+
+  it('should handle DB errors on getByActivity', async () => {
+    (repo.find as jest.Mock).mockRejectedValue(new Error('fail'));
     await expect(
-      service.getEventRegistrationById('unknown-id'),
+      service.getEventRegistrationsByActivityId('a1'),
+    ).rejects.toThrow(HttpException);
+  });
+
+  // --- GET BY USER ---
+  it('should get registrations by userId', async () => {
+    (repo.find as jest.Mock).mockResolvedValue([mockReg]);
+    const result = await service.getEventRegistrationsByUserId('u1');
+    expect(result).toEqual([mockReg]);
+  });
+
+  it('should handle DB errors on getByUser', async () => {
+    (repo.find as jest.Mock).mockRejectedValue(new Error('fail'));
+    await expect(
+      service.getEventRegistrationsByUserId('u1'),
+    ).rejects.toThrow(HttpException);
+  });
+
+  // --- UPDATE ---
+  it('should update registration successfully', async () => {
+    (repo.findOne as jest.Mock).mockResolvedValue(mockReg);
+    (repo.save as jest.Mock).mockResolvedValue({ ...mockReg, isAttended: true });
+    const result = await service.updateEventRegistration('r1', {
+      isAttended: true,
+    });
+    expect(result.isAttended).toBe(true);
+  });
+
+  it('should throw NotFound if updating non-existent registration', async () => {
+    (repo.findOne as jest.Mock).mockResolvedValue(null);
+    await expect(
+      service.updateEventRegistration('x', { isAttended: true }),
     ).rejects.toThrow(NotFoundException);
   });
 
-  // 5️⃣ Get by userId
-  it('should return all registrations for a user', async () => {
-    mockRepository.find.mockResolvedValue([mockRegistration]);
-    const result = await service.getEventRegistrationsByUserId('user-5');
-    expect(result).toHaveLength(1);
-    expect(result[0].userId).toBe('user-5');
-  });
-
-  // 6️⃣ Update registration
-  it('should update registration successfully', async () => {
-    jest
-      .spyOn(service, 'getEventRegistrationById')
-      .mockResolvedValue(mockRegistration);
-    mockRepository.save.mockResolvedValue({
-      ...mockRegistration,
-      isAttended: true,
-    });
-
-    const result = await service.updateEventRegistration('uuid-1', {
-      isAttended: true,
-    });
-
-    expect(result.isAttended).toBe(true);
-  });
-
-  // 7️⃣ Delete registration
+  // --- DELETE ---
   it('should delete registration successfully', async () => {
-    jest
-      .spyOn(service, 'getEventRegistrationById')
-      .mockResolvedValue(mockRegistration);
-    mockRepository.remove.mockResolvedValue(undefined);
-
-    await service.deleteEventRegistration('uuid-1');
-    expect(mockRepository.remove).toHaveBeenCalledWith(mockRegistration);
+    (repo.findOne as jest.Mock).mockResolvedValue(mockReg);
+    (repo.remove as jest.Mock).mockResolvedValue(undefined);
+    await expect(service.deleteEventRegistration('r1')).resolves.toBeUndefined();
   });
 
-  // 8️⃣ Mark attendance
-  it('should mark attendance successfully', async () => {
-    jest
-      .spyOn(service, 'getEventRegistrationById')
-      .mockResolvedValue(mockRegistration);
-    mockRepository.save.mockResolvedValue({
-      ...mockRegistration,
-      isAttended: true,
-    });
+  it('should throw NotFound if deleting non-existent registration', async () => {
+    (repo.findOne as jest.Mock).mockResolvedValue(null);
+    await expect(service.deleteEventRegistration('x')).rejects.toThrow(
+      NotFoundException,
+    );
+  });
 
-    const result = await service.markAttendance('uuid-1', true);
+  // --- MARK ATTENDANCE ---
+  it('should mark attendance successfully', async () => {
+    (repo.findOne as jest.Mock).mockResolvedValue(mockReg);
+    (repo.save as jest.Mock).mockResolvedValue({ ...mockReg, isAttended: true });
+    const result = await service.markAttendance('r1', true);
     expect(result.isAttended).toBe(true);
   });
 
-  // 9️⃣ Get attendees for activity
-  it('should return attendees for a given activity', async () => {
-    mockRepository.find.mockResolvedValue([mockRegistration]);
-    const result = await service.getAttendeesForActivity('activity-10');
-    expect(result).toHaveLength(1);
+  it('should throw NotFound on missing id for markAttendance', async () => {
+    (repo.findOne as jest.Mock).mockResolvedValue(null);
+    await expect(service.markAttendance('x', true)).rejects.toThrow(
+      NotFoundException,
+    );
   });
 
-  // 🔟 Get registration stats
-  it('should return registration stats correctly', async () => {
-    mockRepository.count
-      .mockResolvedValueOnce(10) // total
-      .mockResolvedValueOnce(7); // attended
+  // --- GET ATTENDEES ---
+  it('should get attendees for an activity', async () => {
+    (repo.find as jest.Mock).mockResolvedValue([mockReg]);
+    const result = await service.getAttendeesForActivity('a1');
+    expect(result).toEqual([mockReg]);
+  });
 
-    const stats = await service.getRegistrationStats('activity-10');
-    expect(stats.totalRegistrations).toBe(10);
-    expect(stats.totalAttendees).toBe(7);
-    expect(stats.attendanceRate).toBe(70);
+  it('should handle DB error on getAttendees', async () => {
+    (repo.find as jest.Mock).mockRejectedValue(new Error('fail'));
+    await expect(service.getAttendeesForActivity('a1')).rejects.toThrow(
+      HttpException,
+    );
+  });
+
+  // --- STATS ---
+  it('should get registration stats successfully', async () => {
+    (repo.count as jest.Mock)
+      .mockResolvedValueOnce(10)
+      .mockResolvedValueOnce(5);
+    const stats = await service.getRegistrationStats('a1');
+    expect(stats).toEqual({
+      totalRegistrations: 10,
+      totalAttendees: 5,
+      attendanceRate: 50,
+    });
+  });
+
+  it('should handle DB error on getStats', async () => {
+    (repo.count as jest.Mock).mockRejectedValue(new Error('fail'));
+    await expect(service.getRegistrationStats('a1')).rejects.toThrow(
+      HttpException,
+    );
   });
 });
