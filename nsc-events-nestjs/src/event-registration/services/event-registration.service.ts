@@ -12,7 +12,6 @@ import { CreateEventRegistrationDto } from '../dto/create-event-registration.dto
 
 @Injectable()
 export class EventRegistrationService {
-  register: any;
   constructor(
     @InjectRepository(EventRegistration)
     private readonly eventRegistrationRepository: Repository<EventRegistration>,
