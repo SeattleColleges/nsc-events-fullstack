@@ -36,8 +36,8 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
         endTimeDate,
         to12HourTime,
     } = useEditForm(event);
-    
-    const [initialEventData, setInitialEventData] = useState(event);    
+
+    const [initialEventData, setInitialEventData] = useState(event);
 
     useEffect(() => {
         if (isOpen) {
@@ -46,15 +46,15 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
     }, [isOpen, event]);
 
     const isEventUpdated = () => {
-        return JSON.stringify(initialEventData) !== JSON.stringify(eventData) || 
-                (selectedDate && selectedDate.toISOString() !== eventData.eventDate) || 
-                (startTimeDate && to12HourTime(startTimeDate ? format(startTimeDate, 'HH:mm') : '').toString() !== eventData.eventStartTime) || 
-                (endTimeDate && to12HourTime(endTimeDate ? format(endTimeDate, 'HH:mm') : '').toString() !== eventData.eventEndTime);
+        return JSON.stringify(initialEventData) !== JSON.stringify(eventData) ||
+            (selectedDate && selectedDate.toISOString() !== eventData.eventDate) ||
+            (startTimeDate && to12HourTime(startTimeDate ? format(startTimeDate, 'HH:mm') : '').toString() !== eventData.eventStartTime) ||
+            (endTimeDate && to12HourTime(endTimeDate ? format(endTimeDate, 'HH:mm') : '').toString() !== eventData.eventEndTime);
     };
 
     return (
         <>
-            <Dialog open={ isOpen } maxWidth={"md"} fullWidth={ true }>
+            <Dialog open={isOpen} maxWidth={"md"} fullWidth={true}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off" sx={{ p: 3 }}>
                         <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'black', mb: 2 }}>
@@ -365,27 +365,27 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
                             />
                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }} >
                                 <Box>
-                                <Button type="submit" variant="contained" color="primary" style={{ textTransform: "none" }} disabled={!isEventUpdated()}>
-                                    Confirm Edit
-                                </Button>
-                                <div className="error-messages">
-                                    {Object.entries(errors).map(([key, value]) => {
-                                        if (typeof value === 'object' && value !== null) {
-                                            return Object.entries(value).map(([nestedKey, nestedError]) => (
-                                                nestedError ? <p key={`${key}-${nestedKey}`} className="error-text" style={{ color: "red" }}>
-                                                    {`${nestedKey}: ${nestedError}`}
-                                                </p> : null
-                                            ));
-                                        } else {
-                                            return value ? <p key={key} className="error-text" style={{ color: "red" }}>
-                                                {value}
-                                            </p> : null;
-                                        }
-                                    })}
-                                </div>
+                                    <Button type="submit" variant="contained" color="primary" style={{ textTransform: "none" }} disabled={!isEventUpdated()}>
+                                        Confirm Edit
+                                    </Button>
+                                    <div className="error-messages">
+                                        {Object.entries(errors).map(([key, value]) => {
+                                            if (typeof value === 'object' && value !== null) {
+                                                return Object.entries(value).map(([nestedKey, nestedError]) => (
+                                                    nestedError ? <p key={`${key}-${nestedKey}`} className="error-text" style={{ color: "red" }}>
+                                                        {`${nestedKey}: ${nestedError}`}
+                                                    </p> : null
+                                                ));
+                                            } else {
+                                                return value ? <p key={key} className="error-text" style={{ color: "red" }}>
+                                                    {value}
+                                                </p> : null;
+                                            }
+                                        })}
+                                    </div>
                                 </Box>
 
-                                <Button variant="contained" color="primary" sx={{ textTransform: "none", flex: "0 0 auto" }} onClick={ () => {
+                                <Button variant="contained" color="primary" sx={{ textTransform: "none", flex: "0 0 auto" }} onClick={() => {
                                     toggleEditDialog()
                                 }}>
                                     Cancel
