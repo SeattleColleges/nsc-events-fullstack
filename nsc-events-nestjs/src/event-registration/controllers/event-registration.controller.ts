@@ -25,7 +25,7 @@ export class EventRegistrationController {
   constructor(
     private readonly registrationService: EventRegistrationService,
     private readonly activityService: ActivityService, // Inject ActivityService
-  ) {}
+  ) { }
 
   // Register a user for an event
   @UseGuards(JwtAuthGuard)
@@ -175,7 +175,7 @@ export class EventRegistrationController {
     return isAttending;
   }
 
-  // Unregister from an event
+  // Unregister from an event - is this needed?
   @UseGuards(JwtAuthGuard)
   @Delete('unregister/:id')
   async unregisterFromEvent(
@@ -184,6 +184,19 @@ export class EventRegistrationController {
     await this.registrationService.deleteEventRegistration(id);
     return { message: 'Successfully unregistered from event' };
   }
+
+  // Unregister from an event
+  @UseGuards(JwtAuthGuard)
+  @Delete('unattend')
+  async unattendEvent(
+    @Body() body: { userId: string; eventId: string },
+  ): Promise<{ message: string }> {
+    const { userId, eventId } = body;
+    await this.registrationService.deleteByUserAndEvent(userId, eventId);
+    return { message: 'Successfully unregistered from event' };
+  }
+
+
 
   // Mark attendance for a registration
   @UseGuards(JwtAuthGuard)
