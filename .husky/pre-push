@@ -1,0 +1,23 @@
+# START: Husky Pre-Push Hook - Full Test Suite
+# This hook runs before each push to ensure all tests pass
+echo "Running pre-push checks..."
+echo "Branch: $(git branch --show-current)"
+echo ""
+
+# Run full test suite
+echo "Running full test suite before push..."
+npm run test:full
+
+# Check the exit code
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "Tests failed! Push blocked."
+  echo "Please fix failing tests before pushing."
+  echo "You can bypass this with: git push --no-verify (use with caution!)"
+  exit 1
+fi
+
+echo ""
+echo "All tests passed! Push allowed."
+echo "Proceeding with push..."
+# END: Husky Pre-Push Hook

@@ -1,0 +1,33 @@
+# START: Husky Pre-Commit Hook - Linting Check
+# This hook runs before each commit to ensure code quality
+echo "Running pre-commit checks..."
+echo "Checking all files for linting issues..."
+echo ""
+
+# Run linting for both workspaces
+echo "Linting Next.js workspace..."
+npm run lint:frontend
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "Frontend linting failed! Commit blocked."
+  echo "Please fix linting issues in nsc-events-nextjs before committing."
+  echo "You can bypass this with: git commit --no-verify (use with caution!)"
+  exit 1
+fi
+
+echo "Linting NestJS workspace..."
+npm run lint:backend
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "Backend linting failed! Commit blocked."
+  echo "Please fix linting issues in nsc-events-nestjs before committing."
+  echo "You can bypass this with: git commit --no-verify (use with caution!)"
+  exit 1
+fi
+
+echo ""
+echo "All linting checks passed!"
+echo "Proceeding with commit..."
+# END: Husky Pre-Commit Hook
