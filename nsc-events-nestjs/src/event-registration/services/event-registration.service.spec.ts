@@ -134,15 +134,18 @@ describe('EventRegistrationService', () => {
 
   it('should handle DB errors on getByUser', async () => {
     (repo.find as jest.Mock).mockRejectedValue(new Error('fail'));
-    await expect(
-      service.getEventRegistrationsByUserId('u1'),
-    ).rejects.toThrow(HttpException);
+    await expect(service.getEventRegistrationsByUserId('u1')).rejects.toThrow(
+      HttpException,
+    );
   });
 
   // --- UPDATE ---
   it('should update registration successfully', async () => {
     (repo.findOne as jest.Mock).mockResolvedValue(mockReg);
-    (repo.save as jest.Mock).mockResolvedValue({ ...mockReg, isAttended: true });
+    (repo.save as jest.Mock).mockResolvedValue({
+      ...mockReg,
+      isAttended: true,
+    });
     const result = await service.updateEventRegistration('r1', {
       isAttended: true,
     });
@@ -160,7 +163,9 @@ describe('EventRegistrationService', () => {
   it('should delete registration successfully', async () => {
     (repo.findOne as jest.Mock).mockResolvedValue(mockReg);
     (repo.remove as jest.Mock).mockResolvedValue(undefined);
-    await expect(service.deleteEventRegistration('r1')).resolves.toBeUndefined();
+    await expect(
+      service.deleteEventRegistration('r1'),
+    ).resolves.toBeUndefined();
   });
 
   it('should throw NotFound if deleting non-existent registration', async () => {
@@ -173,7 +178,10 @@ describe('EventRegistrationService', () => {
   // --- MARK ATTENDANCE ---
   it('should mark attendance successfully', async () => {
     (repo.findOne as jest.Mock).mockResolvedValue(mockReg);
-    (repo.save as jest.Mock).mockResolvedValue({ ...mockReg, isAttended: true });
+    (repo.save as jest.Mock).mockResolvedValue({
+      ...mockReg,
+      isAttended: true,
+    });
     const result = await service.markAttendance('r1', true);
     expect(result.isAttended).toBe(true);
   });
