@@ -23,7 +23,7 @@
     "lint:staged": "lint-staged",
     "lint:frontend:staged": "npm run lint --workspace=nsc-events-nextjs",
     "lint:backend:staged": "npm run lint --workspace=nsc-events-nestjs",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "lint-staged": {
     "nsc-events-nextjs/**/*.{js,jsx,ts,tsx}": "npm run lint:frontend:staged",
