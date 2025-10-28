@@ -36,9 +36,9 @@ export class CreateActivityDto {
   readonly eventCategory: string;
   */
 
-  @IsNotEmpty({ message: "Event date is required" })
+  @IsNotEmpty({ message: 'Event date is required' })
   @IsDateString({ message: 'Event date must be a valid ISO 8601 date string' })
-  readonly eventDate: Date;
+  readonly eventDate: string;
 
   @IsTime()
   readonly eventStartTime: string;
