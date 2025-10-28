@@ -5,7 +5,7 @@ const createMockActivity: CreateActivityDto = {
   eventTitle: 'Sample Event',
   eventDescription: 'This is a sample event description.',
   // eventCategory: 'Tech', // no longer needed
-  eventDate: new Date('8-15-2023'),
+  eventDate: '2023-08-15', // ISO 8601 date string format
   eventStartTime: '10:00 AM',
   eventEndTime: '4:00 PM',
   eventLocation: '123 Main Street, City',
