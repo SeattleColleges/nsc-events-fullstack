@@ -84,7 +84,7 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
 
     return (
         <>
-            <Dialog open={ isOpen } maxWidth={"md"} fullWidth={ true }>
+            <Dialog open={isOpen} maxWidth={"md"} fullWidth={true}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off" sx={{ p: 3 }}>
                         <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'black', mb: 2 }}>
@@ -353,7 +353,7 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
                                 </div>
                                 </Box>
 
-                                <Button variant="contained" color="primary" sx={{ textTransform: "none", flex: "0 0 auto" }} onClick={ () => {
+                                <Button variant="contained" color="primary" sx={{ textTransform: "none", flex: "0 0 auto" }} onClick={() => {
                                     toggleEditDialog()
                                 }}>
                                     Cancel

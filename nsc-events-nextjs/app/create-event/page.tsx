@@ -62,6 +62,7 @@ const CreateEvent: React.FC = () => {
 
   const handleDateChange = (newDate: Date | null) => {
     setSelectedDate(newDate);
+
   };
 
   // Handlers for TimePicker changes, converting Date back to string
@@ -269,11 +270,14 @@ const CreateEvent: React.FC = () => {
                     backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
                   }}>
                     <DatePicker
-                      label="Event Date"
+                      label="Event Date *"
                       value={selectedDate}
                       onChange={handleDateChange}
                       minDate={new Date()}
-                      renderInput={(params) => <TextField {...params} />}
+                      renderInput={(params) => (
+                        <TextField {...params}
+                          error={!!errors.eventDate}
+                          helperText={errors.eventDate} />)}
                     />
                   </Box>
 
