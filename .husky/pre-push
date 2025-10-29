@@ -1,0 +1,69 @@
+#!/usr/bin/env sh
+# START: Husky Pre-Push Hook - Full CI Pipeline Simulation
+# This hook runs before each push to simulate the entire GitHub CI workflow
+echo "Running pre-push checks..."
+echo "Simulating GitHub CI Pipeline..."
+echo "Branch: $(git branch --show-current)"
+echo "Author: $(git config user.name)"
+echo ""
+
+# Step 1: Linting (matches GitHub workflow step)
+echo "Step 1/5: Running linter..."
+npm run lint
+
+if [ $? -ne 0 ]; then
+  echo "Linting failed! Push blocked."
+  echo "Please fix linting issues before pushing."
+  echo "You can bypass this with: git push --no-verify (use with caution!)"
+  exit 1
+fi
+
+# Step 2: TypeScript compilation (matches GitHub workflow step)
+echo "Linting passed!"
+echo ""
+echo "Step 2/5: Compiling TypeScript..."
+npm run compile
+
+if [ $? -ne 0 ]; then
+  echo "TypeScript compilation failed! Push blocked."
+  echo "Please fix compilation errors before pushing."
+  echo "You can bypass this with: git push --no-verify (use with caution!)"
+  exit 1
+fi
+
+# Step 3: Test coverage (matches GitHub workflow step)
+echo "Compilation passed!"
+echo ""
+echo "Step 3/5: Running test suite with coverage..."
+npm run test:coverage
+
+if [ $? -ne 0 ]; then
+  echo "Tests failed! Push blocked."
+  echo "Please fix failing tests before pushing."
+  echo "You can bypass this with: git push --no-verify (use with caution!)"
+  exit 1
+fi
+
+# Step 4: Build (matches GitHub workflow step)
+echo "Tests passed!"
+echo ""
+echo "Step 4/5: Building applications..."
+npm run build
+
+if [ $? -ne 0 ]; then
+  echo "Build failed! Push blocked."
+  echo "Please fix build errors before pushing."
+  echo "You can bypass this with: git push --no-verify (use with caution!)"
+  exit 1
+fi
+
+# Step 5: Final validation
+echo "Build successful!"
+echo ""
+echo "Step 5/5: Final validation complete!"
+echo ""
+echo "All GitHub CI pipeline checks passed locally!"
+echo "Your code is ready for the remote repository!"
+echo "Proceeding with push..."
+echo ""
+# END: Husky Pre-Push Hook
