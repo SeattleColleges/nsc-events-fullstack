@@ -17,8 +17,8 @@ export const validateFormData = (data: Activity | ActivityDatabase): FormErrors 
     };
   }
 
-  if (!data.eventDate) {
-    newErrors = { ...newErrors, eventDate: "Event date is required" };
+  if (!data.startDate) {
+    newErrors = { ...newErrors, startDate: "start date is required" };
   }
 
   if (!data.eventLocation) {

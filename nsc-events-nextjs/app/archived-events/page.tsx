@@ -129,7 +129,7 @@ const ArchivedEvents = () => {
                                         <TableCell>
                                         </TableCell>
                                         <TableCell component="th" scope="row">{nscEvent.eventTitle}</TableCell>
-                                        <TableCell>{nscEvent.eventDate}</TableCell>
+                                        <TableCell>{nscEvent.startDate}</TableCell>
                                         <TableCell>{nscEvent.eventLocation}</TableCell>
                                         <TableCell>{nscEvent.eventMeetingURL}</TableCell>
                                         <TableCell align="right">
