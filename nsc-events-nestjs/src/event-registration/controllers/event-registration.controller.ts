@@ -132,11 +132,28 @@ export class EventRegistrationController {
         continue; // Skip adding it to the list
       }
 
+      // Extract date and time from the new timestamp fields
+      const startDate = event.startDate ? new Date(event.startDate) : new Date('1970-01-01');
+      const endDate = event.endDate ? new Date(event.endDate) : null;
+
+      // Format time for display (you can adjust format as needed)
+      const formatTime = (date: Date): string => {
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        const displayMinutes = minutes.toString().padStart(2, '0');
+        return `${displayHours}:${displayMinutes}${ampm}`;
+      };
+
       validEvents.push({
         eventId: event.id,
         eventTitle: event.eventTitle || 'Untitled Event',
-        eventDate: event.eventDate || new Date('1970-01-01'), // Temporary fallback
-        eventStartTime: event.eventStartTime || 'TBA', // Optional fallback
+        eventDate: startDate, // Using startDate as the event date
+        eventStartTime: formatTime(startDate), // Format start time from ISO
+        eventEndTime: endDate ? formatTime(endDate) : 'TBA', // Format end time if available
+        startDate: event.startDate, // Include full ISO timestamp if needed
+        endDate: event.endDate, // Include full ISO timestamp if needed
         registrationId: registration.id,
         isAttended: registration.isAttended,
       });

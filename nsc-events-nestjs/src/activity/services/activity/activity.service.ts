@@ -27,10 +27,15 @@ export class ActivityService {
     userId: string,
   ): Promise<Activity> {
     try {
-      const activity = this.activityRepository.create({
+      // Convert ISO 8601 strings to Date objects
+      const activityData = {
         ...createActivityDto,
+        startDate: new Date(createActivityDto.startDate),
+        endDate: new Date(createActivityDto.endDate),
         createdByUserId: userId,
-      });
+      };
+
+      const activity = this.activityRepository.create(activityData);
 
       return await this.activityRepository.save(activity);
     } catch (error) {
@@ -79,7 +84,8 @@ export class ActivityService {
         qb.andWhere(orClauses.map((c) => `(${c})`).join(' OR '), params);
       }
 
-      qb.orderBy('activity."eventDate"', 'ASC')
+      // Order by startDate instead of eventDate
+      qb.orderBy('activity."startDate"', 'ASC')
         .take(take)
         .skip((page - 1) * take);
 
@@ -122,7 +128,7 @@ export class ActivityService {
           isHidden: false,
           isArchived: false,
         },
-        order: { eventDate: 'ASC' },
+        order: { startDate: 'ASC' },
       });
     } catch (error) {
       throw new HttpException(
@@ -148,7 +154,16 @@ export class ActivityService {
         );
       }
 
-      Object.assign(activity, updateActivityDto);
+      // Convert ISO 8601 strings to Date objects if provided
+      const updateData: any = { ...updateActivityDto };
+      if (updateActivityDto.startDate) {
+        updateData.startDate = new Date(updateActivityDto.startDate);
+      }
+      if (updateActivityDto.endDate) {
+        updateData.endDate = new Date(updateActivityDto.endDate);
+      }
+
+      Object.assign(activity, updateData);
       return await this.activityRepository.save(activity);
     } catch (error) {
       if (
@@ -322,7 +337,7 @@ export class ActivityService {
           '(activity.eventTitle ILIKE :searchTerm OR activity.eventDescription ILIKE :searchTerm OR activity.eventLocation ILIKE :searchTerm)',
           { searchTerm: `%${searchTerm}%` },
         )
-        .orderBy('activity.eventDate', 'ASC')
+        .orderBy('activity.startDate', 'ASC')
         .getMany();
     } catch (error) {
       throw new HttpException(
@@ -337,7 +352,7 @@ export class ActivityService {
     try {
       return await this.activityRepository.find({
         where: { isArchived: true },
-        order: { eventDate: 'DESC' },
+        order: { startDate: 'DESC' },
       });
     } catch (error) {
       throw new HttpException(

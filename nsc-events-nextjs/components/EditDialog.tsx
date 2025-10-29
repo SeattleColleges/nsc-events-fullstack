@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ActivityDatabase } from "@/models/activityDatabase";
 import Dialog from "@mui/material/Dialog";
+// NOTE: We specify the generic type for the pickers to resolve type errors
 import { DatePicker, LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { Box, Button, Stack, Typography } from "@mui/material";
@@ -8,7 +9,8 @@ import TextField from "@mui/material/TextField";
 import { textFieldStyle } from "@/components/InputFields";
 import TagSelector from "@/components/TagSelector";
 import { useEditForm } from "@/hooks/useEditForm";
-import { format } from "date-fns";
+import { format, isSameDay, isSameHour, isSameMinute } from "date-fns";
+import { EventTags } from "@/utility/tags";
 
 interface EditDialogProps {
     isOpen: boolean,
@@ -21,7 +23,6 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
         handleDateChange,
         onStartTimeChange,
         onEndTimeChange,
-        to24HourTime,
         eventData,
         handleInputChange,
         handleSocialMediaChange,
@@ -36,20 +37,49 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
         endTimeDate,
         to12HourTime,
     } = useEditForm(event);
-
-    const [initialEventData, setInitialEventData] = useState(event);
+    
+    // Store the initial data to compare for changes
+    const [initialEventData, setInitialEventData] = useState(event);    
 
     useEffect(() => {
         if (isOpen) {
+            // Set initial data when dialog opens
             setInitialEventData(event);
         }
     }, [isOpen, event]);
 
+    /**
+     * Checks if the event data has been updated by comparing the state in the form
+     * against the initial data.
+     */
     const isEventUpdated = () => {
-        return JSON.stringify(initialEventData) !== JSON.stringify(eventData) ||
-            (selectedDate && selectedDate.toISOString() !== eventData.eventDate) ||
-            (startTimeDate && to12HourTime(startTimeDate ? format(startTimeDate, 'HH:mm') : '').toString() !== eventData.eventStartTime) ||
-            (endTimeDate && to12HourTime(endTimeDate ? format(endTimeDate, 'HH:mm') : '').toString() !== eventData.eventEndTime);
+        // 1. Check for changes in text/array/social media fields
+        const isDataChanged = JSON.stringify(initialEventData) !== JSON.stringify(eventData);
+
+        // 2. Check for changes in date/time pickers
+        let isDateTimeChanged = false;
+
+        // Since eventData is type-safe now (assuming you fixed Activity.ts), 
+        // we can safely access startDate and endDate
+        if (selectedDate && eventData.startDate && startTimeDate && eventData.endDate && endTimeDate) {
+            const initialStartDate = new Date(initialEventData.startDate);
+            const initialEndDate = new Date(initialEventData.endDate);
+
+            // Check if the date part has changed
+            const isDateSame = isSameDay(selectedDate, initialStartDate);
+
+            // Check if the start time part has changed (only comparing hour/minute)
+            const isStartTimeSame = isSameHour(startTimeDate, initialStartDate) && isSameMinute(startTimeDate, initialStartDate);
+
+            // Check if the end time part has changed (only comparing hour/minute)
+            const isEndTimeSame = isSameHour(endTimeDate, initialEndDate) && isSameMinute(endTimeDate, initialEndDate);
+
+            if (!isDateSame || !isStartTimeSame || !isEndTimeSame) {
+                isDateTimeChanged = true;
+            }
+        }
+        
+        return isDataChanged || isDateTimeChanged;
     };
 
     return (
@@ -91,40 +121,57 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
                                 placeholder="Enter the description of the event"
                             />
                             <Box sx={{ backgroundColor: 'inherit' }}>
+                                {/* FIX: Using renderInput instead of slotProps for compatibility */}
                                 <DatePicker
                                     label="Event Date"
                                     value={selectedDate}
-                                    onChange={handleDateChange}
+                                    onChange={(newDate) => handleDateChange(newDate as Date | null)}
                                     minDate={new Date()}
-                                    renderInput={(params) => <TextField {...params} />}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            error={!!errors.startDate}
+                                            helperText={errors.startDate}
+                                        />
+                                    )}
                                 />
                             </Box>
                             <Box sx={{ backgroundColor: 'inherit' }}>
+                                {/* FIX: Using renderInput instead of slotProps for compatibility */}
                                 <TimePicker
                                     label="Start Time"
                                     value={startTimeDate}
-                                    onChange={(value) => onStartTimeChange(value as Date | null)}
-                                    renderInput={(params) => <TextField {...params} />}
+                                    onChange={(newTime) => onStartTimeChange(newTime as Date | null)}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            error={!!errors.startDate}
+                                            helperText={errors.startDate}
+                                        />
+                                    )}
                                 />
                             </Box>
                             <Box sx={{ backgroundColor: 'inherit' }}>
+                                {/* FIX: Using renderInput instead of slotProps for compatibility */}
                                 <TimePicker
                                     label="End Time"
                                     value={endTimeDate}
-                                    onChange={(value) => onEndTimeChange(value as Date | null)}
-                                    renderInput={(params) => <TextField {...params} />}
+                                    onChange={(newTime) => onEndTimeChange(newTime as Date | null)}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            error={!!errors.endDate}
+                                            helperText={errors.endDate || timeError}
+                                        />
+                                    )}
                                 />
                             </Box>
-                            {/* Time Error Message */}
-                            {timeError && (
-                                <div className="text-red-500 text-sm mt-2">{timeError}</div>
-                            )}
                             <TextField
                                 id="event-location"
                                 label="Event Location"
                                 variant="outlined"
                                 name="eventLocation"
-                                value={eventData.eventLocation || ""}
+                                value={eventData.eventLocation || ''}
                                 onChange={handleInputChange}
                                 error={!!errors.eventLocation}
                                 helperText={errors.eventLocation}
@@ -132,17 +179,12 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
                                 InputLabelProps={{ style: textFieldStyle.label }}
                                 placeholder="Enter the location of the event"
                             />
-
-                            {/* <label>
-            Event Cover Photo
-          <ImagePicker />
-          </label> */}
                             <TextField
                                 id="event-host"
                                 label="Event Host"
                                 variant="outlined"
                                 name="eventHost"
-                                value={eventData.eventHost || ""}
+                                value={eventData.eventHost || ''}
                                 onChange={handleInputChange}
                                 error={!!errors.eventHost}
                                 helperText={errors.eventHost}
@@ -151,114 +193,17 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
                                 placeholder="Enter the host of the event"
                             />
                             <TextField
-                                id="event-meeting-url"
-                                label="Event Meeting URL"
-                                variant="outlined"
-                                name="eventMeetingURL"
-                                value={eventData.eventMeetingURL || ""}
-                                onChange={handleInputChange}
-                                error={!!errors.eventMeetingURL}
-                                helperText={errors.eventMeetingURL}
-                                InputProps={{ style: textFieldStyle.input }}
-                                InputLabelProps={{ style: textFieldStyle.label }}
-                            />
-                            <TextField
                                 id="event-registration"
                                 label="Event Registration"
                                 variant="outlined"
                                 name="eventRegistration"
-                                value={eventData.eventRegistration || ""}
+                                value={eventData.eventRegistration || ''}
                                 onChange={handleInputChange}
                                 error={!!errors.eventRegistration}
                                 helperText={errors.eventRegistration}
                                 InputProps={{ style: textFieldStyle.input }}
                                 InputLabelProps={{ style: textFieldStyle.label }}
-                                placeholder="Enter the registration of the event"
-                            />
-                            <TextField
-                                id="event-capacity"
-                                label="Event Capacity"
-                                variant="outlined"
-                                name="eventCapacity"
-                                value={eventData.eventCapacity || ""}
-                                onChange={handleInputChange}
-                                error={!!errors.eventCapacity}
-                                helperText={errors.eventCapacity}
-                                InputProps={{ style: textFieldStyle.input }}
-                                InputLabelProps={{ style: textFieldStyle.label }}
-                                placeholder="Enter the capacity of the event"
-                            />
-                            <TagSelector
-                                selectedTags={eventData.eventTags || []}
-                                allTags={[
-                                    "Professional Development",
-                                    "Club",
-                                    "Social",
-                                    "Tech",
-                                    "Cultural",
-                                    "Study",
-                                    "Coffee",
-                                    "Art/Creative",
-                                    "Conference",
-                                    "Craft",
-                                    "Networking",
-                                    "Pizza",
-                                    "Free Food",
-                                    "LGBTQIA",
-                                ]}
-                                onTagClick={handleTagClick}
-                            />
-                            <TextField
-                                id="event-schedule"
-                                label="Event Schedule"
-                                variant="outlined"
-                                name="eventSchedule"
-                                value={eventData.eventSchedule || ""}
-                                onChange={handleInputChange}
-                                error={!!errors.eventSchedule}
-                                helperText={errors.eventSchedule}
-                                InputProps={{ style: textFieldStyle.input }}
-                                InputLabelProps={{ style: textFieldStyle.label }}
-                                placeholder="Enter the schedule of the event"
-                            />
-                            <TextField
-                                id="event-speakers"
-                                label="Event Speakers"
-                                variant="outlined"
-                                name="eventSpeakers"
-                                value={eventData.eventSpeakers || []}
-                                onChange={handleInputChange}
-                                error={!!errors.eventSpeakers}
-                                helperText={errors.eventSpeakers}
-                                InputProps={{ style: textFieldStyle.input }}
-                                InputLabelProps={{ style: textFieldStyle.label }}
-                                placeholder="Enter the speaker(s) of the event"
-                            />
-                            <TextField
-                                id="event-prerequisites"
-                                label="Event Prerequisites"
-                                variant="outlined"
-                                name="eventPrerequisites"
-                                value={eventData.eventPrerequisites || ''}
-                                onChange={handleInputChange}
-                                error={!!errors.eventPrerequisites}
-                                helperText={errors.eventPrerequisites}
-                                InputProps={{ style: textFieldStyle.input }}
-                                InputLabelProps={{ style: textFieldStyle.label }}
-                                placeholder="Enter the prerequisites of the event"
-                            />
-                            <TextField
-                                id="event-cancellation-policy"
-                                label="Event Cancellation Policy"
-                                variant="outlined"
-                                name="eventCancellationPolicy"
-                                value={eventData.eventCancellationPolicy || ''}
-                                onChange={handleInputChange}
-                                error={!!errors.eventCancellationPolicy}
-                                helperText={errors.eventCancellationPolicy}
-                                InputProps={{ style: textFieldStyle.input }}
-                                InputLabelProps={{ style: textFieldStyle.label }}
-                                placeholder="Enter the cancellation policy of the event"
+                                placeholder="Enter the registration link of the event"
                             />
                             <TextField
                                 id="event-contact"
@@ -271,8 +216,31 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
                                 helperText={errors.eventContact}
                                 InputProps={{ style: textFieldStyle.input }}
                                 InputLabelProps={{ style: textFieldStyle.label }}
-                                placeholder="Enter the contact of the event"
+                                placeholder="Enter the contact information for the event"
                             />
+                            <TextField
+                                id="event-tags"
+                                label="Event Tags"
+                                variant="outlined"
+                                name="eventTags"
+                                value={eventData.eventTags.join(', ')}
+                                onChange={(e) => {
+                                    const tags = e.target.value.split(',').map(tag => tag.trim());
+                                    handleInputChange({ target: { name: 'eventTags', value: tags } } as any);
+                                }}
+                                error={!!errors.eventTags}
+                                helperText={errors.eventTags}
+                                InputProps={{ style: textFieldStyle.input }}
+                                InputLabelProps={{ style: textFieldStyle.label }}
+                                placeholder="Enter the tags of the event"
+                            />
+                            <TagSelector
+                                selectedTags={eventData.eventTags || []}
+                                allTags={EventTags}
+                                onTagClick={handleTagClick}
+                            />
+                            {/* Social Media Inputs */}
+                            <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 'bold' }}>Social Media Links</Typography>
                             <TextField
                                 id="facebook"
                                 label="Facebook"
@@ -363,26 +331,26 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
                                 InputProps={{ style: textFieldStyle.input }}
                                 InputLabelProps={{ style: textFieldStyle.label }}
                             />
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }} >
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 2 }} >
                                 <Box>
-                                    <Button type="submit" variant="contained" color="primary" style={{ textTransform: "none" }} disabled={!isEventUpdated()}>
-                                        Confirm Edit
-                                    </Button>
-                                    <div className="error-messages">
-                                        {Object.entries(errors).map(([key, value]) => {
-                                            if (typeof value === 'object' && value !== null) {
-                                                return Object.entries(value).map(([nestedKey, nestedError]) => (
-                                                    nestedError ? <p key={`${key}-${nestedKey}`} className="error-text" style={{ color: "red" }}>
-                                                        {`${nestedKey}: ${nestedError}`}
-                                                    </p> : null
-                                                ));
-                                            } else {
-                                                return value ? <p key={key} className="error-text" style={{ color: "red" }}>
-                                                    {value}
-                                                </p> : null;
-                                            }
-                                        })}
-                                    </div>
+                                <Button type="submit" variant="contained" color="primary" style={{ textTransform: "none" }} disabled={!isEventUpdated()}>
+                                    Confirm Edit
+                                </Button>
+                                <div className="error-messages">
+                                    {/* Display non-nested errors */}
+                                    {Object.entries(errors).map(([key, value]) => {
+                                        if (typeof value === 'string' && value) {
+                                            return <p key={key} className="error-text" style={{ color: "red" }}>{value}</p>;
+                                        }
+                                        return null;
+                                    })}
+                                    {/* Display nested social media errors */}
+                                     {errors.eventSocialMedia && Object.entries(errors.eventSocialMedia).map(([nestedKey, nestedError]) => (
+                                                nestedError ? <p key={`social-${nestedKey}`} className="error-text" style={{ color: "red" }}>
+                                                    {`${nestedKey}: ${nestedError}`}
+                                                </p> : null
+                                            ))}
+                                </div>
                                 </Box>
 
                                 <Button variant="contained" color="primary" sx={{ textTransform: "none", flex: "0 0 auto" }} onClick={() => {
