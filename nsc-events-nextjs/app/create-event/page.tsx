@@ -276,8 +276,8 @@ const CreateEvent: React.FC = () => {
                       minDate={new Date()}
                       renderInput={(params) => (
                         <TextField {...params}
-                          error={!!errors.eventDate}
-                          helperText={errors.eventDate} />)}
+                          error={!!errors.startDate}
+                          helperText={errors.startDate} />)}
                     />
                   </Box>
 
