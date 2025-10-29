@@ -24,7 +24,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'nsc-events-nestjs/package-lock.json'
       - name: Clean install
-        run: npm ci
+        run: HUSKY=0 npm ci
         working-directory: ./nsc-events-nestjs
       - name: Run linter
         run: npm run lint
