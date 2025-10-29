@@ -67,7 +67,7 @@ export function UpcomingEvent() {
                   {event.eventTitle}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" textAlign="center" marginTop="5px">
-                  Date: {formatDate(event.eventDate)}
+                  Date: {formatDate(event.startDate)}
                 </Typography>
               </CardContent>
               <CardActions sx={{ justifyContent: "center" }}>

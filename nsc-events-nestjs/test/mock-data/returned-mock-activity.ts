@@ -4,9 +4,8 @@ const mockActivityFromDB = {
   eventTitle: 'Sample Event',
   eventDescription: 'This is a sample event description.',
   // eventCategory: 'Tech', // no longer needed
-  eventDate: new Date('8-15-2023'),
-  eventStartTime: '10:00 AM',
-  eventEndTime: '4:00 PM',
+  startDate: '2025-08-15T10:00:00-07:00', // Timezone-aware timestamp string
+  endDate: '2025-08-15T16:00:00-07:00',
   eventLocation: '123 Main Street, City',
   eventMeetingURL: 'https://zoom.us/sample-url',
   eventCoverPhoto: 'https://example.com/event-cover.jpg',
@@ -34,7 +33,7 @@ const mockActivityFromDB = {
   eventNote: 'This is a sample note.',
   createdAt: '2023-09-03T21:31:59.362Z',
   updatedAt: '2023-09-03T21:31:59.362Z',
-  __v: 0,
+  // REMOVED: __v: 0, (MongoDB field, not applicable for PostgreSQL)
 };
 
 export default mockActivityFromDB;
