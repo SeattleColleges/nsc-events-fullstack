@@ -155,9 +155,7 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Event Data: ", eventData);
-    const dataForValidation = { ...eventData };
-    if (selectedDate) { dataForValidation.eventDate = selectedDate.toISOString().split("T")[0] }
-    const newErrors = validateFormData(dataForValidation);
+    const newErrors = validateFormData(eventData);
     const numNewErrors = Object.keys(newErrors).length;
     setFixingErrors(numNewErrors > 0);
     if (numNewErrors > 0) {
