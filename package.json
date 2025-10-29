@@ -17,11 +17,17 @@
     "lint:backend": "npm run lint --workspace=nsc-events-nestjs",
     "dev:backend": "npm run start:dev --workspace=nsc-events-nestjs",
     "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:staged": "lint-staged",
+    "compile": "npm run compile --workspace=nsc-events-nestjs && npm run compile --workspace=nsc-events-nextjs",
     "test": "npm run test:backend && npm run test:frontend",
-    "lint:frontend": "npm run lint --workspace=nsc-events-nextjs"
+    "test:coverage": "npm run test:cov --workspace=nsc-events-nestjs && npm run test:coverage --workspace=nsc-events-nextjs",
+    "lint:frontend": "npm run lint --workspace=nsc-events-nextjs",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6"
   },
   "engines": {
     "node": "22.x"

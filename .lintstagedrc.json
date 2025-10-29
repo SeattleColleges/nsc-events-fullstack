@@ -1,0 +1,8 @@
+{
+  "nsc-events-nestjs/**/*.{ts,js}": [
+    "npm run lint --workspace=nsc-events-nestjs -- --fix"
+  ],
+  "nsc-events-nextjs/**/*.{ts,tsx,js,jsx}": [
+    "npm run lint --workspace=nsc-events-nextjs -- --fix"
+  ]
+}
