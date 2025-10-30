@@ -55,7 +55,7 @@ echo Installing frontend dependencies...
 call npm install
 cd ..
 
-windows:
+
 
 REM --- Husky Git Hooks Setup ---
 echo Setting up Git hooks (Husky)...
