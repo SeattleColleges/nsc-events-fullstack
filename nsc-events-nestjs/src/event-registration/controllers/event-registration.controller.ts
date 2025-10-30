@@ -133,7 +133,9 @@ export class EventRegistrationController {
       }
 
       // Extract date and time from the new timestamp fields
-      const startDate = event.startDate ? new Date(event.startDate) : new Date('1970-01-01');
+      const startDate = event.startDate
+        ? new Date(event.startDate)
+        : new Date('1970-01-01');
       const endDate = event.endDate ? new Date(event.endDate) : null;
 
       // Format time for display (you can adjust format as needed)
