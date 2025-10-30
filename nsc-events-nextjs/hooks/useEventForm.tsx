@@ -155,7 +155,19 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Event Data: ", eventData);
+    // validate the form data
     const newErrors = validateFormData(eventData);
+    // additionally validate date and time selections
+    if (!selectedDate) {
+      newErrors.startDate = "start date is required";
+    }
+    if (!startTime) {
+      newErrors.startDate = newErrors.startDate || "start time is required";
+    }
+    if (!endTime) {
+      newErrors.endDate = "end time is required";
+    }
+
     const numNewErrors = Object.keys(newErrors).length;
     setFixingErrors(numNewErrors > 0);
     if (numNewErrors > 0) {
