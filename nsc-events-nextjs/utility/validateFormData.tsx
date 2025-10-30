@@ -16,11 +16,8 @@ export const validateFormData = (data: Activity | ActivityDatabase): FormErrors 
       eventDescription: "Event description is required",
     };
   }
-
-  if (!data.startDate) {
-    newErrors = { ...newErrors, startDate: "start date is required" };
-  }
-
+  // we do not need this since startDate and endDate validations are handeled in useEventForm.tsx
+  
   if (!data.eventLocation) {
     newErrors = { ...newErrors, eventLocation: "Event location is required" };
   }
