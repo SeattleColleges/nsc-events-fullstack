@@ -67,5 +67,16 @@ npm install
 
 cd "$PROJECT_ROOT"
 
+# --- Husky Git Hooks Setup ---
+echo "Setting up Git hooks (Husky)..."
+if [ -d ".git" ]; then
+    cp .husky/pre-commit .git/hooks/pre-commit 2>/dev/null || echo "Warning: pre-commit hook not found"
+    cp .husky/pre-push .git/hooks/pre-push 2>/dev/null || echo "Warning: pre-push hook not found"
+    chmod +x .git/hooks/pre-commit .git/hooks/pre-push 2>/dev/null
+    echo "Git hooks configured."
+else
+    echo "Warning: Not in a Git repository. Skipping Git hooks setup."
+fi
+
 echo "Setup complete!"
 echo "To start the development servers, run: npm run dev"
