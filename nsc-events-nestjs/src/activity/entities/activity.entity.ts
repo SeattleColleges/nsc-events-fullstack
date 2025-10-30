@@ -29,10 +29,10 @@ export class Activity {
   @Column('text')
   eventDescription: string;
 
-  @Column({ type: 'timestamptz'})
+  @Column({ type: 'timestamptz' })
   startDate: Date;
 
-  @Column({ type: 'timestamptz'})
+  @Column({ type: 'timestamptz' })
   endDate: Date;
 
   @Column()
@@ -98,9 +98,9 @@ export class Activity {
   @Column({ default: false })
   isArchived: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz'})
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz'})
+  @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
 }
