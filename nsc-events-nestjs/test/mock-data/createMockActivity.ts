@@ -5,7 +5,7 @@ const createMockActivity: CreateActivityDto = {
   eventTitle: 'Sample Event',
   eventDescription: 'This is a sample event description.',
   // eventCategory: 'Tech', // no longer needed
-  startDate: '2025-08-15T10:00:00-07:00', 
+  startDate: '2025-08-15T10:00:00-07:00',
   endDate: '2025-08-15T16:00:00-07:00',
   eventLocation: '123 Main Street, City',
   eventMeetingURL: 'https://zoom.us/sample-url',

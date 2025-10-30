@@ -31,11 +31,17 @@ export class CreateActivityDto {
   readonly eventDescription: string;
 
   @IsNotEmpty()
-  @IsISO8601({ strict: true }, { message: 'startDate must be a valid ISO 8601 datetime string' })
+  @IsISO8601(
+    { strict: true },
+    { message: 'startDate must be a valid ISO 8601 datetime string' },
+  )
   readonly startDate: string;
 
   @IsNotEmpty()
-  @IsISO8601({ strict: true }, { message: 'endDate must be a valid ISO 8601 datetime string' })
+  @IsISO8601(
+    { strict: true },
+    { message: 'endDate must be a valid ISO 8601 datetime string' },
+  )
   @Validate(IsAfterStartDate, { message: 'endDate must be after startDate' })
   readonly endDate: string;
 
