@@ -55,6 +55,18 @@ echo Installing frontend dependencies...
 call npm install
 cd ..
 
+
+
+REM --- Husky Git Hooks Setup ---
+echo Setting up Git hooks (Husky)...
+if exist ".git" (
+    copy /Y ".husky\pre-commit" ".git\hooks\pre-commit" >nul 2>nul || echo Warning: pre-commit hook not found
+    copy /Y ".husky\pre-push" ".git\hooks\pre-push" >nul 2>nul || echo Warning: pre-push hook not found
+    echo Git hooks configured.
+) else (
+    echo Warning: Not in a Git repository. Skipping Git hooks setup.
+)
+
 echo.
 echo Setup complete!
 echo To start the development servers, run: npm run dev
