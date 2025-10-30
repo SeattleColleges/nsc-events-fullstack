@@ -22,6 +22,9 @@ chmod +x .git/hooks/pre-commit .git/hooks/pre-push
 copy /Y ".husky\pre-commit" ".git\hooks\pre-commit"
 copy /Y ".husky\pre-push" ".git\hooks\pre-push"
 ```
+### **Powershell (pwsh) command prompt:**
+cp ".husky\pre-commit" ".git\hooks\pre-commit"
+cp ".husky\pre-push" ".git\hooks\pre-push"
 
 ### What these hooks do:
 - **Pre-commit**: Runs linting and TypeScript compilation before each commit
