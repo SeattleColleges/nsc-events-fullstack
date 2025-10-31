@@ -55,14 +55,28 @@ echo Installing frontend dependencies...
 call npm install
 cd ..
 
-
-
 REM --- Husky Git Hooks Setup ---
 echo Setting up Git hooks (Husky)...
 if exist ".git" (
-    copy /Y ".husky\pre-commit" ".git\hooks\pre-commit" >nul 2>nul || echo Warning: pre-commit hook not found
-    copy /Y ".husky\pre-push" ".git\hooks\pre-push" >nul 2>nul || echo Warning: pre-push hook not found
-    echo Git hooks configured.
+    REM Try CMD copy first
+    copy /Y ".husky\pre-commit" ".git\hooks\pre-commit" >nul 2>nul
+    if %errorlevel% neq 0 (
+        REM If CMD copy failed, try PowerShell method
+        powershell -Command "if (Test-Path '.husky\pre-commit') { Copy-Item '.husky\pre-commit' '.git\hooks\pre-commit' -Force }" 2>nul
+    )
+    
+    copy /Y ".husky\pre-push" ".git\hooks\pre-push" >nul 2>nul
+    if %errorlevel% neq 0 (
+        REM If CMD copy failed, try PowerShell method
+        powershell -Command "if (Test-Path '.husky\pre-push') { Copy-Item '.husky\pre-push' '.git\hooks\pre-push' -Force }" 2>nul
+    )
+    
+    REM Verify hooks were installed
+    if exist ".git\hooks\pre-commit" (
+        echo Git hooks configured successfully.
+    ) else (
+        echo Warning: Could not install Git hooks. Please check file permissions.
+    )
 ) else (
     echo Warning: Not in a Git repository. Skipping Git hooks setup.
 )
