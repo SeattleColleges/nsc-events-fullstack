@@ -144,6 +144,7 @@ export class EventRegistrationService {
   }
 
   // ----------------- Delete Event Registration ----------------- \\
+  // this is needed in other instances
   async deleteEventRegistration(id: string): Promise<void> {
     try {
       const registration = await this.getEventRegistrationById(id);
@@ -160,7 +161,7 @@ export class EventRegistrationService {
     }
   }
 
-  // finds event registration using userid and event id
+  // unregisters from event using userid and event id
   async deleteByUserAndEvent(userId: string, eventId: string): Promise<void> {
     const result = await this.eventRegistrationRepository.delete({
       userId,
