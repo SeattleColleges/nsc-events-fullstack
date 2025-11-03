@@ -15,7 +15,7 @@ export class EventRegistrationService {
   constructor(
     @InjectRepository(EventRegistration)
     private readonly eventRegistrationRepository: Repository<EventRegistration>,
-  ) {}
+  ) { }
 
   // ----------------- Create Event Registration ----------------- \\
   async createEventRegistration(
@@ -144,6 +144,7 @@ export class EventRegistrationService {
   }
 
   // ----------------- Delete Event Registration ----------------- \\
+  // this is needed in other instances
   async deleteEventRegistration(id: string): Promise<void> {
     try {
       const registration = await this.getEventRegistrationById(id);
@@ -159,6 +160,21 @@ export class EventRegistrationService {
       );
     }
   }
+
+  // unregisters from event using userid and event id
+  async deleteByUserAndEvent(userId: string, eventId: string): Promise<void> {
+    const result = await this.eventRegistrationRepository.delete({
+      userId,
+      activityId: eventId,
+    });
+
+    if (result.affected === 0) {
+      throw new NotFoundException('Registration not found');
+    }
+  }
+
+
+
 
   // ----------------- Mark Attendance ----------------- \\
   async markAttendance(
