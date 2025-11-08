@@ -6,10 +6,20 @@ on:
     branches: [ main ]
     paths:
       - 'nsc-events-nestjs/**'
+      - '!nsc-events-nestjs/**/*.md'
+      - '!nsc-events-nestjs/LICENSE*'
+      - '!nsc-events-nestjs/.gitignore'
+      - '!nsc-events-nestjs/.prettierrc'
+      - '!nsc-events-nestjs/.eslintrc.js'
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - 'nsc-events-nestjs/**'
+      - '!nsc-events-nestjs/**/*.md'
+      - '!nsc-events-nestjs/LICENSE*'
+      - '!nsc-events-nestjs/.gitignore'
+      - '!nsc-events-nestjs/.prettierrc'
+      - '!nsc-events-nestjs/.eslintrc.js'
 
 jobs:
   build-and-test:
