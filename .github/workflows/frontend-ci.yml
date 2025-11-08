@@ -4,56 +4,76 @@ run-name: NextJS CI
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'nsc-events-nextjs/**'
-      - '!nsc-events-nextjs/**/*.md'
-      - '!nsc-events-nextjs/LICENSE*'
-      - '!nsc-events-nextjs/.gitignore'
-      - '!nsc-events-nextjs/.prettierrc'
-      - '!nsc-events-nextjs/.eslintrc.js'
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - 'nsc-events-nextjs/**'
-      - '!nsc-events-nextjs/**/*.md'
-      - '!nsc-events-nextjs/LICENSE*'
-      - '!nsc-events-nextjs/.gitignore'
-      - '!nsc-events-nextjs/.prettierrc'
-      - '!nsc-events-nextjs/.eslintrc.js'
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'nsc-events-nextjs/**'
+              - '!nsc-events-nextjs/**/*.md'
+              - '!nsc-events-nextjs/LICENSE*'
+              - '!nsc-events-nextjs/.gitignore'
+              - '!nsc-events-nextjs/.prettierrc'
+              - '!nsc-events-nextjs/.eslintrc.js'
+
   build-and-test:
+    needs: check-changes
     runs-on: ubuntu-latest
 
     steps:
+      - name: Skip if no frontend changes
+        if: needs.check-changes.outputs.frontend != 'true'
+        run: |
+          echo "No frontend code changes detected. Skipping build and test."
+          echo "Modified files are documentation or configuration only."
+          
       - uses: actions/checkout@v3
+        if: needs.check-changes.outputs.frontend == 'true'
       - name: Use Node.js 22
+        if: needs.check-changes.outputs.frontend == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: "22.x"
           cache: "npm"
           cache-dependency-path: 'nsc-events-nextjs/package-lock.json'
       - name: Clean install
+        if: needs.check-changes.outputs.frontend == 'true'
         run: HUSKY=0 npm ci
         working-directory: ./nsc-events-nextjs
       - name: Run linter
+        if: needs.check-changes.outputs.frontend == 'true'
         run: npm run lint
         working-directory: ./nsc-events-nextjs
       - name: Compile typescript
+        if: needs.check-changes.outputs.frontend == 'true'
         run: npm run compile
         working-directory: ./nsc-events-nextjs
       - name: Jest unit tests
+        if: needs.check-changes.outputs.frontend == 'true'
         run: npm run test
         working-directory: ./nsc-events-nextjs
       - name: Test coverage
+        if: needs.check-changes.outputs.frontend == 'true'
         run: npm run test:coverage
         working-directory: ./nsc-events-nextjs
       - name: Build App
+        if: needs.check-changes.outputs.frontend == 'true'
         run: npm run build
         working-directory: ./nsc-events-nextjs
 
       # https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts
       - name: Archive NextJS build
+        if: needs.check-changes.outputs.frontend == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build
