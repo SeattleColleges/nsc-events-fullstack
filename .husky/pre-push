@@ -1,69 +1,110 @@
 #!/usr/bin/env sh
-# START: Husky Pre-Push Hook - Full CI Pipeline Simulation
-# This hook runs before each push to simulate the entire GitHub CI workflow
-echo "Running pre-push checks..."
-echo "Simulating GitHub CI Pipeline..."
+# START: Husky Pre-Push Hook - Smart CI Pipeline Simulation
+# This hook mirrors the GitHub workflow: only tests changed workspaces
+echo "🚀 Running pre-push checks..."
+echo "📋 Detecting changed files (mirroring GitHub workflow)..."
 echo "Branch: $(git branch --show-current)"
-echo "Author: $(git config user.name)"
 echo ""
 
-# Step 1: Linting (matches GitHub workflow step)
-echo "Step 1/5: Running linter..."
-npm run lint
+# Detect changes in backend and frontend (excluding docs/config)
+BACKEND_CHANGED=$(git diff --name-only HEAD @{u} 2>/dev/null | grep -E '^nsc-events-nestjs/' | grep -Ev '\.(md|gitignore|prettierrc|eslintrc\.js)$|LICENSE' || echo "")
+FRONTEND_CHANGED=$(git diff --name-only HEAD @{u} 2>/dev/null | grep -E '^nsc-events-nextjs/' | grep -Ev '\.(md|gitignore|prettierrc|eslintrc\.js)$|LICENSE' || echo "")
 
-if [ $? -ne 0 ]; then
-  echo "Linting failed! Push blocked."
-  echo "Please fix linting issues before pushing."
-  echo "You can bypass this with: git push --no-verify (use with caution!)"
-  exit 1
+# If no upstream, check against origin/main
+if [ -z "$BACKEND_CHANGED" ] && [ -z "$FRONTEND_CHANGED" ]; then
+  BACKEND_CHANGED=$(git diff --name-only origin/main...HEAD 2>/dev/null | grep -E '^nsc-events-nestjs/' | grep -Ev '\.(md|gitignore|prettierrc|eslintrc\.js)$|LICENSE' || echo "")
+  FRONTEND_CHANGED=$(git diff --name-only origin/main...HEAD 2>/dev/null | grep -E '^nsc-events-nextjs/' | grep -Ev '\.(md|gitignore|prettierrc|eslintrc\.js)$|LICENSE' || echo "")
 fi
 
-# Step 2: TypeScript compilation (matches GitHub workflow step)
-echo "Linting passed!"
-echo ""
-echo "Step 2/5: Compiling TypeScript..."
-npm run compile
-
-if [ $? -ne 0 ]; then
-  echo "TypeScript compilation failed! Push blocked."
-  echo "Please fix compilation errors before pushing."
-  echo "You can bypass this with: git push --no-verify (use with caution!)"
-  exit 1
+# Check if only docs/config changed
+if [ -z "$BACKEND_CHANGED" ] && [ -z "$FRONTEND_CHANGED" ]; then
+  echo "✅ Only documentation or config files changed - skipping all checks"
+  echo "Proceeding with push..."
+  exit 0
 fi
 
-# Step 3: Test coverage (matches GitHub workflow step)
-echo "Compilation passed!"
-echo ""
-echo "Step 3/5: Running test suite with coverage..."
-npm run test:coverage
-
-if [ $? -ne 0 ]; then
-  echo "Tests failed! Push blocked."
-  echo "Please fix failing tests before pushing."
-  echo "You can bypass this with: git push --no-verify (use with caution!)"
-  exit 1
+# Backend CI Pipeline
+if [ -n "$BACKEND_CHANGED" ]; then
+  echo "📦 Backend changes detected - running backend checks..."
+  echo ""
+  
+  echo "  ▶ Linting backend..."
+  npm run lint:backend
+  if [ $? -ne 0 ]; then
+    echo "❌ Backend linting failed! Push blocked."
+    exit 1
+  fi
+  
+  echo "  ▶ Compiling backend TypeScript..."
+  npm run compile --workspace=nsc-events-nestjs
+  if [ $? -ne 0 ]; then
+    echo "❌ Backend compilation failed! Push blocked."
+    exit 1
+  fi
+  
+  echo "  ▶ Running backend tests..."
+  npm run test:backend
+  if [ $? -ne 0 ]; then
+    echo "❌ Backend tests failed! Push blocked."
+    exit 1
+  fi
+  
+  echo "  ▶ Building backend..."
+  npm run build:backend
+  if [ $? -ne 0 ]; then
+    echo "❌ Backend build failed! Push blocked."
+    exit 1
+  fi
+  
+  echo "✅ Backend checks passed!"
+  echo ""
+else
+  echo "⏭️  No backend changes - skipping backend checks"
+  echo ""
 fi
 
-# Step 4: Build (matches GitHub workflow step)
-echo "Tests passed!"
-echo ""
-echo "Step 4/5: Building applications..."
-npm run build
-
-if [ $? -ne 0 ]; then
-  echo "Build failed! Push blocked."
-  echo "Please fix build errors before pushing."
-  echo "You can bypass this with: git push --no-verify (use with caution!)"
-  exit 1
+# Frontend CI Pipeline
+if [ -n "$FRONTEND_CHANGED" ]; then
+  echo "🎨 Frontend changes detected - running frontend checks..."
+  echo ""
+  
+  echo "  ▶ Linting frontend..."
+  npm run lint:frontend
+  if [ $? -ne 0 ]; then
+    echo "❌ Frontend linting failed! Push blocked."
+    exit 1
+  fi
+  
+  echo "  ▶ Compiling frontend TypeScript..."
+  npm run compile --workspace=nsc-events-nextjs
+  if [ $? -ne 0 ]; then
+    echo "❌ Frontend compilation failed! Push blocked."
+    exit 1
+  fi
+  
+  echo "  ▶ Running frontend tests..."
+  npm run test:frontend
+  if [ $? -ne 0 ]; then
+    echo "❌ Frontend tests failed! Push blocked."
+    exit 1
+  fi
+  
+  echo "  ▶ Building frontend..."
+  npm run build:frontend
+  if [ $? -ne 0 ]; then
+    echo "❌ Frontend build failed! Push blocked."
+    exit 1
+  fi
+  
+  echo "✅ Frontend checks passed!"
+  echo ""
+else
+  echo "⏭️  No frontend changes - skipping frontend checks"
+  echo ""
 fi
 
-# Step 5: Final validation
-echo "Build successful!"
-echo ""
-echo "Step 5/5: Final validation complete!"
-echo ""
-echo "All GitHub CI pipeline checks passed locally!"
-echo "Your code is ready for the remote repository!"
+echo "🎉 All pre-push checks passed!"
+echo "Your code mirrors the GitHub CI workflow!"
 echo "Proceeding with push..."
 echo ""
 # END: Husky Pre-Push Hook

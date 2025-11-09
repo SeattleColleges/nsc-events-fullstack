@@ -1,29 +1,48 @@
 #!/usr/bin/env sh
-# START: Husky Pre-Commit Hook - Linting and Compilation Check
+# START: Husky Pre-Commit Hook - Smart Linting and Compilation
 # This hook runs before each commit to ensure code quality
-echo "Running pre-commit checks..."
-echo "Checking staged files for linting issues..."
+echo "🔍 Running pre-commit checks..."
 
-# Run lint-staged for efficient linting of only staged files
+# Detect which workspace has staged changes
+BACKEND_STAGED=$(git diff --cached --name-only | grep -E '^nsc-events-nestjs/.*\.(ts|js)$' || echo "")
+FRONTEND_STAGED=$(git diff --cached --name-only | grep -E '^nsc-events-nextjs/.*\.(ts|tsx|js|jsx)$' || echo "")
+
+# If no code files staged, skip checks
+if [ -z "$BACKEND_STAGED" ] && [ -z "$FRONTEND_STAGED" ]; then
+  echo "✅ No code changes staged - skipping checks"
+  exit 0
+fi
+
+# Run lint-staged for efficient linting (already workspace-aware)
+echo "📝 Linting staged files..."
 npm run lint:staged
 
 if [ $? -ne 0 ]; then
-  echo "Linting failed for staged files! Commit blocked."
-  echo "Please fix linting issues before committing."
-  echo "You can bypass this with: git commit --no-verify (use with caution!)"
+  echo "❌ Linting failed! Commit blocked."
+  echo "Fix linting issues or bypass with: git commit --no-verify"
   exit 1
 fi
 
-echo "Compiling TypeScript..."
-npm run compile
-
-if [ $? -ne 0 ]; then
-  echo "TypeScript compilation failed! Commit blocked."
-  echo "Please fix compilation errors before committing."
-  echo "You can bypass this with: git commit --no-verify (use with caution!)"
-  exit 1
+# Compile only affected workspaces
+if [ -n "$BACKEND_STAGED" ]; then
+  echo "🔨 Compiling backend TypeScript..."
+  npm run compile --workspace=nsc-events-nestjs
+  if [ $? -ne 0 ]; then
+    echo "❌ Backend compilation failed! Commit blocked."
+    exit 1
+  fi
+  echo "✅ Backend compilation passed"
 fi
 
-echo "All pre-commit checks passed!"
-echo "Proceeding with commit..."
+if [ -n "$FRONTEND_STAGED" ]; then
+  echo "🔨 Compiling frontend TypeScript..."
+  npm run compile --workspace=nsc-events-nextjs
+  if [ $? -ne 0 ]; then
+    echo "❌ Frontend compilation failed! Commit blocked."
+    exit 1
+  fi
+  echo "✅ Frontend compilation passed"
+fi
+
+echo "🎉 All pre-commit checks passed!"
 # END: Husky Pre-Commit Hook
