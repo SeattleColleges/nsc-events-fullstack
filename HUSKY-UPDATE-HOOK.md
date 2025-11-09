@@ -80,7 +80,7 @@ This creates legacy hooks that override Husky's smart detection and will run red
 If you're setting up the project for the first time:
 
 1. Clone the repository
-2. Run `npm install`
+2. Run `bash ./setup-macos-linux.sh` or `./setup-windows.bat` depending on your OS. 
 3. **That's it!** The `prepare` script automatically sets up Husky
 
 The hooks will work immediately with no additional steps needed!
