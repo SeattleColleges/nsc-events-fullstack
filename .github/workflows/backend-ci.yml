@@ -4,43 +4,72 @@ run-name: NestJS CI
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'nsc-events-nestjs/**'
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - 'nsc-events-nestjs/**'
 
 jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'nsc-events-nestjs/**'
+              - '!nsc-events-nestjs/**/*.md'
+              - '!nsc-events-nestjs/LICENSE*'
+              - '!nsc-events-nestjs/.gitignore'
+              - '!nsc-events-nestjs/.prettierrc'
+              - '!nsc-events-nestjs/.eslintrc.js'
+
   build-and-test:
+    needs: check-changes
     runs-on: ubuntu-latest
 
     steps:
+      - name: Skip if no backend changes
+        if: needs.check-changes.outputs.backend != 'true'
+        run: |
+          echo "No backend code changes detected. Skipping build and test."
+          echo "Modified files are documentation or configuration only."
+          
       - uses: actions/checkout@v3
+        if: needs.check-changes.outputs.backend == 'true'
       - name: Use Node.js 22
+        if: needs.check-changes.outputs.backend == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: '22.x'
           cache: 'npm'
           cache-dependency-path: 'nsc-events-nestjs/package-lock.json'
       - name: Clean install
+        if: needs.check-changes.outputs.backend == 'true'
         run: HUSKY=0 npm ci
         working-directory: ./nsc-events-nestjs
       - name: Run linter
+        if: needs.check-changes.outputs.backend == 'true'
         run: npm run lint
         working-directory: ./nsc-events-nestjs
       - name: Compile typescript
+        if: needs.check-changes.outputs.backend == 'true'
         run: npm run compile
         working-directory: ./nsc-events-nestjs
       - name: Test coverage
+        if: needs.check-changes.outputs.backend == 'true'
         run: npm run test:cov
         working-directory: ./nsc-events-nestjs
       - name: Build App
+        if: needs.check-changes.outputs.backend == 'true'
         run: npm run build --if-present
         working-directory: ./nsc-events-nestjs
 
       # https://docs.github.com/en/actions/using-workflows/storing-workflow-data-as-artifacts
       - name: Archive NestJS build
+        if: needs.check-changes.outputs.backend == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: nestjs-build
@@ -48,6 +77,7 @@ jobs:
           retention-days: 14
 
       - name: Archive code coverage results
+        if: needs.check-changes.outputs.backend == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: nestjs-code-coverage-report

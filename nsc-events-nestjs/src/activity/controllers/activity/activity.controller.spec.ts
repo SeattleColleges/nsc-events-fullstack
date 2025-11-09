@@ -7,6 +7,7 @@ import { CreateActivityDto } from '../../dto/create-activity.dto';
 import { UpdateActivityDto } from '../../dto/update-activity.dto';
 import { AttendEventDto } from '../../dto/attend-event.dto';
 import { Role } from '../../../user/entities/user.entity';
+import { AuthGuard } from '@nestjs/passport';
 
 describe('ActivityController', () => {
   let controller: ActivityController;
@@ -66,6 +67,10 @@ describe('ActivityController', () => {
         },
       ],
     }).compile();
+    })
+      .overrideGuard(AuthGuard())
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<ActivityController>(ActivityController);
     service = module.get<ActivityService>(ActivityService);
