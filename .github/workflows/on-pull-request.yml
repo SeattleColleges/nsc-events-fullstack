@@ -34,80 +34,56 @@ jobs:
 
   frontend-ci:
     needs: detect-changes
+    if: needs.detect-changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Skip if no frontend changes
-        if: needs.detect-changes.outputs.frontend != 'true'
-        run: |
-          echo "No frontend code changes detected. Skipping build and test."
-          echo "Modified files are documentation or configuration only."
-          
       - uses: actions/checkout@v3
-        if: needs.detect-changes.outputs.frontend == 'true'
       - name: Use Node.js 22
-        if: needs.detect-changes.outputs.frontend == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: "22.x"
           cache: "npm"
           cache-dependency-path: 'nsc-events-nextjs/package-lock.json'
       - name: Clean install
-        if: needs.detect-changes.outputs.frontend == 'true'
         run: HUSKY=0 npm ci
         working-directory: ./nsc-events-nextjs
       - name: Run linter
-        if: needs.detect-changes.outputs.frontend == 'true'
         run: npm run lint
         working-directory: ./nsc-events-nextjs
       - name: Compile typescript
-        if: needs.detect-changes.outputs.frontend == 'true'
         run: npm run compile
         working-directory: ./nsc-events-nextjs
       - name: Jest unit tests
-        if: needs.detect-changes.outputs.frontend == 'true'
         run: npm run test
         working-directory: ./nsc-events-nextjs
       - name: Build App
-        if: needs.detect-changes.outputs.frontend == 'true'
         run: npm run build
         working-directory: ./nsc-events-nextjs
 
   backend-ci:
     needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Skip if no backend changes
-        if: needs.detect-changes.outputs.backend != 'true'
-        run: |
-          echo "No backend code changes detected. Skipping build and test."
-          echo "Modified files are documentation or configuration only."
-          
       - uses: actions/checkout@v3
-        if: needs.detect-changes.outputs.backend == 'true'
       - name: Use Node.js 22
-        if: needs.detect-changes.outputs.backend == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: '22.x'
           cache: 'npm'
           cache-dependency-path: 'nsc-events-nestjs/package-lock.json'
       - name: Clean install
-        if: needs.detect-changes.outputs.backend == 'true'
-        run: npm ci
+        run: HUSKY=0 npm ci
         working-directory: ./nsc-events-nestjs
       - name: Run linter
-        if: needs.detect-changes.outputs.backend == 'true'
         run: npm run lint
         working-directory: ./nsc-events-nestjs
       - name: Compile typescript
-        if: needs.detect-changes.outputs.backend == 'true'
         run: npm run compile
         working-directory: ./nsc-events-nestjs
       - name: Test coverage
-        if: needs.detect-changes.outputs.backend == 'true'
         run: npm run test:cov
         working-directory: ./nsc-events-nestjs
       - name: Build App
-        if: needs.detect-changes.outputs.backend == 'true'
         run: npm run build --if-present
         working-directory: ./nsc-events-nestjs
