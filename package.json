@@ -7,7 +7,7 @@
     "nsc-events-nestjs"
   ],
   "scripts": {
-    "prepare": "husky",
+    "prepare": "node -e \"try{require('husky')}catch(e){if(e.code!=='MODULE_NOT_FOUND')throw e}\"",
     "test:frontend": "npm run test --workspace=nsc-events-nextjs",
     "dev:frontend": "npm run dev --workspace=nsc-events-nextjs",
     "build:frontend": "npm run build --workspace=nsc-events-nextjs",
