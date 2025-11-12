@@ -396,12 +396,13 @@ describe('ActivityController', () => {
 
       mockActivityService.createActivity.mockResolvedValue(mockActivity);
 
-      const result = await controller.addEvent(createActivityDto, mockRequest);
+      const result = await controller.addEvent(createActivityDto, undefined, mockRequest);
 
       expect(result).toEqual(mockActivity);
       expect(mockActivityService.createActivity).toHaveBeenCalledWith(
         createActivityDto,
         'creator-123',
+        undefined,
       );
     });
 
@@ -412,12 +413,13 @@ describe('ActivityController', () => {
 
       mockActivityService.createActivity.mockResolvedValue(mockActivity);
 
-      const result = await controller.addEvent(createActivityDto, mockRequest);
+      const result = await controller.addEvent(createActivityDto, undefined, mockRequest);
 
       expect(result).toEqual(mockActivity);
       expect(mockActivityService.createActivity).toHaveBeenCalledWith(
         createActivityDto,
         'admin-123',
+        undefined,
       );
     });
 
@@ -427,7 +429,7 @@ describe('ActivityController', () => {
       };
 
       await expect(
-        controller.addEvent(createActivityDto, mockRequest),
+        controller.addEvent(createActivityDto, undefined, mockRequest),
       ).rejects.toThrow(UnauthorizedException);
 
       expect(mockActivityService.createActivity).not.toHaveBeenCalled();
