@@ -47,6 +47,9 @@
     "next": "^14.2.33",
     "next-auth": "^4.24.13",
     "path-to-regexp": "^0.1.12",
-    "tmp": "^0.2.5"
+    "tmp": "^0.2.5",
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "^4.1.1"
+    }
   }
 }
