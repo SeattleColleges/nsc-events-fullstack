@@ -39,6 +39,7 @@
   "overrides": {
     "form-data": "4.0.4",
     "safer-buffer": "2.1.2",
+    "jsdom": "27.2.0",
     "@nestjs/common": "^10.4.20",
     "@nestjs/core": "^10.4.20",
     "@nestjs/config": "^4.0.2",
