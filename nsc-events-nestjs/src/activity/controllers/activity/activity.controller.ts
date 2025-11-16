@@ -82,12 +82,32 @@ export class ActivityController {
 
   @Post('new')
   @UseGuards(AuthGuard())
+  @UseInterceptors(FileInterceptor('coverImage'))
   async addEvent(
-    @Body() activity: CreateActivityDto,
+    @Body() body: any,
+    @UploadedFile() file: Express.Multer.File,
     @Req() req: any,
   ): Promise<Activity> {
     if (req.user.role != Role.user) {
-      return await this.activityService.createActivity(activity, req.user.id);
+      // Parse JSON fields from multipart/form-data
+      const activityData: CreateActivityDto = {
+        ...body,
+        eventTags: typeof body.eventTags === 'string'
+          ? JSON.parse(body.eventTags)
+          : body.eventTags,
+        eventSocialMedia: typeof body.eventSocialMedia === 'string'
+          ? JSON.parse(body.eventSocialMedia)
+          : body.eventSocialMedia,
+        eventSpeakers: body.eventSpeakers && typeof body.eventSpeakers === 'string'
+          ? JSON.parse(body.eventSpeakers)
+          : body.eventSpeakers,
+      };
+
+      return await this.activityService.createActivity(
+        activityData,
+        req.user.id,
+        file, // Pass the optional file
+      );
     } else {
       throw new UnauthorizedException();
     }

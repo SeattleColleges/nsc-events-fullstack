@@ -20,6 +20,7 @@ import {
   useMediaQuery,
   Paper,
 } from "@mui/material";
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { textFieldStyle } from "@/components/InputFields";
 import { MouseEvent, ChangeEvent, useState, FormEvent } from "react";
 import useAuth from "@/hooks/useAuth";
@@ -43,6 +44,11 @@ const CreateEvent: React.FC = () => {
     handleEndTimeChange,
     timeError,
     successMessage,
+    selectedCoverImage,
+    setSelectedCoverImage,
+    coverImagePreview,
+    setCoverImagePreview,
+    coverImageError,
   } = useEventForm(activity);
 
   // Get the current theme mode for current page
@@ -325,34 +331,68 @@ const CreateEvent: React.FC = () => {
               >
                 {/* stack tag for vertical alignment */}
                 <Stack sx={{ width: "100%", padding: 5 }} spacing={2}>
-                  {/* commented out below due to not needing the cover photo and document fields. */}
-                  {/* <TextField
-                    id="event-cover-photo"
-                    label="Event Cover Photo"
-                    variant="outlined"
-                    name="eventCoverPhoto"
-                    value={eventData.eventCoverPhoto}
-                    onChange={handleInputChange}
-                    // error={!!errors.eventCoverPhoto}
-                    helperText={errors.eventCoverPhoto}
-                    InputProps={{ style: textFieldStyle.input }}
-                    InputLabelProps={{ style: textFieldStyle.label }}
-                    placeholder="Enter the event cover photo of the event"
-                  />
-
-                  <TextField
-                    id="event-document"
-                    label="Event Document"
-                    variant="outlined"
-                    name="eventDocument"
-                    value={eventData.eventDocument}
-                    onChange={handleInputChange}
-                    // error={!!errors.eventDocument}
-                    helperText={errors.eventDocument}
-                    InputProps={{ style: textFieldStyle.input }}
-                    InputLabelProps={{ style: textFieldStyle.label }}
-                    placeholder="Add a document for the event"
-                  /> */}
+                  {/* Event Cover Photo Upload */}
+                  <Box>
+                    <Typography variant="body1" sx={{ mb: 1 }}>
+                      Event Cover Photo (Optional)
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      sx={{
+                        marginBottom: 2,
+                        width: "100%",
+                        backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
+                      }}
+                    >
+                      <AddPhotoAlternateIcon sx={{ mr: 1 }} />
+                      {selectedCoverImage ? "Change Photo" : "Upload Cover Photo"}
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/jpg, image/gif"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            // Validate file size (5MB max)
+                            if (file.size > 5 * 1024 * 1024) {
+                              alert("File size exceeds 5MB limit");
+                              return;
+                            }
+                            setSelectedCoverImage(file);
+                            setCoverImagePreview(URL.createObjectURL(file));
+                          }
+                        }}
+                        hidden
+                      />
+                    </Button>
+                    {selectedCoverImage && (
+                      <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                        Selected: {selectedCoverImage.name}
+                      </Typography>
+                    )}
+                    {coverImagePreview && (
+                      <Box
+                        component="img"
+                        src={coverImagePreview}
+                        alt="Cover preview"
+                        sx={{
+                          width: "100%",
+                          height: "200px",
+                          objectFit: "cover",
+                          borderRadius: 1,
+                          mb: 1
+                        }}
+                      />
+                    )}
+                    {coverImageError && (
+                      <Typography variant="body2" color="error">
+                        {coverImageError}
+                      </Typography>
+                    )}
+                    <Typography variant="caption" color="textSecondary">
+                      Supported formats: PNG, JPEG, JPG, GIF (Max 5MB)
+                    </Typography>
+                  </Box>
 
                   <TextField
                     id="event-capacity"
