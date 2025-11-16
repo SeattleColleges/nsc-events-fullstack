@@ -7,7 +7,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import { User, UserDocument, Role } from '../../user/entities/user.entity';
+import { EmailService } from '../../email/email.service';
 
 export interface LoginDto {
   email: string;
@@ -30,15 +32,107 @@ export interface AuthResponse {
 
 @Injectable()
 export class AuthService {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  requestPasswordReset(email: string): Promise<{ message: string }> {
-    throw new Error('Method not implemented.');
-  }
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
+
+  // Request password reset - now with actual email sending and token storage
+  async requestPasswordReset(email: string): Promise<{ message: string }> {
+    // Check if user exists
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    // Always return success message to prevent email enumeration attacks
+    const successMessage =
+      'If an account with this email exists, you will receive a password reset link.';
+
+    if (!user) {
+      // Return success even if user doesn't exist (security best practice)
+      return { message: successMessage };
+    }
+
+    try {
+      // Generate secure reset token
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const hashedToken = await bcrypt.hash(resetToken, 12);
+
+      // Set token and expiration (1 hour)
+      user.resetPasswordToken = hashedToken;
+      user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
+
+      await this.userRepository.save(user);
+
+      // Send email with reset token (not the hashed version)
+      await this.emailService.sendPasswordResetEmail(email, resetToken);
+
+      console.log(`Password reset email sent successfully to: ${email}`);
+    } catch (error) {
+      console.error('Failed to send password reset email:', error);
+      // Don't expose email error to user for security
+    }
+
+    return { message: successMessage };
+  }
+
+  // Reset password with token
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    // Find all users with reset tokens (we'll check each one)
+    const users = await this.userRepository.find({
+      select: ['id', 'email', 'resetPasswordToken', 'resetPasswordExpires'],
+    });
+
+    let validUser = null;
+
+    // Check each user's token to see if it matches
+    for (const user of users) {
+      if (user.resetPasswordToken && user.resetPasswordExpires) {
+        // Check if token hasn't expired
+        if (user.resetPasswordExpires > new Date()) {
+          // Verify the token
+          const isValidToken = await bcrypt.compare(
+            token,
+            user.resetPasswordToken,
+          );
+          if (isValidToken) {
+            validUser = user;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!validUser) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    // Get the full user object for updating
+    const fullUser = await this.userRepository.findOne({
+      where: { id: validUser.id },
+    });
+
+    if (!fullUser) {
+      throw new BadRequestException('User not found');
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update password and clear reset token fields
+    fullUser.password = hashedPassword;
+    fullUser.resetPasswordToken = null;
+    fullUser.resetPasswordExpires = null;
+
+    await this.userRepository.save(fullUser);
+
+    console.log(`Password reset successfully for user: ${fullUser.email}`);
+
+    return { message: 'Password reset successfully' };
+  }
 
   // Register a new user
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
