@@ -43,6 +43,11 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
   const [successMessage, setSuccessMessage] = useState<String>("");
   const [errorMessage, setErrorMessage] = useState<String>("");
   const queryClient = useQueryClient()
+
+  // Cover image state
+  const [selectedCoverImage, setSelectedCoverImage] = useState<File | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
+  const [coverImageError, setCoverImageError] = useState<string>("");
   // Use useDateTimeSelection hook
   const {
     startTime,
@@ -200,7 +205,7 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
       if (!dataToSend.eventDocument?.trim()) {
         dataToSend.eventDocument = "";
       }
-      
+
       // Create ISO 8601 timestamps with timezone
       if (!selectedDate || !startTime || !endTime) {
         throw new Error('Date and time are required');
@@ -215,14 +220,34 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
 
       console.log("Event data after applying transformation: ", dataToSend);
 
+      // Create FormData for multipart/form-data submission
+      const formData = new FormData();
+
+      // Append cover image if selected
+      if (selectedCoverImage) {
+        formData.append('coverImage', selectedCoverImage);
+      }
+
+      // Append all other fields as JSON strings or values
+      Object.keys(dataToSend).forEach((key) => {
+        const value = dataToSend[key];
+        if (value !== undefined && value !== null) {
+          if (typeof value === 'object') {
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, value.toString());
+          }
+        }
+      });
+
       const apiUrl = process.env.NSC_EVENTS_PUBLIC_API_URL;
       const response = await fetch(`${apiUrl}/events/new`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
+          // Don't set Content-Type header - browser will set it automatically with boundary
         },
-        body: JSON.stringify(dataToSend),
+        body: formData,
       });
 
       const data = await response.json();
@@ -275,8 +300,8 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
     setEventData,
     setErrors,
     to24HourTime,
-    eventData, 
-    handleInputChange, 
+    eventData,
+    handleInputChange,
     handleSocialMediaChange,
     handleTagClick,
     handleSubmit,
@@ -295,6 +320,11 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
     setErrorMessage,
     setSuccessMessage,
     timezoneMessage,
-    createISODateTime
+    createISODateTime,
+    selectedCoverImage,
+    setSelectedCoverImage,
+    coverImagePreview,
+    setCoverImagePreview,
+    coverImageError,
   };
 }
