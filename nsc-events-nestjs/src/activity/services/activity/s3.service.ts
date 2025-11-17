@@ -11,6 +11,7 @@ import {
   DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { Express } from 'express';
+import * as sharp from 'sharp';
 
 @Injectable()
 export class S3Service {
@@ -51,18 +52,49 @@ export class S3Service {
    */
 
   /**
+   * Resizes an image buffer to a maximum width/height while maintaining aspect ratio
+   * @param buffer - The original image buffer
+   * @param maxWidth - Maximum width in pixels (default: 1920)
+   * @param maxHeight - Maximum height in pixels (default: 1080)
+   * @returns Resized image buffer
+   * @private
+   */
+  private async resizeImage(
+    buffer: Buffer,
+    maxWidth: number = 1920,
+    maxHeight: number = 1080,
+  ): Promise<Buffer> {
+    try {
+      return await sharp(buffer)
+        .resize(maxWidth, maxHeight, {
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .jpeg({ quality: 85 })
+        .toBuffer();
+    } catch (error) {
+      throw new Error(`Failed to resize image: ${error.message}`);
+    }
+  }
+
+  /**
    * Uploads a file to a specified folder in the S3 bucket.
    *
    * Validates the file size is under 5 MB.
    *
    * @param file - The file to be uploaded
    * @param folder - The target folder within the bucket.
+   * @param resize - Whether to resize the image before upload (default: false)
    * @returns The public URL of the uploaded file.
    * @throws {BadRequestException} If the file size exceeds 5 MB.
    * @throws {BadRequestException} If the file type is not allowed.
    * @throws {Error} If the upload fails.
    */
-  async uploadFile(file: Express.Multer.File, folder: string): Promise<string> {
+  async uploadFile(
+    file: Express.Multer.File,
+    folder: string,
+    resize: boolean = false,
+  ): Promise<string> {
     // Validate file size before uploading.
     if (file.size > this.MAX_FILE_SIZE_BYTES) {
       throw new BadRequestException(
@@ -79,6 +111,12 @@ export class S3Service {
     }
 
     try {
+      // Resize image if requested
+      let fileBuffer = file.buffer;
+      if (resize) {
+        fileBuffer = await this.resizeImage(file.buffer);
+      }
+
       // Create a unique filename to prevent overwriting
       const fileName = `${Date.now()}-${
         'name' in file ? file.name : file.originalname
@@ -88,7 +126,7 @@ export class S3Service {
       const uploadParams = {
         Bucket: this.bucketName,
         Key: `${folder}/${fileName}`,
-        Body: file.buffer,
+        Body: fileBuffer,
         ContentType: file.mimetype,
       };
 

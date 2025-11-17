@@ -119,7 +119,7 @@ const ArchivedEvents = () => {
                                     <TableCell sx={{ backgroundColor: isDarkMode ? '#333' : 'inherit', color: isDarkMode ? 'white' : 'inherit', fontWeight: 'bold' }}>Event Title</TableCell>
                                     <TableCell sx={{ backgroundColor: isDarkMode ? '#333' : 'inherit', color: isDarkMode ? 'white' : 'inherit', fontWeight: 'bold' }}>Date</TableCell>
                                     <TableCell sx={{ backgroundColor: isDarkMode ? '#333' : 'inherit', color: isDarkMode ? 'white' : 'inherit', fontWeight: 'bold' }}>Location</TableCell>
-                                    <TableCell sx={{ backgroundColor: isDarkMode ? '#333' : 'inherit', color: isDarkMode ? 'white' : 'inherit', fontWeight: 'bold' }}>Host Email</TableCell>
+                                    <TableCell sx={{ backgroundColor: isDarkMode ? '#333' : 'inherit', color: isDarkMode ? 'white' : 'inherit', fontWeight: 'bold' }}>Event Contact</TableCell>
                                     <TableCell align="right" sx={{ backgroundColor: isDarkMode ? '#333' : 'inherit' }}></TableCell>
                                 </TableRow>
                             </TableHead>
@@ -131,7 +131,7 @@ const ArchivedEvents = () => {
                                         <TableCell component="th" scope="row">{nscEvent.eventTitle}</TableCell>
                                         <TableCell>{nscEvent.startDate}</TableCell>
                                         <TableCell>{nscEvent.eventLocation}</TableCell>
-                                        <TableCell>{nscEvent.eventMeetingURL}</TableCell>
+                                        <TableCell>{nscEvent.eventContact}</TableCell>
                                         <TableCell align="right">
                                             <IconButton
                                                 aria-label="more"
