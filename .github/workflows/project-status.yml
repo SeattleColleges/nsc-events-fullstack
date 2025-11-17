@@ -94,7 +94,7 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
           ORG: SeattleColleges
-          PROJECT_NUMBER: 21
+          PROJECT_NUMBER: 14
           DESIRED: ${{ steps.decide.outputs.desired }}
           ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
           PR_NODE_ID: ${{ github.event.pull_request.node_id }}
