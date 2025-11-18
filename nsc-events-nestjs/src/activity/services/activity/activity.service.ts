@@ -46,7 +46,8 @@ export class ActivityService {
         endDate: new Date(createActivityDto.endDate),
         createdByUserId: userId,
         // Use uploaded image URL if available, otherwise use the one from DTO (empty string)
-        eventCoverPhoto: uploadedImageUrl || createActivityDto.eventCoverPhoto || '',
+        eventCoverPhoto:
+          uploadedImageUrl || createActivityDto.eventCoverPhoto || '',
       };
 
       const activity = this.activityRepository.create(activityData);
@@ -61,8 +62,11 @@ export class ActivityService {
         throw error;
       }
 
+      // Log the actual error for debugging
+      console.error('Error creating activity:', error);
+
       throw new HttpException(
-        'Error creating activity',
+        `Error creating activity: ${error.message || 'Unknown error'}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

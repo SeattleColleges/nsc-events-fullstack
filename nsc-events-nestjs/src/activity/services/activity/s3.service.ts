@@ -61,8 +61,8 @@ export class S3Service {
    */
   private async resizeImage(
     buffer: Buffer,
-    maxWidth: number = 1920,
-    maxHeight: number = 1080,
+    maxWidth = 1920,
+    maxHeight = 1080,
   ): Promise<Buffer> {
     try {
       return await sharp(buffer)
@@ -93,7 +93,7 @@ export class S3Service {
   async uploadFile(
     file: Express.Multer.File,
     folder: string,
-    resize: boolean = false,
+    resize = false,
   ): Promise<string> {
     // Validate file size before uploading.
     if (file.size > this.MAX_FILE_SIZE_BYTES) {
