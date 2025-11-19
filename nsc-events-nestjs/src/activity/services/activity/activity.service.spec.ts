@@ -177,6 +177,96 @@ describe('ActivityService', () => {
         }),
       );
     });
+
+    it('should create activity with cover image file', async () => {
+      const mockFile: Express.Multer.File = {
+        fieldname: 'coverImage',
+        originalname: 'test-cover.jpg',
+        encoding: '7bit',
+        mimetype: 'image/jpeg',
+        size: 2048,
+        buffer: Buffer.from('test-image-data'),
+        stream: null,
+        destination: '',
+        filename: '',
+        path: '',
+      };
+
+      const uploadedImageUrl = 'https://s3.amazonaws.com/bucket/cover-image.jpg';
+      s3Service.uploadFile.mockResolvedValue(uploadedImageUrl);
+
+      const activityWithImage = {
+        ...mockActivity,
+        eventCoverPhoto: uploadedImageUrl,
+      };
+      activityRepository.create.mockReturnValue(activityWithImage);
+      activityRepository.save.mockResolvedValue(activityWithImage);
+
+      const result = await service.createActivity(
+        createActivityDto,
+        'user-123',
+        mockFile,
+      );
+
+      expect(s3Service.uploadFile).toHaveBeenCalledWith(
+        mockFile,
+        'cover-images',
+        true, // Enable resize
+      );
+      expect(result.eventCoverPhoto).toBe(uploadedImageUrl);
+      expect(activityRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          eventCoverPhoto: uploadedImageUrl,
+          createdByUserId: 'user-123',
+        }),
+      );
+      expect(activityRepository.save).toHaveBeenCalledWith(activityWithImage);
+    });
+
+    it('should rethrow BadRequestException from S3 service', async () => {
+      const mockFile: Express.Multer.File = {
+        fieldname: 'coverImage',
+        originalname: 'invalid.txt',
+        encoding: '7bit',
+        mimetype: 'text/plain',
+        size: 1024,
+        buffer: Buffer.from('test'),
+        stream: null,
+        destination: '',
+        filename: '',
+        path: '',
+      };
+
+      const badRequestError = new BadRequestException('Invalid file type');
+      s3Service.uploadFile.mockRejectedValue(badRequestError);
+
+      await expect(
+        service.createActivity(createActivityDto, 'user-123', mockFile),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw HttpException when S3 upload fails with generic error', async () => {
+      const mockFile: Express.Multer.File = {
+        fieldname: 'coverImage',
+        originalname: 'test.jpg',
+        encoding: '7bit',
+        mimetype: 'image/jpeg',
+        size: 1024,
+        buffer: Buffer.from('test'),
+        stream: null,
+        destination: '',
+        filename: '',
+        path: '',
+      };
+
+      s3Service.uploadFile.mockRejectedValue(new Error('S3 service unavailable'));
+
+      await expect(
+        service.createActivity(createActivityDto, 'user-123', mockFile),
+      ).rejects.toThrow(
+        new HttpException('Error creating activity', HttpStatus.INTERNAL_SERVER_ERROR),
+      );
+    });
   });
 
   describe('getAllActivities', () => {
@@ -684,7 +774,11 @@ describe('ActivityService', () => {
       const result = await service.updateCoverImage('activity-123', mockFile);
 
       expect(result.eventCoverPhoto).toBe(uploadedImageUrl);
-      expect(s3Service.uploadFile).toHaveBeenCalledWith(mockFile, 'cover-images');
+      expect(s3Service.uploadFile).toHaveBeenCalledWith(
+        mockFile,
+        'cover-images',
+        true, // Enable resize
+      );
       expect(activityRepository.save).toHaveBeenCalled();
     });
 
