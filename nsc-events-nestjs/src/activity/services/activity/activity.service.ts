@@ -48,6 +48,8 @@ export class ActivityService {
         // Use uploaded image URL if available, otherwise use the one from DTO (empty string)
         eventCoverPhoto:
           uploadedImageUrl || createActivityDto.eventCoverPhoto || '',
+        // Ensure eventSocialMedia is always an object, never null
+        eventSocialMedia: createActivityDto.eventSocialMedia || {},
       };
 
       const activity = this.activityRepository.create(activityData);
@@ -187,6 +189,10 @@ export class ActivityService {
       }
       if (updateActivityDto.endDate) {
         updateData.endDate = new Date(updateActivityDto.endDate);
+      }
+      // Ensure eventSocialMedia is always an object, never null
+      if (updateActivityDto.eventSocialMedia !== undefined) {
+        updateData.eventSocialMedia = updateActivityDto.eventSocialMedia || {};
       }
 
       Object.assign(activity, updateData);

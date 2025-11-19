@@ -74,8 +74,8 @@ export class Activity {
   @Column()
   eventContact: string;
 
-  @Column('json', { nullable: true })
-  eventSocialMedia?: SocialMedia;
+  @Column('json', { nullable: false, default: {} })
+  eventSocialMedia: SocialMedia;
 
   @Column({ default: 0 })
   attendanceCount?: number;
