@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: "22.x"
           cache: "npm"
-          cache-dependency-path: 'nsc-events-nextjs/package-lock.json'
+          cache-dependency-path: 'package-lock.json'
       - name: Clean install dependencies
         run: HUSKY=0 npm ci
       - name: Run linter
