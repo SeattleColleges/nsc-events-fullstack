@@ -23,9 +23,9 @@ if %errorlevel% neq 0 (
 echo Prerequisites met.
 
 REM --- Dependency Installation ---
-echo Installing root dependencies...
+echo Installing dependencies for all workspaces...
 call npm install
-echo Root dependencies installed.
+echo All workspace dependencies installed.
 
 REM --- Backend Setup ---
 echo Setting up backend (nsc-events-nestjs)...
@@ -37,8 +37,7 @@ if exist ".env.example" (
 ) else (
     echo Warning: nsc-events-nestjs\.env.example not found. Please create .env file manually.
 )
-echo Installing backend dependencies...
-call npm install
+
 cd ..
 
 REM --- Frontend Setup ---
@@ -51,8 +50,7 @@ if exist ".env.example" (
 ) else (
     echo Warning: nsc-events-nextjs\.env.example not found. Please create .env file manually.
 )
-echo Installing frontend dependencies...
-call npm install
+
 cd ..
 
 REM --- Husky Git Hooks Setup ---
