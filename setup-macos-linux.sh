@@ -29,11 +29,11 @@ fi
 echo "Prerequisites met."
 
 # --- Dependency Installation ---
-echo "Installing root dependencies..."
+echo "Installing dependencies for all workspace..."
 cd "$PROJECT_ROOT"
 npm install
 
-echo "Root dependencies installed."
+echo "All workspace dependencies installed."
 
 # --- Backend Setup ---
 echo "Setting up backend (nsc-events-nestjs)..."
@@ -47,9 +47,6 @@ else
     echo "Warning: nsc-events-nestjs/.env.example not found. Please create .env file manually."
 fi
 
-echo "Installing backend dependencies..."
-npm install
-
 # --- Frontend Setup ---
 echo "Setting up frontend (nsc-events-nextjs)..."
 cd "$PROJECT_ROOT/nsc-events-nextjs"
@@ -61,9 +58,6 @@ if [ -f ".env.example" ]; then
 else
     echo "Warning: nsc-events-nextjs/.env.example not found. Please create .env file manually."
 fi
-
-echo "Installing frontend dependencies..."
-npm install
 
 cd "$PROJECT_ROOT"
 
