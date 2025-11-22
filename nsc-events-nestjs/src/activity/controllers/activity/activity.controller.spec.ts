@@ -105,7 +105,7 @@ describe('ActivityController', () => {
         expectedActivities,
       );
 
-      const result = await controller.getAllActivities('2', '20', 'false');
+      const result = await controller.getAllActivities('2', '20', undefined, 'false');
 
       expect(result).toEqual(expectedActivities);
       expect(mockActivityService.getAllActivities).toHaveBeenCalledWith({
@@ -125,6 +125,7 @@ describe('ActivityController', () => {
       const result = await controller.getAllActivities(
         '1',
         '12',
+        undefined,
         'false',
         'club',
       );
@@ -147,6 +148,7 @@ describe('ActivityController', () => {
       const result = await controller.getAllActivities(
         '1',
         '12',
+        undefined,
         'false',
         'club,study,sports',
       );
@@ -169,6 +171,7 @@ describe('ActivityController', () => {
       const result = await controller.getAllActivities(
         '1',
         '12',
+        undefined,
         'false',
         ' CLUB , Study ,  SPORTS  ',
       );
@@ -188,7 +191,7 @@ describe('ActivityController', () => {
         expectedActivities,
       );
 
-      const result = await controller.getAllActivities('1', '12', 'false', '');
+      const result = await controller.getAllActivities('1', '12', undefined, 'false', '');
 
       expect(result).toEqual(expectedActivities);
       expect(mockActivityService.getAllActivities).toHaveBeenCalledWith({
@@ -205,7 +208,7 @@ describe('ActivityController', () => {
         archivedActivity,
       ]);
 
-      const result = await controller.getAllActivities('1', '12', 'true');
+      const result = await controller.getAllActivities('1', '12', undefined, 'true');
 
       expect(result).toEqual([archivedActivity]);
       expect(mockActivityService.getAllActivities).toHaveBeenCalledWith({
@@ -221,7 +224,9 @@ describe('ActivityController', () => {
     it('should return a single activity by id', async () => {
       mockActivityService.getActivityById.mockResolvedValue(mockActivity);
 
-      const result = await controller.findActivityById('123e4567-e89b-12d3-a456-426614174000');
+      const result = await controller.findActivityById(
+        '123e4567-e89b-12d3-a456-426614174000',
+      );
 
       expect(result).toEqual(mockActivity);
       expect(mockActivityService.getActivityById).toHaveBeenCalledWith(
@@ -242,7 +247,10 @@ describe('ActivityController', () => {
 
   describe('getActivitiesByUserId', () => {
     it('should return all activities created by a specific user', async () => {
-      const userActivities = [mockActivity, { ...mockActivity, id: 'activity-2' }];
+      const userActivities = [
+        mockActivity,
+        { ...mockActivity, id: 'activity-2' },
+      ];
       mockActivityService.getActivitiesByUserId.mockResolvedValue(
         userActivities,
       );
@@ -288,10 +296,7 @@ describe('ActivityController', () => {
         user: { id: 'user-123', role: Role.creator },
       };
 
-      const result = await controller.attendEvent(
-        'event-123',
-        attendEventDto,
-      );
+      const result = await controller.attendEvent('event-123', attendEventDto);
 
       expect(result).toEqual(updatedActivity);
       expect(mockActivityService.addAttendee).toHaveBeenCalledWith(
@@ -317,10 +322,7 @@ describe('ActivityController', () => {
         user: { id: 'user-123', role: Role.creator },
       };
 
-      const result = await controller.attendEvent(
-        'event-123',
-        attendEventDto,
-      );
+      const result = await controller.attendEvent('event-123', attendEventDto);
 
       expect(result).toEqual(updatedActivity);
       expect(mockActivityService.addAttendee).toHaveBeenCalledWith(
@@ -348,10 +350,7 @@ describe('ActivityController', () => {
         user: { id: 'user-123', role: Role.creator },
       };
 
-      const result = await controller.attendEvent(
-        'event-123',
-        attendEventDto,
-      );
+      const result = await controller.attendEvent('event-123', attendEventDto);
 
       expect(result).toEqual(updatedActivity);
       expect(mockActivityService.addAttendee).toHaveBeenCalledWith(
@@ -396,7 +395,11 @@ describe('ActivityController', () => {
 
       mockActivityService.createActivity.mockResolvedValue(mockActivity);
 
-      const result = await controller.addEvent(createActivityDto, undefined, mockRequest);
+      const result = await controller.addEvent(
+        createActivityDto,
+        undefined,
+        mockRequest,
+      );
 
       expect(result).toEqual(mockActivity);
       expect(mockActivityService.createActivity).toHaveBeenCalledWith(
@@ -413,7 +416,11 @@ describe('ActivityController', () => {
 
       mockActivityService.createActivity.mockResolvedValue(mockActivity);
 
-      const result = await controller.addEvent(createActivityDto, undefined, mockRequest);
+      const result = await controller.addEvent(
+        createActivityDto,
+        undefined,
+        mockRequest,
+      );
 
       expect(result).toEqual(mockActivity);
       expect(mockActivityService.createActivity).toHaveBeenCalledWith(
@@ -791,7 +798,8 @@ describe('ActivityController', () => {
 
       const updatedActivity = {
         ...mockActivity,
-        eventCoverPhoto: 'https://s3.amazonaws.com/bucket/cover-images/test-image.jpg',
+        eventCoverPhoto:
+          'https://s3.amazonaws.com/bucket/cover-images/test-image.jpg',
       };
 
       mockActivityService.getActivityById.mockResolvedValue(mockActivity);
@@ -820,7 +828,8 @@ describe('ActivityController', () => {
 
       const updatedActivity = {
         ...mockActivity,
-        eventCoverPhoto: 'https://s3.amazonaws.com/bucket/cover-images/test-image.jpg',
+        eventCoverPhoto:
+          'https://s3.amazonaws.com/bucket/cover-images/test-image.jpg',
       };
 
       mockActivityService.getActivityById.mockResolvedValue(mockActivity);

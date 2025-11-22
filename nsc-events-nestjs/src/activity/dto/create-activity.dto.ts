@@ -114,7 +114,7 @@ export class CreateActivityDto {
 
   @IsOptional()
   @IsSocialMedia()
-  readonly eventSocialMedia: SocialMedia;
+  readonly eventSocialMedia?: SocialMedia;
 
   @IsOptional()
   @IsString()
@@ -126,7 +126,7 @@ export class CreateActivityDto {
 
   @IsOptional()
   @IsString()
-  readonly eventNote: string;
+  readonly eventNote?: string;
 
   @IsOptional()
   @IsBoolean()
