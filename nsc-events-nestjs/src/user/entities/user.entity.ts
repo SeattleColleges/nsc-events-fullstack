@@ -93,6 +93,12 @@ export class User implements UserDocument {
   @Column({ type: 'json', nullable: true })
   googleCredentials?: GoogleCredentials;
 
+  @Column({ nullable: true })
+  resetPasswordToken?: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetPasswordExpires?: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

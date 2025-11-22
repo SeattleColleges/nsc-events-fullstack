@@ -11,6 +11,7 @@ import {
 } from './auth.service';
 import { User, Role } from '../../user/entities/user.entity';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { EmailService } from '../../email/email.service';
 
 // Type for mocked repository to ensure type safety
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
@@ -19,6 +20,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let userRepository: MockRepository<User>;
   let jwtService: JwtService;
+  let emailService: EmailService;
   let module: TestingModule;
 
   // Mock user data
@@ -30,6 +32,8 @@ describe('AuthService', () => {
     password: 'Password123',
     pronouns: 'he/him',
     role: Role.user,
+    resetPasswordToken: null,
+    resetPasswordExpires: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -60,6 +64,7 @@ describe('AuthService', () => {
             create: jest.fn(),
             save: jest.fn(),
             update: jest.fn(),
+            find: jest.fn(),
           },
         },
         {
@@ -69,12 +74,19 @@ describe('AuthService', () => {
             verify: jest.fn(),
           },
         },
+        {
+          provide: EmailService,
+          useValue: {
+            sendPasswordResetEmail: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     userRepository = module.get(getRepositoryToken(User));
     jwtService = module.get<JwtService>(JwtService);
+    emailService = module.get<EmailService>(EmailService);
   });
 
   afterEach(() => {
@@ -275,6 +287,98 @@ describe('AuthService', () => {
       await expect(service.verifyToken(mockToken)).rejects.toThrow(
         UnauthorizedException,
       );
+    });
+  });
+
+  // Request Password Reset Tests
+  describe('requestPasswordReset', () => {
+    it('should successfully request password reset for existing user', async () => {
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(mockUser);
+      jest.spyOn(userRepository, 'save').mockResolvedValue(mockUser);
+      jest.spyOn(emailService, 'sendPasswordResetEmail').mockResolvedValue();
+
+      const result = await service.requestPasswordReset('user@nsc.com');
+
+      expect(result.message).toContain('If an account with this email exists');
+      expect(userRepository.save).toHaveBeenCalled();
+      expect(emailService.sendPasswordResetEmail).toHaveBeenCalled();
+    });
+
+    it('should return success message even for non-existent user', async () => {
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
+
+      const result = await service.requestPasswordReset(
+        'nonexistent@email.com',
+      );
+
+      expect(result.message).toContain('If an account with this email exists');
+      expect(userRepository.save).not.toHaveBeenCalled();
+      expect(emailService.sendPasswordResetEmail).not.toHaveBeenCalled();
+    });
+
+    it('should handle email service errors gracefully', async () => {
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(mockUser);
+      jest.spyOn(userRepository, 'save').mockResolvedValue(mockUser);
+      jest
+        .spyOn(emailService, 'sendPasswordResetEmail')
+        .mockRejectedValue(new Error('Email failed'));
+
+      const result = await service.requestPasswordReset('user@nsc.com');
+
+      expect(result.message).toContain('If an account with this email exists');
+    });
+  });
+
+  // Reset Password Tests
+  describe('resetPassword', () => {
+    const validToken = 'valid-reset-token';
+    const hashedToken = 'hashed-reset-token';
+
+    it('should successfully reset password with valid token', async () => {
+      const userWithToken = {
+        ...mockUser,
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: new Date(Date.now() + 3600000), // 1 hour from now
+      };
+
+      jest.spyOn(userRepository, 'find').mockResolvedValue([userWithToken]);
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(userWithToken);
+      jest.spyOn(userRepository, 'save').mockResolvedValue(userWithToken);
+      jest
+        .spyOn(bcrypt, 'compare')
+        .mockImplementation(() => Promise.resolve(true));
+      jest
+        .spyOn(bcrypt, 'hash')
+        .mockImplementation(() => Promise.resolve('new-hashed-password'));
+
+      const result = await service.resetPassword(validToken, 'newPassword123');
+
+      expect(result.message).toBe('Password reset successfully');
+      expect(userRepository.save).toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException for invalid token', async () => {
+      jest.spyOn(userRepository, 'find').mockResolvedValue([]);
+
+      await expect(
+        service.resetPassword('invalid-token', 'newPassword123'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException for expired token', async () => {
+      const userWithExpiredToken = {
+        ...mockUser,
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: new Date(Date.now() - 3600000), // 1 hour ago (expired)
+      };
+
+      jest
+        .spyOn(userRepository, 'find')
+        .mockResolvedValue([userWithExpiredToken]);
+
+      await expect(
+        service.resetPassword(validToken, 'newPassword123'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

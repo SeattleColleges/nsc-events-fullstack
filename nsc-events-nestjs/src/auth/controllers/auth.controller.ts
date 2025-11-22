@@ -5,6 +5,7 @@ import { LoginDto } from '../dto/login.dto';
 import { SignUpDto } from '../dto/signup.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
 import { ChangePasswordDto } from '../dto/change-password.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -92,6 +93,12 @@ export class AuthController {
   forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }> {
     // AuthService should send a reset link and return a generic message
     return this.authService.requestPasswordReset(dto.email);
+  }
+
+  // reset password route
+  @Post('/reset-password')
+  resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
+    return this.authService.resetPassword(dto.token, dto.password);
   }
 
   // change password route

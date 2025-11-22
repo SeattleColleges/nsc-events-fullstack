@@ -6,7 +6,7 @@ import { textFieldStyle } from "@/components/InputFields";
 import Image from "next/image";
 import { useTheme } from "@mui/material";
 
-const URL = process.env.NSC_EVENTS_PUBLIC_API_URL;
+const URL = process.env.NSC_EVENTS_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 const ForgotPassword = () => {
   const { palette } = useTheme();
