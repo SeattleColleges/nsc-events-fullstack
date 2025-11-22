@@ -74,7 +74,7 @@ export class Activity {
   @Column()
   eventContact: string;
 
-  @Column('json')
+  @Column('json', { nullable: false, default: {} })
   eventSocialMedia: SocialMedia;
 
   @Column({ default: 0 })
@@ -89,8 +89,8 @@ export class Activity {
   @Column({ nullable: true })
   eventAccessibility?: string;
 
-  @Column()
-  eventNote: string;
+  @Column({ nullable: true })
+  eventNote?: string;
 
   @Column({ default: false })
   isHidden: boolean;
