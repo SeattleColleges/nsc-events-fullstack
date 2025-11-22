@@ -17,7 +17,16 @@ import { AttendEventDto } from '../dto/attend-event.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { EventRegistration } from '../entities/event-registration.entity';
 import { ActivityService } from '../../activity/services/activity/activity.service';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 
+@ApiTags('Event Registration')
 @Controller('event-registration')
 export class EventRegistrationController {
   private readonly logger = new Logger(EventRegistrationController.name);
@@ -25,11 +34,24 @@ export class EventRegistrationController {
   constructor(
     private readonly registrationService: EventRegistrationService,
     private readonly activityService: ActivityService, // Inject ActivityService
-  ) { }
+  ) {}
 
   // Register a user for an event
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Post('register')
+  @ApiOperation({
+    summary: 'Register user for an event',
+    description: 'Creates a new event registration for a user',
+  })
+  @ApiBody({ type: CreateEventRegistrationDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Successfully registered for event',
+    type: EventRegistration,
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
   async registerForEvent(
     @Body() createRegistrationDto: CreateEventRegistrationDto,
   ): Promise<EventRegistration> {
@@ -40,6 +62,18 @@ export class EventRegistrationController {
 
   // New endpoint for attending an event
   @Post('attend')
+  @ApiOperation({
+    summary: 'Attend an event',
+    description: 'Quick registration for event attendance',
+  })
+  @ApiBody({ type: AttendEventDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Successfully attended event',
+    type: EventRegistration,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 500, description: 'Error attending event' })
   async attendEvent(
     @Body() attendDto: AttendEventDto,
   ): Promise<EventRegistration> {
@@ -69,6 +103,29 @@ export class EventRegistrationController {
 
   // Get all registrations for an event
   @Get('event/:activityId')
+  @ApiOperation({
+    summary: 'Get event registrations',
+    description: 'Retrieves all registrations for a specific event',
+  })
+  @ApiParam({ name: 'activityId', description: 'Event/Activity ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Event registration details with attendee information',
+    schema: {
+      type: 'object',
+      properties: {
+        count: { type: 'number', example: 25 },
+        anonymousCount: { type: 'number', example: 0 },
+        attendees: { type: 'array', items: { type: 'object' } },
+        attendeeNames: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['John Doe', 'Jane Smith'],
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Event not found' })
   async getRegistrationsForEvent(
     @Param('activityId') activityId: string,
   ): Promise<{
@@ -109,7 +166,36 @@ export class EventRegistrationController {
 
   // Get all events a user is registered for (fetch real event details)
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('user/:userId')
+  @ApiOperation({
+    summary: 'Get user registrations',
+    description: 'Retrieves all events a user is registered for',
+  })
+  @ApiParam({ name: 'userId', description: 'User ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of events user is registered for',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          eventId: { type: 'string' },
+          eventTitle: { type: 'string' },
+          eventDate: { type: 'string', format: 'date-time' },
+          eventStartTime: { type: 'string', example: '2:00PM' },
+          eventEndTime: { type: 'string', example: '4:00PM' },
+          startDate: { type: 'string', format: 'date-time' },
+          endDate: { type: 'string', format: 'date-time' },
+          registrationId: { type: 'string' },
+          isAttended: { type: 'boolean' },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'User not found' })
   async getEventsForUser(@Param('userId') userId: string): Promise<any[]> {
     const registrations =
       await this.registrationService.getEventRegistrationsByUserId(userId);
@@ -166,7 +252,25 @@ export class EventRegistrationController {
 
   // Check if user is registered for an event (alias for frontend compatibility)
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('check/:activityId/:userId')
+  @ApiOperation({
+    summary: 'Check if user is registered',
+    description: 'Checks if a user is registered for a specific event',
+  })
+  @ApiParam({ name: 'activityId', description: 'Event/Activity ID (UUID)' })
+  @ApiParam({ name: 'userId', description: 'User ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Registration status',
+    schema: {
+      type: 'object',
+      properties: {
+        isRegistered: { type: 'boolean', example: true },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async isUserRegistered(
     @Param('activityId') activityId: string,
     @Param('userId') userId: string,
@@ -181,7 +285,23 @@ export class EventRegistrationController {
 
   // Check if user is attending an event (alias for frontend compatability)
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('is-attending/:activityId/:userId')
+  @ApiOperation({
+    summary: 'Check if user is attending',
+    description: 'Checks if a user is attending a specific event',
+  })
+  @ApiParam({ name: 'activityId', description: 'Event/Activity ID (UUID)' })
+  @ApiParam({ name: 'userId', description: 'User ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Attendance status',
+    schema: {
+      type: 'boolean',
+      example: true,
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async isUserAttending(
     @Param('activityId') activityId: string,
     @Param('userId') userId: string,
@@ -196,7 +316,28 @@ export class EventRegistrationController {
 
   // Unregister from an event - is this needed?
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Delete('unregister/:id')
+  @ApiOperation({
+    summary: 'Unregister from event by registration ID',
+    description: 'Removes a registration using the registration ID',
+  })
+  @ApiParam({ name: 'id', description: 'Registration ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully unregistered',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Successfully unregistered from event',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Registration not found' })
   async unregisterFromEvent(
     @Param('id') id: string,
   ): Promise<{ message: string }> {
@@ -206,7 +347,43 @@ export class EventRegistrationController {
 
   // Unregister from an event
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Delete('unattend')
+  @ApiOperation({
+    summary: 'Unregister from event',
+    description: 'Removes a registration using user ID and event ID',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        userId: {
+          type: 'string',
+          example: 'u1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        },
+        eventId: {
+          type: 'string',
+          example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        },
+      },
+      required: ['userId', 'eventId'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully unregistered',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Successfully unregistered from event',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Registration not found' })
   async unattendEvent(
     @Body() body: { userId: string; eventId: string },
   ): Promise<{ message: string }> {
@@ -215,11 +392,31 @@ export class EventRegistrationController {
     return { message: 'Successfully unregistered from event' };
   }
 
-
-
   // Mark attendance for a registration
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Patch('attendance/:id')
+  @ApiOperation({
+    summary: 'Mark attendance',
+    description: 'Updates the attendance status for a registration',
+  })
+  @ApiParam({ name: 'id', description: 'Registration ID (UUID)' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        isAttended: { type: 'boolean', example: true },
+      },
+      required: ['isAttended'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Attendance updated',
+    type: EventRegistration,
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Registration not found' })
   async markAttendance(
     @Param('id') id: string,
     @Body() body: { isAttended: boolean },
@@ -229,6 +426,18 @@ export class EventRegistrationController {
 
   // Get attendees for an event
   @Get('attendees/:activityId')
+  @ApiOperation({
+    summary: 'Get event attendees',
+    description:
+      'Retrieves all attendees who have marked attendance for an event',
+  })
+  @ApiParam({ name: 'activityId', description: 'Event/Activity ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of attendees',
+    type: [EventRegistration],
+  })
+  @ApiResponse({ status: 404, description: 'Event not found' })
   async getAttendeesForEvent(
     @Param('activityId') activityId: string,
   ): Promise<EventRegistration[]> {
@@ -237,6 +446,25 @@ export class EventRegistrationController {
 
   // Get registration statistics for an event
   @Get('stats/:activityId')
+  @ApiOperation({
+    summary: 'Get registration statistics',
+    description:
+      'Retrieves registration and attendance statistics for an event',
+  })
+  @ApiParam({ name: 'activityId', description: 'Event/Activity ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Event statistics',
+    schema: {
+      type: 'object',
+      properties: {
+        totalRegistrations: { type: 'number', example: 50 },
+        totalAttendees: { type: 'number', example: 45 },
+        attendanceRate: { type: 'number', example: 0.9 },
+      },
+    },
+  })
+  @ApiResponse({ status: 404, description: 'Event not found' })
   async getRegistrationStats(@Param('activityId') activityId: string): Promise<{
     totalRegistrations: number;
     totalAttendees: number;

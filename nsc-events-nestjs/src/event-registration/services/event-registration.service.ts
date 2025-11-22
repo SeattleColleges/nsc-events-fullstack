@@ -15,7 +15,7 @@ export class EventRegistrationService {
   constructor(
     @InjectRepository(EventRegistration)
     private readonly eventRegistrationRepository: Repository<EventRegistration>,
-  ) { }
+  ) {}
 
   // ----------------- Create Event Registration ----------------- \\
   async createEventRegistration(
@@ -172,9 +172,6 @@ export class EventRegistrationService {
       throw new NotFoundException('Registration not found');
     }
   }
-
-
-
 
   // ----------------- Mark Attendance ----------------- \\
   async markAttendance(
