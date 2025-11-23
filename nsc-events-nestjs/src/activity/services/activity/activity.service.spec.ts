@@ -18,6 +18,12 @@ describe('ActivityService', () => {
   let activityRepository: jest.Mocked<Repository<Activity>>;
   let s3Service: jest.Mocked<S3Service>;
   let queryBuilder: jest.Mocked<SelectQueryBuilder<Activity>>;
+  let module: TestingModule;
+
+  // Suppress console.error during tests for cleaner output
+  beforeAll(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
 
   const mockActivity: Activity = {
     id: 'activity-123',
@@ -112,7 +118,7 @@ describe('ActivityService', () => {
       uploadFile: jest.fn(),
     };
 
-    const module: TestingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       providers: [
         ActivityService,
         {
@@ -133,6 +139,13 @@ describe('ActivityService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterAll(async () => {
+    jest.restoreAllMocks();
+    if (module) {
+      await module.close();
+    }
   });
 
   describe('createActivity', () => {
@@ -160,7 +173,7 @@ describe('ActivityService', () => {
       await expect(
         service.createActivity(createActivityDto, 'user-123'),
       ).rejects.toThrow(
-        new HttpException('Error creating activity', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException('Error creating activity: Database error', HttpStatus.INTERNAL_SERVER_ERROR),
       );
     });
 
@@ -264,7 +277,7 @@ describe('ActivityService', () => {
       await expect(
         service.createActivity(createActivityDto, 'user-123', mockFile),
       ).rejects.toThrow(
-        new HttpException('Error creating activity', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException('Error creating activity: S3 service unavailable', HttpStatus.INTERNAL_SERVER_ERROR),
       );
     });
   });
