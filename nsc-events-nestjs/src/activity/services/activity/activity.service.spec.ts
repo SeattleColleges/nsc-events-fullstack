@@ -22,6 +22,7 @@ describe('ActivityService', () => {
 
   // Suppress console.error during tests for cleaner output
   beforeAll(() => {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
@@ -153,7 +154,10 @@ describe('ActivityService', () => {
       activityRepository.create.mockReturnValue(mockActivity);
       activityRepository.save.mockResolvedValue(mockActivity);
 
-      const result = await service.createActivity(createActivityDto, 'user-123');
+      const result = await service.createActivity(
+        createActivityDto,
+        'user-123',
+      );
 
       expect(result).toEqual(mockActivity);
       expect(activityRepository.create).toHaveBeenCalledWith(
@@ -173,7 +177,10 @@ describe('ActivityService', () => {
       await expect(
         service.createActivity(createActivityDto, 'user-123'),
       ).rejects.toThrow(
-        new HttpException('Error creating activity: Database error', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException(
+          'Error creating activity: Database error',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
 
@@ -205,7 +212,8 @@ describe('ActivityService', () => {
         path: '',
       };
 
-      const uploadedImageUrl = 'https://s3.amazonaws.com/bucket/cover-image.jpg';
+      const uploadedImageUrl =
+        'https://s3.amazonaws.com/bucket/cover-image.jpg';
       s3Service.uploadFile.mockResolvedValue(uploadedImageUrl);
 
       const activityWithImage = {
@@ -272,12 +280,17 @@ describe('ActivityService', () => {
         path: '',
       };
 
-      s3Service.uploadFile.mockRejectedValue(new Error('S3 service unavailable'));
+      s3Service.uploadFile.mockRejectedValue(
+        new Error('S3 service unavailable'),
+      );
 
       await expect(
         service.createActivity(createActivityDto, 'user-123', mockFile),
       ).rejects.toThrow(
-        new HttpException('Error creating activity: S3 service unavailable', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException(
+          'Error creating activity: S3 service unavailable',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -287,7 +300,9 @@ describe('ActivityService', () => {
       const result = await service.getAllActivities();
 
       expect(result).toEqual([mockActivity]);
-      expect(queryBuilder.where).toHaveBeenCalledWith('activity."isHidden" = false');
+      expect(queryBuilder.where).toHaveBeenCalledWith(
+        'activity."isHidden" = false',
+      );
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
         'activity."isArchived" = :isArchived',
         { isArchived: false },
@@ -346,7 +361,10 @@ describe('ActivityService', () => {
       queryBuilder.getMany.mockRejectedValue(new Error('Database error'));
 
       await expect(service.getAllActivities()).rejects.toThrow(
-        new HttpException('Error retrieving activities', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException(
+          'Error retrieving activities',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -366,14 +384,19 @@ describe('ActivityService', () => {
     it('should throw NotFoundException when activity not found', async () => {
       activityRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.getActivityById('invalid-id')).rejects.toThrow(NotFoundException);
+      await expect(service.getActivityById('invalid-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw HttpException for generic errors', async () => {
       activityRepository.findOne.mockRejectedValue(new Error('Database error'));
 
       await expect(service.getActivityById('activity-123')).rejects.toThrow(
-        new HttpException('Error retrieving activity', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException(
+          'Error retrieving activity',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -399,7 +422,10 @@ describe('ActivityService', () => {
       activityRepository.find.mockRejectedValue(new Error('Database error'));
 
       await expect(service.getActivitiesByUserId('user-123')).rejects.toThrow(
-        new HttpException('Error retrieving user activities', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException(
+          'Error retrieving user activities',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -454,15 +480,25 @@ describe('ActivityService', () => {
       activityRepository.findOne.mockResolvedValue(mockActivity);
 
       await expect(
-        service.updateActivity('activity-123', updateDto as UpdateActivityDto, 'other-user'),
-      ).rejects.toThrow(new BadRequestException('You can only update your own activities'));
+        service.updateActivity(
+          'activity-123',
+          updateDto as UpdateActivityDto,
+          'other-user',
+        ),
+      ).rejects.toThrow(
+        new BadRequestException('You can only update your own activities'),
+      );
     });
 
     it('should throw NotFoundException when activity not found', async () => {
       activityRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.updateActivity('invalid-id', updateDto as UpdateActivityDto, 'user-123'),
+        service.updateActivity(
+          'invalid-id',
+          updateDto as UpdateActivityDto,
+          'user-123',
+        ),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -471,8 +507,17 @@ describe('ActivityService', () => {
       activityRepository.save.mockRejectedValue(new Error('Database error'));
 
       await expect(
-        service.updateActivity('activity-123', updateDto as UpdateActivityDto, 'user-123'),
-      ).rejects.toThrow(new HttpException('Error updating activity', HttpStatus.INTERNAL_SERVER_ERROR));
+        service.updateActivity(
+          'activity-123',
+          updateDto as UpdateActivityDto,
+          'user-123',
+        ),
+      ).rejects.toThrow(
+        new HttpException(
+          'Error updating activity',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
+      );
     });
   });
 
@@ -489,7 +534,9 @@ describe('ActivityService', () => {
     it('should throw BadRequestException when user does not own activity', async () => {
       activityRepository.findOne.mockResolvedValue(mockActivity);
 
-      await expect(service.deleteActivity('activity-123', 'other-user')).rejects.toThrow(
+      await expect(
+        service.deleteActivity('activity-123', 'other-user'),
+      ).rejects.toThrow(
         new BadRequestException('You can only delete your own activities'),
       );
     });
@@ -497,17 +544,22 @@ describe('ActivityService', () => {
     it('should throw NotFoundException when activity not found', async () => {
       activityRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.deleteActivity('invalid-id', 'user-123')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.deleteActivity('invalid-id', 'user-123'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw HttpException for generic errors', async () => {
       activityRepository.findOne.mockResolvedValue(mockActivity);
       activityRepository.remove.mockRejectedValue(new Error('Database error'));
 
-      await expect(service.deleteActivity('activity-123', 'user-123')).rejects.toThrow(
-        new HttpException('Error deleting activity', HttpStatus.INTERNAL_SERVER_ERROR),
+      await expect(
+        service.deleteActivity('activity-123', 'user-123'),
+      ).rejects.toThrow(
+        new HttpException(
+          'Error deleting activity',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -527,7 +579,9 @@ describe('ActivityService', () => {
     it('should throw BadRequestException when user does not own activity', async () => {
       activityRepository.findOne.mockResolvedValue(mockActivity);
 
-      await expect(service.hideActivity('activity-123', 'other-user')).rejects.toThrow(
+      await expect(
+        service.hideActivity('activity-123', 'other-user'),
+      ).rejects.toThrow(
         new BadRequestException('You can only hide your own activities'),
       );
     });
@@ -535,17 +589,22 @@ describe('ActivityService', () => {
     it('should throw NotFoundException when activity not found', async () => {
       activityRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.hideActivity('invalid-id', 'user-123')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.hideActivity('invalid-id', 'user-123'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw HttpException for generic errors', async () => {
       activityRepository.findOne.mockResolvedValue(mockActivity);
       activityRepository.save.mockRejectedValue(new Error('Database error'));
 
-      await expect(service.hideActivity('activity-123', 'user-123')).rejects.toThrow(
-        new HttpException('Error hiding activity', HttpStatus.INTERNAL_SERVER_ERROR),
+      await expect(
+        service.hideActivity('activity-123', 'user-123'),
+      ).rejects.toThrow(
+        new HttpException(
+          'Error hiding activity',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -565,7 +624,9 @@ describe('ActivityService', () => {
     it('should throw NotFoundException when activity not found', async () => {
       activityRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.archiveActivity('invalid-id')).rejects.toThrow(NotFoundException);
+      await expect(service.archiveActivity('invalid-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw HttpException for generic errors', async () => {
@@ -573,7 +634,10 @@ describe('ActivityService', () => {
       activityRepository.save.mockRejectedValue(new Error('Database error'));
 
       await expect(service.archiveActivity('activity-123')).rejects.toThrow(
-        new HttpException('Error archiving activity', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException(
+          'Error archiving activity',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -631,23 +695,30 @@ describe('ActivityService', () => {
       };
       activityRepository.findOne.mockResolvedValue(activityWithAttendee);
 
-      await expect(service.addAttendee('activity-123', attendee)).rejects.toThrow(
-        new BadRequestException('Attendee already registered'),
-      );
+      await expect(
+        service.addAttendee('activity-123', attendee),
+      ).rejects.toThrow(new BadRequestException('Attendee already registered'));
     });
 
     it('should throw NotFoundException when activity not found', async () => {
       activityRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.addAttendee('invalid-id', attendee)).rejects.toThrow(NotFoundException);
+      await expect(service.addAttendee('invalid-id', attendee)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw HttpException for generic errors', async () => {
       activityRepository.findOne.mockResolvedValue(mockActivity);
       activityRepository.save.mockRejectedValue(new Error('Database error'));
 
-      await expect(service.addAttendee('activity-123', attendee)).rejects.toThrow(
-        new HttpException('Error adding attendee', HttpStatus.INTERNAL_SERVER_ERROR),
+      await expect(
+        service.addAttendee('activity-123', attendee),
+      ).rejects.toThrow(
+        new HttpException(
+          'Error adding attendee',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -699,7 +770,9 @@ describe('ActivityService', () => {
     it('should throw NotFoundException when activity not found', async () => {
       activityRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.removeAttendee('invalid-id', 0)).rejects.toThrow(NotFoundException);
+      await expect(service.removeAttendee('invalid-id', 0)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw HttpException for generic errors', async () => {
@@ -708,7 +781,10 @@ describe('ActivityService', () => {
       activityRepository.save.mockRejectedValue(new Error('Database error'));
 
       await expect(service.removeAttendee('activity-123', 0)).rejects.toThrow(
-        new HttpException('Error removing attendee', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException(
+          'Error removing attendee',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -732,7 +808,10 @@ describe('ActivityService', () => {
       queryBuilder.getMany.mockRejectedValue(new Error('Database error'));
 
       await expect(service.searchActivities('test')).rejects.toThrow(
-        new HttpException('Error searching activities', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException(
+          'Error searching activities',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -755,7 +834,10 @@ describe('ActivityService', () => {
       activityRepository.find.mockRejectedValue(new Error('Database error'));
 
       await expect(service.getArchivedActivities()).rejects.toThrow(
-        new HttpException('Error retrieving archived activities', HttpStatus.INTERNAL_SERVER_ERROR),
+        new HttpException(
+          'Error retrieving archived activities',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
@@ -798,7 +880,9 @@ describe('ActivityService', () => {
     it('should throw NotFoundException when activity not found', async () => {
       activityRepository.findOne.mockResolvedValue(null);
 
-      await expect(service.updateCoverImage('invalid-id', mockFile)).rejects.toThrow(
+      await expect(
+        service.updateCoverImage('invalid-id', mockFile),
+      ).rejects.toThrow(
         new NotFoundException('Activity with ID invalid-id not found'),
       );
     });
@@ -808,9 +892,9 @@ describe('ActivityService', () => {
       const badRequestError = new BadRequestException('Invalid file type');
       s3Service.uploadFile.mockRejectedValue(badRequestError);
 
-      await expect(service.updateCoverImage('activity-123', mockFile)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.updateCoverImage('activity-123', mockFile),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw HttpException for generic errors', async () => {
@@ -818,8 +902,13 @@ describe('ActivityService', () => {
       s3Service.uploadFile.mockResolvedValue('https://example.com/image.jpg');
       activityRepository.save.mockRejectedValue(new Error('Database error'));
 
-      await expect(service.updateCoverImage('activity-123', mockFile)).rejects.toThrow(
-        new HttpException('Error updating cover image', HttpStatus.INTERNAL_SERVER_ERROR),
+      await expect(
+        service.updateCoverImage('activity-123', mockFile),
+      ).rejects.toThrow(
+        new HttpException(
+          'Error updating cover image',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });
