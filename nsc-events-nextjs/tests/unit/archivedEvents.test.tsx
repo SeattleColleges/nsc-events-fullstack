@@ -16,8 +16,8 @@ describe('ArchivedEvents Page', () => {
     // Mock `useArchivedEvents` to return test data
     (useArchivedEvents as jest.Mock).mockReturnValue({
       data: [
-        { _id: '1', eventTitle: 'Archived Event 1', eventDate: '2024-11-15' },
-        { _id: '2', eventTitle: 'Archived Event 2', eventDate: '2024-12-01' },
+        { id: '1', eventTitle: 'Archived Event 1', eventDate: '2024-11-15' },
+        { id: '2', eventTitle: 'Archived Event 2', eventDate: '2024-12-01' },
       ],
       isLoading: false,
       isError: false,
