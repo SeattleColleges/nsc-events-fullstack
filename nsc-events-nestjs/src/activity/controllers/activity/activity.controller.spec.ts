@@ -105,7 +105,12 @@ describe('ActivityController', () => {
         expectedActivities,
       );
 
-      const result = await controller.getAllActivities('2', '20', undefined, 'false');
+      const result = await controller.getAllActivities(
+        '2',
+        '20',
+        undefined,
+        'false',
+      );
 
       expect(result).toEqual(expectedActivities);
       expect(mockActivityService.getAllActivities).toHaveBeenCalledWith({
@@ -191,7 +196,13 @@ describe('ActivityController', () => {
         expectedActivities,
       );
 
-      const result = await controller.getAllActivities('1', '12', undefined, 'false', '');
+      const result = await controller.getAllActivities(
+        '1',
+        '12',
+        undefined,
+        'false',
+        '',
+      );
 
       expect(result).toEqual(expectedActivities);
       expect(mockActivityService.getAllActivities).toHaveBeenCalledWith({
@@ -208,7 +219,12 @@ describe('ActivityController', () => {
         archivedActivity,
       ]);
 
-      const result = await controller.getAllActivities('1', '12', undefined, 'true');
+      const result = await controller.getAllActivities(
+        '1',
+        '12',
+        undefined,
+        'true',
+      );
 
       expect(result).toEqual([archivedActivity]);
       expect(mockActivityService.getAllActivities).toHaveBeenCalledWith({
