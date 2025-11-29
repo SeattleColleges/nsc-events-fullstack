@@ -277,20 +277,22 @@ export const AttendedEvents: React.FC<AttendedEventsProps> = ({
       </Box>
 
       <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <DialogTitle>Confirm Unregister</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to unregister for{" "}
-            <strong>{pendingEvent?.title}</strong>?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)}>No</Button>
-          <Button color="error" onClick={confirmUnattend}>
-            Yes, Unregister
-          </Button>
-        </DialogActions>
-      </Dialog>
+  <DialogTitle>Confirm Unregister</DialogTitle>
+  <DialogContent>
+    <Typography>
+      Are you sure you want to unregister from{" "}
+      <strong>{pendingEvent?.title}</strong>?
+    </Typography>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setConfirmOpen(false)} color="secondary">
+      Cancel
+    </Button>
+    <Button color="error" onClick={confirmUnattend}>
+      Unregister
+    </Button>
+  </DialogActions>
+</Dialog>
     </Box>
   );
 };
