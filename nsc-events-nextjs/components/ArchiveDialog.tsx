@@ -20,11 +20,12 @@ const ArchiveDialog = ({ isOpen, event, dialogToggle }: ArchiveDialogProps) => {
   const router = useRouter();
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  const archiveEvent = async (id: string) => {
+  const toggleArchiveEvent = async (id: string, isArchived: boolean) => {
     const token = localStorage.getItem("token");
     try {
       const apiUrl = process.env.NSC_EVENTS_PUBLIC_API_URL;
-      const response = await fetch(`${apiUrl}/events/archive/${id}`, {
+      const endpoint = isArchived ? 'unarchive' : 'archive';
+      const response = await fetch(`${apiUrl}/events/${endpoint}/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -32,7 +33,7 @@ const ArchiveDialog = ({ isOpen, event, dialogToggle }: ArchiveDialogProps) => {
         },
       });
       if (!response.ok) {
-        throw new Error(`Failed to archive event: ${response.statusText}`);
+        throw new Error(`Failed to ${endpoint} event: ${response.statusText}`);
       }
       return response.json();
     } catch (error) {
@@ -41,19 +42,22 @@ const ArchiveDialog = ({ isOpen, event, dialogToggle }: ArchiveDialogProps) => {
     }
   };
   const queryClient = useQueryClient();
-  const { mutate: archiveEventMutation } = useMutation({
-    mutationFn: archiveEvent,
-    onSuccess: async () => {
-      setSnackbarMessage("Successfully archived event.");
+  const { mutate: toggleArchiveMutation } = useMutation({
+    mutationFn: ({ id, isArchived }: { id: string; isArchived: boolean }) =>
+      toggleArchiveEvent(id, isArchived),
+    onSuccess: async (_data, variables) => {
+      const action = variables.isArchived ? "unarchived" : "archived";
+      setSnackbarMessage(`Successfully ${action} event.`);
       await queryClient.refetchQueries({ queryKey: ["events", "myEvents", "archivedEvents"] });
       setTimeout(() => {
         router.refresh();
-        router.push("/");
+        router.push(variables.isArchived ? "/" : "/archived-events");
       }, 1200);
     },
-    onError: (error: String) => {
-      setSnackbarMessage("Failed to archive event.");
-      console.error("Failed to archive event: ", error);
+    onError: (error: Error, variables) => {
+      const action = variables.isArchived ? "unarchive" : "archive";
+      setSnackbarMessage(`Failed to ${action} event.`);
+      console.error(`Failed to ${action} event: `, error);
     },
   });
 
@@ -80,7 +84,7 @@ const ArchiveDialog = ({ isOpen, event, dialogToggle }: ArchiveDialogProps) => {
           </Button>
           <Button
             onClick={() => {
-              archiveEventMutation(event.id);
+              toggleArchiveMutation({ id: event.id, isArchived: event.isArchived ?? false });
               handleClick();
             }}
             autoFocus
