@@ -1403,4 +1403,141 @@ describe('EditDialog Component', () => {
       expect(mockHandleInputChange).toHaveBeenCalled();
     });
   });
+
+  describe('Whitespace Validation', () => {
+    it('should display validation error when eventTitle is whitespace only', () => {
+      mockUseEditForm.mockReturnValue({
+        ...defaultMockReturn,
+        errors: {
+          eventTitle: 'Event title is required',
+        },
+        eventData: { ...mockEventData, eventTitle: '   ' },
+      });
+
+      render(
+        <EditDialog
+          isOpen={true}
+          event={mockEventData}
+          toggleEditDialog={mockToggleEditDialog}
+        />,
+        { wrapper: createWrapper() }
+      );
+
+      expect(screen.getAllByText('Event title is required')[0]).toBeInTheDocument();
+    });
+
+    it('should display validation error when eventDescription is whitespace only', () => {
+      mockUseEditForm.mockReturnValue({
+        ...defaultMockReturn,
+        errors: {
+          eventDescription: 'Event description is required',
+        },
+        eventData: { ...mockEventData, eventDescription: '   ' },
+      });
+
+      render(
+        <EditDialog
+          isOpen={true}
+          event={mockEventData}
+          toggleEditDialog={mockToggleEditDialog}
+        />,
+        { wrapper: createWrapper() }
+      );
+
+      expect(screen.getAllByText('Event description is required')[0]).toBeInTheDocument();
+    });
+
+    it('should display validation error when eventLocation is whitespace only', () => {
+      mockUseEditForm.mockReturnValue({
+        ...defaultMockReturn,
+        errors: {
+          eventLocation: 'Event location is required',
+        },
+        eventData: { ...mockEventData, eventLocation: '   ' },
+      });
+
+      render(
+        <EditDialog
+          isOpen={true}
+          event={mockEventData}
+          toggleEditDialog={mockToggleEditDialog}
+        />,
+        { wrapper: createWrapper() }
+      );
+
+      expect(screen.getAllByText('Event location is required')[0]).toBeInTheDocument();
+    });
+
+    it('should display validation error when eventHost is whitespace only', () => {
+      mockUseEditForm.mockReturnValue({
+        ...defaultMockReturn,
+        errors: {
+          eventHost: 'Event host is required',
+        },
+        eventData: { ...mockEventData, eventHost: '   ' },
+      });
+
+      render(
+        <EditDialog
+          isOpen={true}
+          event={mockEventData}
+          toggleEditDialog={mockToggleEditDialog}
+        />,
+        { wrapper: createWrapper() }
+      );
+
+      expect(screen.getAllByText('Event host is required')[0]).toBeInTheDocument();
+    });
+
+    it('should display validation error when eventContact is whitespace only', () => {
+      mockUseEditForm.mockReturnValue({
+        ...defaultMockReturn,
+        errors: {
+          eventContact: 'Event contact is required',
+        },
+        eventData: { ...mockEventData, eventContact: '   ' },
+      });
+
+      render(
+        <EditDialog
+          isOpen={true}
+          event={mockEventData}
+          toggleEditDialog={mockToggleEditDialog}
+        />,
+        { wrapper: createWrapper() }
+      );
+
+      expect(screen.getAllByText('Event contact is required')[0]).toBeInTheDocument();
+    });
+
+    it('should display multiple validation errors for multiple whitespace fields', () => {
+      mockUseEditForm.mockReturnValue({
+        ...defaultMockReturn,
+        errors: {
+          eventTitle: 'Event title is required',
+          eventDescription: 'Event description is required',
+          eventHost: 'Event host is required',
+        },
+        eventData: {
+          ...mockEventData,
+          eventTitle: '   ',
+          eventDescription: '   ',
+          eventHost: '   ',
+        },
+      });
+
+      render(
+        <EditDialog
+          isOpen={true}
+          event={mockEventData}
+          toggleEditDialog={mockToggleEditDialog}
+        />,
+        { wrapper: createWrapper() }
+      );
+
+      expect(screen.getAllByText('Event title is required')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('Event description is required')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('Event host is required')[0]).toBeInTheDocument();
+    });
+  });
 });
