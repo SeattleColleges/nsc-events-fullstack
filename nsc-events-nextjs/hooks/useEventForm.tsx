@@ -180,24 +180,24 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
     if (!endTime) {
       newErrors.endDate = "end time is required";
     }
-    if (selectedDate && startTime) {
-      const today = new Date();
+    // if (selectedDate && startTime) {
+    //   const today = new Date();
 
-      const chosen = new Date(selectedDate);
+    //   const chosen = new Date(selectedDate);
 
-      if (chosen.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
-        //compare time in here
-      }
+    //   if (chosen.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
+    //     //compare time in here
+    //   }
 
-    }
+    // }
 
-    if (selectedDate && endTime) {
-      const endDateTime = new Date(`${selectedDate}T${endTime}`);
-      const now = new Date();
-      if (endDateTime < now) {
-        newErrors.endDate = "End time cannot be in the past";
-      }
-    }
+    // if (selectedDate && endTime) {
+    //   const endDateTime = new Date(`${selectedDate}T${endTime}`);
+    //   const now = new Date();
+    //   if (endDateTime < now) {
+    //     newErrors.endDate = "End time cannot be in the past";
+    //   }
+    // }
     const numNewErrors = Object.keys(newErrors).length;
     setFixingErrors(numNewErrors > 0);
     if (numNewErrors > 0) {
