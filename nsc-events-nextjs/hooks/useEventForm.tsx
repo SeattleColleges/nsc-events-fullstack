@@ -130,7 +130,7 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
     // Convert time to 24-hour format
     const time24 = to24HourTime(time);
     const [hours, minutes] = time24.split(':');
-    
+
     // Create a new date object with the selected date
     const dateTime = new Date(date);
     dateTime.setHours(parseInt(hours, 10));
@@ -159,12 +159,20 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Event Data: ", eventData);
+    // console.log("Event Data: ", eventData);
     // validate the form data
     const newErrors = validateFormData(eventData);
     // additionally validate date and time selections
     if (!selectedDate) {
       newErrors.startDate = "start date is required";
+    } else {
+      const today = new Date();
+
+      const chosen = new Date(selectedDate);
+
+      if (chosen.setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0)) {
+        newErrors.startDate = "Event date cannot be in the past";
+      }
     }
     if (!startTime) {
       newErrors.startDate = newErrors.startDate || "start time is required";
@@ -172,7 +180,24 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
     if (!endTime) {
       newErrors.endDate = "end time is required";
     }
+    if (selectedDate && startTime) {
+      const today = new Date();
 
+      const chosen = new Date(selectedDate);
+
+      if (chosen.setHours(0, 0, 0, 0) === today.setHours(0, 0, 0, 0)) {
+        //compare time in here
+      }
+
+    }
+
+    if (selectedDate && endTime) {
+      const endDateTime = new Date(`${selectedDate}T${endTime}`);
+      const now = new Date();
+      if (endDateTime < now) {
+        newErrors.endDate = "End time cannot be in the past";
+      }
+    }
     const numNewErrors = Object.keys(newErrors).length;
     setFixingErrors(numNewErrors > 0);
     if (numNewErrors > 0) {
