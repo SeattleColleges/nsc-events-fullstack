@@ -46,7 +46,7 @@ describe('validateFormData Utility', () => {
         const data = { ...validActivityData, eventTitle: '   ' };
         const errors = validateFormData(data);
 
-        expect(errors.eventTitle).toBeUndefined(); // Current implementation doesn't trim
+        expect(errors.eventTitle).toBe('Event title is required');
       });
     });
 
@@ -71,6 +71,13 @@ describe('validateFormData Utility', () => {
         const errors = validateFormData(data);
 
         expect(errors.eventDescription).toBeUndefined();
+      });
+
+      it('should return error when eventDescription is whitespace only', () => {
+        const data = { ...validActivityData, eventDescription: '   ' };
+        const errors = validateFormData(data);
+
+        expect(errors.eventDescription).toBe('Event description is required');
       });
     });
 
@@ -103,6 +110,13 @@ describe('validateFormData Utility', () => {
           expect(errors.eventLocation).toBeUndefined();
         });
       });
+
+      it('should return error when eventLocation is whitespace only', () => {
+        const data = { ...validActivityData, eventLocation: '   ' };
+        const errors = validateFormData(data);
+
+        expect(errors.eventLocation).toBe('Event location is required');
+      });
     });
 
     describe('Event Host Validation', () => {
@@ -134,6 +148,13 @@ describe('validateFormData Utility', () => {
           expect(errors.eventHost).toBeUndefined();
         });
       });
+
+      it('should return error when eventHost is whitespace only', () => {
+        const data = { ...validActivityData, eventHost: '   ' };
+        const errors = validateFormData(data);
+
+        expect(errors.eventHost).toBe('Event host is required');
+      });
     });
 
     describe('Event Contact Validation', () => {
@@ -149,6 +170,13 @@ describe('validateFormData Utility', () => {
         const errors = validateFormData(data);
 
         expect(errors.eventContact).toBeUndefined();
+      });
+
+      it('should return error when eventContact is whitespace only', () => {
+        const data = { ...validActivityData, eventContact: '   ' };
+        const errors = validateFormData(data);
+
+        expect(errors.eventContact).toBe('Event contact is required');
       });
     });
 
