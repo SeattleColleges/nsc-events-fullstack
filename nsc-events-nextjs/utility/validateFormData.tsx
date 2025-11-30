@@ -1,5 +1,5 @@
-import { Activity, FormErrors, activity } from "@/models/activity";
-import { ActivityDatabase, activityDatabase } from "@/models/activityDatabase";
+import { Activity, FormErrors } from "@/models/activity";
+import { ActivityDatabase } from "@/models/activityDatabase";
 
 
 export const validateFormData = (data: Activity | ActivityDatabase): FormErrors => {
@@ -27,15 +27,12 @@ export const validateFormData = (data: Activity | ActivityDatabase): FormErrors 
 
   if (!data.eventCapacity && data.eventCapacity !== 0) {
     newErrors = { ...newErrors, eventCapacity: "Event capacity is required" };
+  } else if (isNaN(data.eventCapacity) || data.eventCapacity < 1) {
+    newErrors = { ...newErrors, eventCapacity: "Event capacity should be a number greater than 0" };
   }
 
   if (!data.eventContact || !data.eventContact.trim()) {
     newErrors = { ...newErrors, eventContact: "Event contact is required" };
-  }
-
-  // Overrides previous eventCapacity error check
-  if (data.eventCapacity && isNaN(data.eventCapacity) || data.eventCapacity < 1) {
-    newErrors = { ...newErrors, eventCapacity: "Event capacity should be a number greater than 0" };
   }
 
   if (data.eventTags.length < 1) {
