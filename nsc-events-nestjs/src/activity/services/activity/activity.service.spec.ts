@@ -642,6 +642,40 @@ describe('ActivityService', () => {
     });
   });
 
+  describe('unarchiveActivity', () => {
+    it('should unarchive activity successfully', async () => {
+      const archivedActivity = { ...mockActivity, isArchived: true };
+      activityRepository.findOne.mockResolvedValue(archivedActivity);
+      const unarchivedActivity = { ...archivedActivity, isArchived: false };
+      activityRepository.save.mockResolvedValue(unarchivedActivity);
+
+      const result = await service.unarchiveActivity('activity-123');
+
+      expect(result.isArchived).toBe(false);
+      expect(activityRepository.save).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when activity not found', async () => {
+      activityRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.unarchiveActivity('invalid-id')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+
+    it('should throw HttpException for generic errors', async () => {
+      activityRepository.findOne.mockResolvedValue(mockActivity);
+      activityRepository.save.mockRejectedValue(new Error('Database error'));
+
+      await expect(service.unarchiveActivity('activity-123')).rejects.toThrow(
+        new HttpException(
+          'Error unarchiving activity',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
+      );
+    });
+  });
+
   describe('addAttendee', () => {
     const attendee: Attendee = {
       firstName: 'John',
@@ -790,17 +824,102 @@ describe('ActivityService', () => {
   });
 
   describe('searchActivities', () => {
+    beforeEach(() => {
+      // Reset queryBuilder mocks before each test
+      queryBuilder.where.mockReturnThis();
+      queryBuilder.andWhere.mockReturnThis();
+      queryBuilder.orderBy.mockReturnThis();
+      queryBuilder.getMany.mockResolvedValue([mockActivity]);
+    });
+
     it('should return activities matching search term', async () => {
       const result = await service.searchActivities('test');
 
       expect(result).toEqual([mockActivity]);
       expect(queryBuilder.where).toHaveBeenCalledWith(
-        'activity.isHidden = :isHidden AND activity.isArchived = :isArchived',
-        { isHidden: false, isArchived: false },
+        'activity.isHidden = :isHidden',
+        { isHidden: false },
       );
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        '(activity.eventTitle ILIKE :searchTerm OR activity.eventDescription ILIKE :searchTerm OR activity.eventLocation ILIKE :searchTerm)',
-        { searchTerm: '%test%' },
+        'activity.isArchived = :isArchived',
+        { isArchived: false },
+      );
+    });
+
+    it('should search in archived events when isArchived is true', async () => {
+      const result = await service.searchActivities('test', {
+        isArchived: true,
+      });
+
+      expect(result).toEqual([mockActivity]);
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'activity.isArchived = :isArchived',
+        { isArchived: true },
+      );
+    });
+
+    it('should filter by location when provided', async () => {
+      await service.searchActivities('test', { location: 'Seattle' });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'activity.eventLocation ILIKE :location',
+        { location: '%Seattle%' },
+      );
+    });
+
+    it('should filter by host when provided', async () => {
+      await service.searchActivities('test', { host: 'NSC' });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'activity.eventHost ILIKE :host',
+        { host: '%NSC%' },
+      );
+    });
+
+    it('should filter by date range when provided', async () => {
+      await service.searchActivities('test', {
+        startDate: '2024-01-01',
+        endDate: '2024-12-31',
+      });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'activity.startDate >= :startDate',
+        { startDate: new Date('2024-01-01') },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'activity.endDate <= :endDate',
+        { endDate: new Date('2024-12-31') },
+      );
+    });
+
+    it('should handle empty search term', async () => {
+      await service.searchActivities('');
+
+      expect(queryBuilder.andWhere).not.toHaveBeenCalledWith(
+        expect.stringContaining('ILIKE :searchTerm'),
+        expect.anything(),
+      );
+    });
+
+    it('should combine multiple filters', async () => {
+      await service.searchActivities('workshop', {
+        isArchived: true,
+        location: 'Seattle',
+        host: 'NSC',
+        startDate: '2024-01-01',
+      });
+
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'activity.isArchived = :isArchived',
+        { isArchived: true },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'activity.eventLocation ILIKE :location',
+        { location: '%Seattle%' },
+      );
+      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        'activity.eventHost ILIKE :host',
+        { host: '%NSC%' },
       );
     });
 
