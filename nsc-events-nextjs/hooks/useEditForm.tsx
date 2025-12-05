@@ -97,13 +97,21 @@ export const useEditForm = (initialData: ActivityDatabase) => {
   // Handlers for TimePicker changes, converting Date back to string
   const onStartTimeChange = (date: Date | null) => {
     setStartTimeDate(date);
-    const timeStr = date ? format(date, 'HH:mm') : '';
+    if (!date || isNaN(date.getTime())) {
+      handleStartTimeChange('');
+      return;
+    }
+    const timeStr = format(date, 'HH:mm');
     handleStartTimeChange(timeStr);
   };
 
   const onEndTimeChange = (date: Date | null) => {
     setEndTimeDate(date);
-    const timeStr = date ? format(date, 'HH:mm') : '';
+    if (!date || isNaN(date.getTime())) {
+      handleEndTimeChange('');
+      return;
+    }
+    const timeStr = format(date, 'HH:mm');
     handleEndTimeChange(timeStr);
   };
 
