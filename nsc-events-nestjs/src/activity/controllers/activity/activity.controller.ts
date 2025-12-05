@@ -76,6 +76,30 @@ export class ActivityController {
     description: 'Filter by tags (comma-separated)',
     example: 'club,study',
   })
+  @ApiQuery({
+    name: 'location',
+    required: false,
+    description: 'Filter by location (partial match)',
+    example: 'Seattle',
+  })
+  @ApiQuery({
+    name: 'host',
+    required: false,
+    description: 'Filter by host (partial match)',
+    example: 'NSC',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Filter events starting from this date (ISO 8601)',
+    example: '2024-01-01',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'Filter events ending before this date (ISO 8601)',
+    example: '2024-12-31',
+  })
   @ApiResponse({
     status: 200,
     description: 'List of events',
@@ -87,6 +111,10 @@ export class ActivityController {
     @Query('numEvents') numEvents?: string,
     @Query('isArchived') isArchived = 'false',
     @Query('tags') tagsParam?: string,
+    @Query('location') location?: string,
+    @Query('host') host?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
   ): Promise<Activity[]> {
     // Support both parameter names for backward compatibility
     const take = numberOfEventsToGet || numEvents || '12';
@@ -102,6 +130,10 @@ export class ActivityController {
       numberOfEventsToGet: take,
       isArchived,
       tags, // array of normalized tags
+      location,
+      host,
+      startDate,
+      endDate,
     });
   }
 
@@ -512,6 +544,108 @@ export class ActivityController {
     } else {
       throw new UnauthorizedException();
     }
+  }
+
+  @Put('unarchive/:id')
+  @UseGuards(AuthGuard())
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Unarchive event',
+    description:
+      'Unarchives an event (requires creator ownership or admin role)',
+  })
+  @ApiParam({ name: 'id', description: 'Event ID (UUID)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Event successfully unarchived',
+    type: Activity,
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - must be event creator or admin',
+  })
+  @ApiResponse({ status: 404, description: 'Event not found' })
+  async unarchiveActivityById(
+    @Param('id') id: string,
+    @Req() req: any,
+  ): Promise<Activity> {
+    const preOperationActivity: Activity =
+      await this.activityService.getActivityById(id);
+    if (req.user.role === Role.admin) {
+      return this.activityService.unarchiveActivity(id);
+    }
+    if (
+      preOperationActivity.createdByUserId === req.user.id &&
+      req.user.role === Role.creator
+    ) {
+      return await this.activityService.unarchiveActivity(id);
+    } else {
+      throw new UnauthorizedException();
+    }
+  }
+
+  @Get('search')
+  @ApiOperation({
+    summary: 'Search events',
+    description: 'Search events by keyword with optional filters',
+  })
+  @ApiQuery({
+    name: 'q',
+    required: true,
+    description: 'Search term (searches title, description, location, host)',
+    example: 'workshop',
+  })
+  @ApiQuery({
+    name: 'isArchived',
+    required: false,
+    description: 'Search in archived events',
+    example: 'false',
+  })
+  @ApiQuery({
+    name: 'location',
+    required: false,
+    description: 'Filter by location',
+    example: 'Seattle',
+  })
+  @ApiQuery({
+    name: 'host',
+    required: false,
+    description: 'Filter by host',
+    example: 'NSC',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Filter events starting from this date (ISO 8601)',
+    example: '2024-01-01',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'Filter events ending before this date (ISO 8601)',
+    example: '2024-12-31',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List of matching events',
+    type: [Activity],
+  })
+  async searchActivities(
+    @Query('q') searchTerm: string,
+    @Query('isArchived') isArchived?: string,
+    @Query('location') location?: string,
+    @Query('host') host?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ): Promise<Activity[]> {
+    return this.activityService.searchActivities(searchTerm, {
+      isArchived: isArchived === 'true',
+      location,
+      host,
+      startDate,
+      endDate,
+    });
   }
 
   // TODO: File upload functionality (cover images, documents) can be implemented here

@@ -112,6 +112,33 @@ export class ActivityService {
         qb.andWhere(orClauses.map((c) => `(${c})`).join(' OR '), params);
       }
 
+      // Location filter
+      if (queryParams?.location && queryParams.location.trim()) {
+        qb.andWhere('activity."eventLocation" ILIKE :location', {
+          location: `%${queryParams.location.trim()}%`,
+        });
+      }
+
+      // Host filter
+      if (queryParams?.host && queryParams.host.trim()) {
+        qb.andWhere('activity."eventHost" ILIKE :host', {
+          host: `%${queryParams.host.trim()}%`,
+        });
+      }
+
+      // Date range filters
+      if (queryParams?.startDate) {
+        qb.andWhere('activity."startDate" >= :startDate', {
+          startDate: new Date(queryParams.startDate),
+        });
+      }
+
+      if (queryParams?.endDate) {
+        qb.andWhere('activity."endDate" <= :endDate', {
+          endDate: new Date(queryParams.endDate),
+        });
+      }
+
       // Order by startDate instead of eventDate
       qb.orderBy('activity."startDate"', 'ASC')
         .take(take)
@@ -285,6 +312,27 @@ export class ActivityService {
     }
   }
 
+  // ----------------- Unarchive Activity ----------------- \\
+  async unarchiveActivity(id: string): Promise<Activity> {
+    try {
+      const activity = await this.getActivityById(id);
+
+      activity.isArchived = false;
+      return await this.activityRepository.save(activity);
+    } catch (error) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error unarchiving activity',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   // ----------------- Add Attendee ----------------- \\
   async addAttendee(activityId: string, attendee: Attendee): Promise<Activity> {
     try {
@@ -354,23 +402,61 @@ export class ActivityService {
   }
 
   // ----------------- Search Activities ----------------- \\
-  async searchActivities(searchTerm: string): Promise<Activity[]> {
+  async searchActivities(
+    searchTerm: string,
+    options?: {
+      isArchived?: boolean;
+      location?: string;
+      host?: string;
+      startDate?: string;
+      endDate?: string;
+    },
+  ): Promise<Activity[]> {
     try {
-      return await this.activityRepository
+      const qb = this.activityRepository
         .createQueryBuilder('activity')
-        .where(
-          'activity.isHidden = :isHidden AND activity.isArchived = :isArchived',
-          {
-            isHidden: false,
-            isArchived: false,
-          },
-        )
-        .andWhere(
-          '(activity.eventTitle ILIKE :searchTerm OR activity.eventDescription ILIKE :searchTerm OR activity.eventLocation ILIKE :searchTerm)',
-          { searchTerm: `%${searchTerm}%` },
-        )
-        .orderBy('activity.startDate', 'ASC')
-        .getMany();
+        .where('activity.isHidden = :isHidden', { isHidden: false });
+
+      // Filter by archived status (default to non-archived)
+      const isArchived = options?.isArchived ?? false;
+      qb.andWhere('activity.isArchived = :isArchived', { isArchived });
+
+      // Search term filter (title, description, or location)
+      if (searchTerm && searchTerm.trim()) {
+        qb.andWhere(
+          '(activity.eventTitle ILIKE :searchTerm OR activity.eventDescription ILIKE :searchTerm OR activity.eventLocation ILIKE :searchTerm OR activity.eventHost ILIKE :searchTerm)',
+          { searchTerm: `%${searchTerm.trim()}%` },
+        );
+      }
+
+      // Location filter
+      if (options?.location && options.location.trim()) {
+        qb.andWhere('activity.eventLocation ILIKE :location', {
+          location: `%${options.location.trim()}%`,
+        });
+      }
+
+      // Host filter
+      if (options?.host && options.host.trim()) {
+        qb.andWhere('activity.eventHost ILIKE :host', {
+          host: `%${options.host.trim()}%`,
+        });
+      }
+
+      // Date range filter
+      if (options?.startDate) {
+        qb.andWhere('activity.startDate >= :startDate', {
+          startDate: new Date(options.startDate),
+        });
+      }
+
+      if (options?.endDate) {
+        qb.andWhere('activity.endDate <= :endDate', {
+          endDate: new Date(options.endDate),
+        });
+      }
+
+      return await qb.orderBy('activity.startDate', 'ASC').getMany();
     } catch (error) {
       throw new HttpException(
         'Error searching activities',
