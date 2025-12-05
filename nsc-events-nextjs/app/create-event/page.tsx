@@ -71,14 +71,15 @@ const CreateEvent: React.FC = () => {
 
   };
 
+  const isValidDate = (d: any) => d instanceof Date && !isNaN(d.getTime());
   // Handlers for TimePicker changes, converting Date back to string
   const onStartTimeChange = (date: Date | null) => {
-    const timeStr = date ? format(date, "HH:mm") : "";
+    const timeStr = isValidDate(date) ? format(date as Date, "HH:mm") : "";
     handleStartTimeChange(timeStr);
   };
 
   const onEndTimeChange = (date: Date | null) => {
-    const timeStr = date ? format(date, "HH:mm") : "";
+    const timeStr = isValidDate(date) ? format(date as Date, "HH:mm") : "";
     handleEndTimeChange(timeStr);
   };
 
@@ -280,6 +281,7 @@ const CreateEvent: React.FC = () => {
                       value={selectedDate}
                       onChange={handleDateChange}
                       minDate={new Date()}
+                      disableMaskedInput
                       renderInput={(params) => (
                         <TextField {...params}
                           error={!!errors.startDate}
@@ -291,6 +293,7 @@ const CreateEvent: React.FC = () => {
                     backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
                   }}>
                     <TimePicker
+                      disableMaskedInput
                       label="Start Time"
                       value={startTimeDate}
                       onChange={(value) => onStartTimeChange(value as Date | null)}
@@ -301,6 +304,7 @@ const CreateEvent: React.FC = () => {
                     backgroundColor: mode === "light" ? "white" : "#f5f1f11a",
                   }}>
                     <TimePicker
+                      disableMaskedInput
                       label="End Time"
                       value={endTimeDate}
                       onChange={(value) => onEndTimeChange(value as Date | null)}
