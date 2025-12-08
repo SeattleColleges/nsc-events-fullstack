@@ -240,7 +240,8 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
         }
       });
 
-      const apiUrl = process.env.NSC_EVENTS_PUBLIC_API_URL;
+      // IMPORTANT: Must use NEXT_PUBLIC_ prefix for browser-accessible env vars
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${apiUrl}/events/new`, {
         method: "POST",
         headers: {
