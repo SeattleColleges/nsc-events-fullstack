@@ -52,11 +52,9 @@ jobs:
       - name: Clean install dependencies
         run: HUSKY=0 npm ci --include=optional
 
-      - name: Install libvips for sharp
-        run: sudo apt-get update && sudo apt-get install -y libvips-dev
-
-      - name: Rebuild sharp for Linux
-        run: npm rebuild sharp
+      - name: Install sharp for Linux platform
+        run: npm install --os=linux --cpu=x64 sharp
+        working-directory: ./nsc-events-nestjs
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
