@@ -28,7 +28,7 @@ jobs:
       postgres:
         image: postgres:14
         env:
-          POSTGRES_DB: nsc_events_test
+          POSTGRES_DB: nsc_events
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         options: >-
@@ -82,7 +82,11 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:8080
           PLAYWRIGHT_API_URL: http://localhost:3000
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/nsc_events_test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DATABASE: nsc_events
           NODE_ENV: test
         run: npm run test:e2e
 
