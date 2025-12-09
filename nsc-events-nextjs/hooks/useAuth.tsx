@@ -10,13 +10,38 @@ const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
 
   const checkAuth = () => {
-    const token = localStorage.getItem('token');
-    setIsAuth(!!token);
-    if (token) {
-      // Decode token, update user state
-      const user = JSON.parse(atob(token.split('.')[1]));
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Trim whitespace and check if token exists
+      const trimmedToken = token?.trim();
+      
+      if (!trimmedToken) {
+        setIsAuth(false);
+        setUser(null);
+        return;
+      }
+
+      setIsAuth(true);
+
+      // Validate JWT format (must have 3 parts)
+      const parts = trimmedToken.split('.');
+      if (parts.length !== 3) {
+        console.error('Invalid JWT format');
+        setUser(null);
+        return;
+      }
+
+      // Decode token payload
+      const payload = parts[1];
+      const decoded = atob(payload);
+      const user = JSON.parse(decoded);
+      
       setUser(user);
-    } else {
+    } catch (error) {
+      // Handle any decoding or parsing errors gracefully
+      console.error('Error decoding token:', error);
+      setIsAuth(false);
       setUser(null);
     }
   };
