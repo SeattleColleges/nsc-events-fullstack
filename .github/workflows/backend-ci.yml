@@ -3,14 +3,14 @@ run-name: NestJS CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'nsc-events-nestjs/**'
-      - '!nsc-events-nestjs/**/*.md'
-      - '!nsc-events-nestjs/LICENSE*'
-      - '!nsc-events-nestjs/.gitignore'
-      - '!nsc-events-nestjs/.prettierrc'
-      - '!nsc-events-nestjs/.eslintrc.js'
+      - "nsc-events-nestjs/**"
+      - "!nsc-events-nestjs/**/*.md"
+      - "!nsc-events-nestjs/LICENSE*"
+      - "!nsc-events-nestjs/.gitignore"
+      - "!nsc-events-nestjs/.prettierrc"
+      - "!nsc-events-nestjs/.eslintrc.js"
 
 jobs:
   build-and-test:
@@ -21,11 +21,14 @@ jobs:
       - name: Use Node.js 22
         uses: actions/setup-node@v3
         with:
-          node-version: '22.x'
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
+          node-version: "22.x"
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
       - name: Clean install dependencies
         run: HUSKY=0 npm ci
+      - name: Install sharp for Linux
+        run: npm install --os=linux --cpu=x64 sharp
+        working-directory: ./nsc-events-nestjs
       - name: Run linter
         run: npm run lint
         working-directory: ./nsc-events-nestjs
