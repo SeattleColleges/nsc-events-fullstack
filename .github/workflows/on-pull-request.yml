@@ -73,6 +73,8 @@ jobs:
           cache-dependency-path: 'package-lock.json'
       - name: Clean install dependencies
         run: HUSKY=0 npm ci
+      - name: Rebuild sharp for Linux
+        run: npm rebuild sharp
       - name: Run linter
         run: npm run lint
         working-directory: ./nsc-events-nestjs

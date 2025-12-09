@@ -30,8 +30,8 @@
     "test:all": "npm run test && npm run test:e2e"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "aws-sdk-client-mock": "^4.1.0",
-    "@playwright/test": "^1.42.1",
     "axios": "^1.13.2",
     "concurrently": "^8.2.2",
     "husky": "^9.1.7",
