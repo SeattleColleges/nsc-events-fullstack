@@ -47,6 +47,16 @@ export default defineConfig({
       port: 3000,
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
+      env: {
+        PATH: process.env.PATH || '',
+        NODE_ENV: process.env.NODE_ENV || 'test',
+        JWT_SECRET: process.env.JWT_SECRET || 'e2e-test-jwt-secret-key',
+        POSTGRES_HOST: process.env.POSTGRES_HOST || 'localhost',
+        POSTGRES_PORT: process.env.POSTGRES_PORT || '5432',
+        POSTGRES_USER: process.env.POSTGRES_USER || 'postgres',
+        POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD || 'postgres',
+        POSTGRES_DATABASE: process.env.POSTGRES_DATABASE || 'nsc_events',
+      },
     },
     {
       command: 'npm run dev --workspace=nsc-events-nextjs',
