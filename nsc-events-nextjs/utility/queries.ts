@@ -61,7 +61,7 @@ const getMyEvents = async (userId: string, page: any) => {
 }
 export function useMyEvents(userId: string, page: any, isEnabled: boolean) {
     return useQuery<ActivityDatabase[], Error>({
-        queryKey: ["myEvents", page],
+        queryKey: ["myEvents", userId, page],
         queryFn: async () => {
             const data = await getMyEvents(userId, page);
             return data as unknown as ActivityDatabase[];
