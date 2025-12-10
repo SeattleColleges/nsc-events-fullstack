@@ -97,7 +97,7 @@ jobs:
       - name: Run E2E tests
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:8080
-          PLAYWRIGHT_API_URL: http://localhost:3000
+          PLAYWRIGHT_API_URL: http://localhost:3000/api
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           POSTGRES_USER: postgres
