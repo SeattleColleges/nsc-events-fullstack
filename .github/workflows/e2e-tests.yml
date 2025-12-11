@@ -60,19 +60,18 @@ jobs:
         run: npm install sharp --os=linux --cpu=x64
         working-directory: ./nsc-events-nestjs
 
-      # SETUP PLAYWRIGHT
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
       # BUILD BOTH APPS
       - name: Build backend
-        run: npm run build:backend
+        run: npm run build --workspace nsc-events-nestjs
 
       - name: Build frontend
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3000/api
-        # Directly run the 'build' script defined in the NextJS package.json
-        run: npm run build:frontend
+        run: npm run build --workspace nsc-events-nextjs
+
+      # SETUP PLAYWRIGHT
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
 
         # WAIT FOR DB AND RUN TESTS
       - name: Wait for database
