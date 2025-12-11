@@ -43,7 +43,9 @@ export default defineConfig({
 
   webServer: [
     {
-      command: 'npm run start:dev --workspace=nsc-events-nestjs',
+      command: process.env.CI
+        ? 'npm run start:prod --workspace=nsc-events-nestjs'
+        : 'npm run start:dev --workspace=nsc-events-nestjs',
       port: 3000,
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
@@ -59,7 +61,9 @@ export default defineConfig({
       },
     },
     {
-      command: 'npm run dev --workspace=nsc-events-nextjs',
+      command: process.env.CI
+        ? 'npm run start --workspace=nsc-events-nextjs'
+        : 'npm run dev --workspace=nsc-events-nextjs',
       port: 8080,
       reuseExistingServer: !process.env.CI,
       timeout: 120000,

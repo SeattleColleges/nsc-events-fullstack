@@ -79,6 +79,8 @@ jobs:
         run: npm run build:backend
 
       - name: Build frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:3000/api
         run: npm run build:frontend
 
       - name: Wait for database

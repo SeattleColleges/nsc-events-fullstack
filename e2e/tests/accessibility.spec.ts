@@ -1,13 +1,18 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Accessibility', () => {
-  test('should have accessible navigation structure', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
+  // Run accessibility tests serially to avoid cold-start race conditions
+  test.describe.configure({ mode: 'serial' });
 
-    // Wait for the page content to be visible
-    await page.waitForSelector('body', { state: 'visible' });
-    await page.waitForTimeout(1000); // Allow React hydration
+  test('should have accessible navigation structure', async ({ page }) => {
+    // Increase timeout for cold start
+    test.setTimeout(60000);
+
+    await page.goto('/', { waitUntil: 'networkidle', timeout: 30000 });
+
+    // Wait for navigation or header to be visible (more reliable than waiting for body)
+    const navLocator = page.locator('nav, [role="navigation"], header').first();
+    await expect(navLocator).toBeVisible({ timeout: 30000 });
 
     // Check for navigation element or header with navigation role
     const hasNav = await page.locator('nav, [role="navigation"], header').count();
@@ -15,16 +20,11 @@ test.describe('Accessibility', () => {
   });
 
   test('should have accessible form inputs on sign-in page', async ({ page }) => {
-    await page.goto('/auth/sign-in');
-    await page.waitForLoadState('domcontentloaded');
+    await page.goto('/auth/sign-in', { waitUntil: 'networkidle', timeout: 30000 });
 
-    // Wait for form to render
-    await page.waitForSelector('form, [role="form"]', { timeout: 10000 });
-    await page.waitForTimeout(500);
-
-    // Check email input has accessible label
+    // Check email input has accessible label - wait for it to be visible first
     const emailInput = page.locator('input[type="email"], input[name="email"]').first();
-    await expect(emailInput).toBeVisible({ timeout: 5000 });
+    await expect(emailInput).toBeVisible({ timeout: 15000 });
 
     // MUI TextField provides accessible labels via aria-labelledby or label association
     const hasLabel = await emailInput.evaluate((el) => {
@@ -38,13 +38,11 @@ test.describe('Accessibility', () => {
   });
 
   test('should have accessible buttons with text or aria-label', async ({ page }) => {
-    await page.goto('/auth/sign-in');
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(1000);
+    await page.goto('/auth/sign-in', { waitUntil: 'networkidle', timeout: 30000 });
 
     // Find the submit button
     const submitButton = page.locator('button[type="submit"]').first();
-    await expect(submitButton).toBeVisible({ timeout: 5000 });
+    await expect(submitButton).toBeVisible({ timeout: 15000 });
 
     // Verify button has accessible name (text content or aria-label)
     const accessibleName = await submitButton.evaluate((el) => {
