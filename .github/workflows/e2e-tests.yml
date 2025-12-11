@@ -76,6 +76,7 @@ jobs:
         run: npx playwright install-deps
 
       - name: Build backend
+        working-directory: ./nsc-events-nestjs
         run: npm run build:backend
 
       - name: Build frontend
