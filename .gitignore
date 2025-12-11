@@ -61,3 +61,13 @@ yarn-error.log*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+
+# Playwright E2E tests
+playwright-report/
+test-results/
+.auth/
+e2e/.env
+e2e/.env.local
+
+# Playwright generated files
+.auth/

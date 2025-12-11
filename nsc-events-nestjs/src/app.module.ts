@@ -24,8 +24,9 @@ import { EventRegistration } from './event-registration/entities/event-registrat
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV === 'test' ? [] : '.env',
       isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'test',
     }),
     WinstonLoggerModule,
     // Configure TypeORM for PostgreSQL
