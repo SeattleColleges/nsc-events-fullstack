@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
+    # SETUP SERVICES
     services:
       postgres:
         image: postgres:14
@@ -42,6 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # SETUP NODE/NPM
       - name: Use Node.js 22
         uses: actions/setup-node@v3
         with:
@@ -49,41 +51,30 @@ jobs:
           cache: "npm"
           cache-dependency-path: "package-lock.json"
 
-      - name: Clean install dependencies
-        run: HUSKY=0 npm ci --include=optional
+      - name: Clean install dependencies (for all workspaces)
+        # Use 'npm ci' from the root to install all dependencies for all workspaces
+        run: HUSKY=0 npm ci
 
-      - name: Install sharp for Linux platform
-        run: npm install --os=linux --cpu=x64 sharp
+        # Sharp is platform dependent → install only inside NestJS workspace
+      - name: Install platform-specific deps for backend
+        run: npm install sharp --os=linux --cpu=x64
         working-directory: ./nsc-events-nestjs
 
-      - name: Get Playwright version
-        id: playwright-version
-        run: echo "version=$(npm ls @playwright/test --json | jq -r '.dependencies["@playwright/test"].version')" >> $GITHUB_OUTPUT
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-
+      # SETUP PLAYWRIGHT
       - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
 
-      - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
-
+      # BUILD BOTH APPS
       - name: Build backend
-        working-directory: ./nsc-events-nestjs
         run: npm run build:backend
 
       - name: Build frontend
         env:
           NEXT_PUBLIC_API_URL: http://localhost:3000/api
+        # Directly run the 'build' script defined in the NextJS package.json
         run: npm run build:frontend
 
+        # WAIT FOR DB AND RUN TESTS
       - name: Wait for database
         run: |
           for i in {1..30}; do
@@ -99,6 +90,7 @@ jobs:
 
       - name: Run E2E tests
         env:
+          # Environment variables
           PLAYWRIGHT_BASE_URL: http://localhost:8080
           PLAYWRIGHT_API_URL: http://localhost:3000/api
           POSTGRES_HOST: localhost
@@ -110,6 +102,7 @@ jobs:
           JWT_SECRET: e2e-test-jwt-secret-key
         run: npm run test:e2e
 
+      # ARTIFACTS AND PR COMMENT
       - name: Archive Playwright report
         if: always()
         uses: actions/upload-artifact@v4
