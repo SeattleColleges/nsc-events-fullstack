@@ -25,6 +25,7 @@
     "lint:frontend": "npm run lint --workspace=nsc-events-nextjs"
   },
   "devDependencies": {
+    "aws-sdk-client-mock": "^4.1.0",
     "concurrently": "^8.2.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6"
@@ -34,8 +35,8 @@
   },
   "dependencies": {
     "@nestjs/typeorm": "^11.0.0",
-    "typeorm": "^0.3.25",
-    "path-to-regexp": "0.1.12"
+    "path-to-regexp": "0.1.12",
+    "typeorm": "^0.3.25"
   },
   "overrides": {
     "form-data": "4.0.4",

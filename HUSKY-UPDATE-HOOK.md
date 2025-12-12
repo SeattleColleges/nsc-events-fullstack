@@ -1,4 +1,15 @@
 # Git Hooks Setup After `git pull`
+## For brand new Project clones:
+
+If you're setting up the project for the first time:
+
+1. Clone the repository
+2. Run `bash ./setup-macos-linux.sh` or `./setup-windows.bat` depending on your OS. 
+3. **That's it!** The `prepare` script automatically sets up Husky
+
+The hooks will work immediately with no additional steps needed!
+
+---
 
 ## If you already have this project locally and just ran `git pull origin main`:
 
@@ -11,20 +22,27 @@ You need to **remove old legacy hooks** that conflict with the new Husky v9 setu
 ```bash
 rm -f .git/hooks/pre-commit .git/hooks/pre-push
 ```
+Then run ```npm install``` in the root project directory
+
+---
 
 #### **Windows (PowerShell):**
 
 ```powershell
 Remove-Item .git/hooks/pre-commit, .git/hooks/pre-push -ErrorAction SilentlyContinue
 ```
+Then run ```npm install``` in the root project directory
+
+---
 
 #### **Windows (Command Prompt):**
 
 ```cmd
 del .git\hooks\pre-commit .git\hooks\pre-push
 ```
+Then run ```npm install``` in the root project directory
 
-**That's it!** After removing the old hooks, the new smart hooks will work automatically.
+**That's it!** After `removing the old hooks` and runing `npm install`, the new smart hooks will work automatically.
 
 ---
 
@@ -75,12 +93,4 @@ This creates legacy hooks that override Husky's smart detection and will run red
 
 ---
 
-## For brand new Project clones:
 
-If you're setting up the project for the first time:
-
-1. Clone the repository
-2. Run `bash ./setup-macos-linux.sh` or `./setup-windows.bat` depending on your OS. 
-3. **That's it!** The `prepare` script automatically sets up Husky
-
-The hooks will work immediately with no additional steps needed!
