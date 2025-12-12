@@ -107,7 +107,7 @@ export default function Footer() {
               South Seattle
             </Link>
             <Link
-              href="http://www.seattlecentral.edu/"
+              href="https://www.seattlecentral.edu/"
               underline="hover"
               color="inherit"
             >

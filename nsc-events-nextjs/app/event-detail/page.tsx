@@ -59,6 +59,7 @@ const EventDetail = () => {
   const [isAuthed, setAuthed] = useState(false);
   const [token, setToken] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [unregisterDialogOpen, setUnregisterDialogOpen] = useState(false);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -133,6 +134,43 @@ const EventDetail = () => {
           </DialogActions>
         </Dialog>
       </>
+    );
+  };
+
+  const UnregisterDialog = () => {
+    return (
+      <Dialog
+        open={unregisterDialogOpen}
+        onClose={() => {
+          setUnregisterDialogOpen(false);
+        }}
+        autoFocus
+      >
+        <DialogTitle>{"Unregister from Event?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="unregister-dialog-description">
+            Are you sure you want to unregister from this event?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setUnregisterDialogOpen(false);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              handleUnregister();
+              setUnregisterDialogOpen(false);
+            }}
+            autoFocus
+          >
+            Unregister
+          </Button>
+        </DialogActions>
+      </Dialog>
     );
   };
 
@@ -635,7 +673,7 @@ const EventDetail = () => {
                     }}
                     onClick={() => {
                       if (isRegistered) {
-                        handleUnregister();
+                        setUnregisterDialogOpen(true);
                       } else {
                         toggleAttendDialog();
                       }
@@ -671,6 +709,7 @@ const EventDetail = () => {
             </Grid>
           </Box>
           <DeleteDialog />
+          <UnregisterDialog />
           <ViewMoreDetailsDialog
             isOpen={moreDetailsDialogOpen}
             event={event}
