@@ -45,5 +45,5 @@ export function normalizeActivityIds<T extends Record<string, any>>(activities: 
  */
 export function getActivityId(activity: Record<string, any> | null | undefined): string | undefined {
   if (!activity) return undefined;
-  return activity.id || activity._id;
+  return activity.id ?? activity._id;
 }
