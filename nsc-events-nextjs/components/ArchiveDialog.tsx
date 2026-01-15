@@ -24,7 +24,7 @@ const ArchiveDialog = ({ isOpen, event, dialogToggle }: ArchiveDialogProps) => {
     const token = localStorage.getItem("token");
     try {
       // IMPORTANT: Must use NEXT_PUBLIC_ prefix for browser-accessible env vars
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
       const endpoint = isArchived ? 'unarchive' : 'archive';
       const response = await fetch(`${apiUrl}/events/${endpoint}/${id}`, {
         method: "PUT",

@@ -144,7 +144,7 @@ export const useEditForm = (initialData: ActivityDatabase) => {
       console.log("Event data being sent for update:", dataToSend);
 
       // IMPORTANT: Must use NEXT_PUBLIC_ prefix for browser-accessible env vars
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
       // Use id for the API endpoint
       const eventId = dataToSend.id;
       

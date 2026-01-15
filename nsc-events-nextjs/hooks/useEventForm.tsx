@@ -241,7 +241,7 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
       });
 
       // IMPORTANT: Must use NEXT_PUBLIC_ prefix for browser-accessible env vars
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
       const response = await fetch(`${apiUrl}/events/new`, {
         method: "POST",
         headers: {
