@@ -15,6 +15,15 @@ async function bootstrap() {
       'http://localhost:8080',
     ],
     credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Origin',
+      'X-Requested-With',
+    ],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
   });
 
   // Swagger configuration
