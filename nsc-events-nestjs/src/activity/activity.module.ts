@@ -4,12 +4,18 @@ import { ActivityController } from './controllers/activity/activity.controller';
 import { ActivityService } from '../activity/services/activity/activity.service';
 import { Activity } from './entities/activity.entity';
 import { AuthModule } from '../auth/auth.module';
-import { S3Service } from '../activity/services/activity/s3.service';
+import { TagModule } from '../tag/tag.module';
+import { MediaModule } from '../media/media.module';
 
 @Module({
-  imports: [AuthModule, TypeOrmModule.forFeature([Activity])],
+  imports: [
+    AuthModule,
+    TypeOrmModule.forFeature([Activity]),
+    TagModule,
+    MediaModule,
+  ],
   controllers: [ActivityController],
-  providers: [ActivityService, S3Service],
+  providers: [ActivityService],
   exports: [TypeOrmModule, ActivityService],
 })
 export class ActivityModule {}

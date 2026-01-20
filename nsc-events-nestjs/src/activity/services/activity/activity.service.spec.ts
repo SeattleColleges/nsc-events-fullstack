@@ -8,15 +8,18 @@ import {
 } from '@nestjs/common';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ActivityService } from './activity.service';
-import { Activity, Attendee } from '../../entities/activity.entity';
+import { Activity } from '../../entities/activity.entity';
 import { CreateActivityDto } from '../../dto/create-activity.dto';
 import { UpdateActivityDto } from '../../dto/update-activity.dto';
-import { S3Service } from './s3.service';
+import { TagService } from '../../../tag/tag.service';
+import { MediaService } from '../../../media/media.service';
+import { Media, MediaType } from '../../../media/entities/media.entity';
 
 describe('ActivityService', () => {
   let service: ActivityService;
   let activityRepository: jest.Mocked<Repository<Activity>>;
-  let s3Service: jest.Mocked<S3Service>;
+  let tagService: jest.Mocked<TagService>;
+  let mediaService: jest.Mocked<MediaService>;
   let queryBuilder: jest.Mocked<SelectQueryBuilder<Activity>>;
   let module: TestingModule;
 
@@ -29,18 +32,22 @@ describe('ActivityService', () => {
   const mockActivity: Activity = {
     id: 'activity-123',
     createdByUserId: 'user-123',
+    createdByUser: null,
+    registrations: [],
     eventTitle: 'Test Event',
     eventDescription: 'Test Description',
     startDate: new Date('2024-12-31T10:00:00Z'),
     endDate: new Date('2024-12-31T12:00:00Z'),
     eventLocation: 'Test Location',
-    eventCoverPhoto: 'https://example.com/image.jpg',
-    eventDocument: '',
+    coverPhotoId: null,
+    coverPhoto: null,
+    documentId: null,
+    document: null,
     eventHost: 'Test Host',
     eventMeetingURL: 'https://meet.example.com',
     eventRegistration: '',
     eventCapacity: '100',
-    eventTags: ['tech', 'workshop'],
+    tags: [],
     eventSchedule: '',
     eventSpeakers: ['Speaker 1'],
     eventPrerequisites: '',
@@ -52,8 +59,6 @@ describe('ActivityService', () => {
       instagram: '',
       hashtag: '#test',
     },
-    attendanceCount: 0,
-    attendees: [],
     eventPrivacy: 'public',
     eventAccessibility: '',
     eventNote: '',
@@ -70,13 +75,11 @@ describe('ActivityService', () => {
     startDate: '2024-12-31T10:00:00Z',
     endDate: '2024-12-31T12:00:00Z',
     eventLocation: 'Test Location',
-    eventCoverPhoto: '',
-    eventDocument: '',
     eventHost: 'Test Host',
     eventMeetingURL: 'https://meet.example.com',
     eventRegistration: '',
     eventCapacity: '100',
-    eventTags: ['tech', 'workshop'],
+    tagNames: ['tech', 'workshop'],
     eventSchedule: '',
     eventSpeakers: ['Speaker 1'],
     eventPrerequisites: '',
@@ -103,6 +106,7 @@ describe('ActivityService', () => {
       orderBy: jest.fn().mockReturnThis(),
       take: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
+      leftJoinAndSelect: jest.fn().mockReturnThis(),
       getMany: jest.fn().mockResolvedValue([mockActivity]),
     } as any;
 
@@ -115,8 +119,15 @@ describe('ActivityService', () => {
       createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
     };
 
-    const mockS3Service = {
+    const mockTagService = {
+      findOrCreate: jest.fn(),
+      findOrCreateMany: jest.fn().mockResolvedValue([]),
+    };
+
+    const mockMediaService = {
       uploadFile: jest.fn(),
+      replaceMedia: jest.fn(),
+      delete: jest.fn(),
     };
 
     module = await Test.createTestingModule({
@@ -127,15 +138,20 @@ describe('ActivityService', () => {
           useValue: mockRepository,
         },
         {
-          provide: S3Service,
-          useValue: mockS3Service,
+          provide: TagService,
+          useValue: mockTagService,
+        },
+        {
+          provide: MediaService,
+          useValue: mockMediaService,
         },
       ],
     }).compile();
 
     service = module.get<ActivityService>(ActivityService);
     activityRepository = module.get(getRepositoryToken(Activity));
-    s3Service = module.get(S3Service);
+    tagService = module.get(TagService);
+    mediaService = module.get(MediaService);
   });
 
   afterEach(() => {
@@ -212,13 +228,24 @@ describe('ActivityService', () => {
         path: '',
       };
 
-      const uploadedImageUrl =
-        'https://s3.amazonaws.com/bucket/cover-image.jpg';
-      s3Service.uploadFile.mockResolvedValue(uploadedImageUrl);
+      const mockMedia: Media = {
+        id: 'media-123',
+        filename: 'test-cover.jpg',
+        originalName: 'test-cover.jpg',
+        mimeType: 'image/jpeg',
+        size: 2048,
+        s3Key: 'cover-images/test-cover.jpg',
+        s3Url: 'https://s3.amazonaws.com/bucket/cover-image.jpg',
+        type: MediaType.IMAGE,
+        uploadedByUserId: 'user-123',
+        uploadedBy: null,
+        createdAt: new Date(),
+      };
+      mediaService.uploadFile.mockResolvedValue(mockMedia);
 
       const activityWithImage = {
         ...mockActivity,
-        eventCoverPhoto: uploadedImageUrl,
+        coverPhotoId: mockMedia.id,
       };
       activityRepository.create.mockReturnValue(activityWithImage);
       activityRepository.save.mockResolvedValue(activityWithImage);
@@ -229,22 +256,24 @@ describe('ActivityService', () => {
         mockFile,
       );
 
-      expect(s3Service.uploadFile).toHaveBeenCalledWith(
+      expect(mediaService.uploadFile).toHaveBeenCalledWith(
         mockFile,
+        'user-123',
+        MediaType.IMAGE,
         'cover-images',
         true, // Enable resize
       );
-      expect(result.eventCoverPhoto).toBe(uploadedImageUrl);
+      expect(result.coverPhotoId).toBe(mockMedia.id);
       expect(activityRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          eventCoverPhoto: uploadedImageUrl,
+          coverPhotoId: mockMedia.id,
           createdByUserId: 'user-123',
         }),
       );
       expect(activityRepository.save).toHaveBeenCalledWith(activityWithImage);
     });
 
-    it('should rethrow BadRequestException from S3 service', async () => {
+    it('should rethrow BadRequestException from Media service', async () => {
       const mockFile: Express.Multer.File = {
         fieldname: 'coverImage',
         originalname: 'invalid.txt',
@@ -259,14 +288,14 @@ describe('ActivityService', () => {
       };
 
       const badRequestError = new BadRequestException('Invalid file type');
-      s3Service.uploadFile.mockRejectedValue(badRequestError);
+      mediaService.uploadFile.mockRejectedValue(badRequestError);
 
       await expect(
         service.createActivity(createActivityDto, 'user-123', mockFile),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('should throw HttpException when S3 upload fails with generic error', async () => {
+    it('should throw HttpException when media upload fails with generic error', async () => {
       const mockFile: Express.Multer.File = {
         fieldname: 'coverImage',
         originalname: 'test.jpg',
@@ -280,15 +309,15 @@ describe('ActivityService', () => {
         path: '',
       };
 
-      s3Service.uploadFile.mockRejectedValue(
-        new Error('S3 service unavailable'),
+      mediaService.uploadFile.mockRejectedValue(
+        new Error('Media service unavailable'),
       );
 
       await expect(
         service.createActivity(createActivityDto, 'user-123', mockFile),
       ).rejects.toThrow(
         new HttpException(
-          'Error creating activity: S3 service unavailable',
+          'Error creating activity: Media service unavailable',
           HttpStatus.INTERNAL_SERVER_ERROR,
         ),
       );
@@ -334,10 +363,9 @@ describe('ActivityService', () => {
       await service.getAllActivities({ tags: ['tech', 'workshop'] });
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('activity."eventTags" ~*'),
+        expect.stringContaining('activity.id IN'),
         expect.objectContaining({
-          tag0: expect.stringContaining('tech'),
-          tag1: expect.stringContaining('workshop'),
+          tagNames: ['tech', 'workshop'],
         }),
       );
     });
@@ -346,8 +374,10 @@ describe('ActivityService', () => {
       await service.getAllActivities({ tags: 'tech,workshop' });
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.stringContaining('activity."eventTags" ~*'),
-        expect.any(Object),
+        expect.stringContaining('activity.id IN'),
+        expect.objectContaining({
+          tagNames: expect.arrayContaining(['tech', 'workshop']),
+        }),
       );
     });
 
@@ -676,152 +706,8 @@ describe('ActivityService', () => {
     });
   });
 
-  describe('addAttendee', () => {
-    const attendee: Attendee = {
-      firstName: 'John',
-      lastName: 'Doe',
-    };
-
-    it('should add attendee when attendees array is empty', async () => {
-      const activityWithoutAttendees = { ...mockActivity, attendees: null };
-      activityRepository.findOne.mockResolvedValue(activityWithoutAttendees);
-      const updatedActivity = {
-        ...activityWithoutAttendees,
-        attendees: [attendee],
-        attendanceCount: 1,
-      };
-      activityRepository.save.mockResolvedValue(updatedActivity);
-
-      const result = await service.addAttendee('activity-123', attendee);
-
-      expect(result.attendees).toContain(attendee);
-      expect(result.attendanceCount).toBe(1);
-    });
-
-    it('should add attendee when attendees array already exists', async () => {
-      const existingAttendee: Attendee = {
-        firstName: 'Jane',
-        lastName: 'Smith',
-      };
-      const activityWithAttendees = {
-        ...mockActivity,
-        attendees: [existingAttendee],
-        attendanceCount: 1,
-      };
-      activityRepository.findOne.mockResolvedValue(activityWithAttendees);
-      const updatedActivity = {
-        ...activityWithAttendees,
-        attendees: [existingAttendee, attendee],
-        attendanceCount: 2,
-      };
-      activityRepository.save.mockResolvedValue(updatedActivity);
-
-      const result = await service.addAttendee('activity-123', attendee);
-
-      expect(result.attendees).toHaveLength(2);
-      expect(result.attendanceCount).toBe(2);
-    });
-
-    it('should throw BadRequestException when attendee already registered', async () => {
-      const activityWithAttendee = {
-        ...mockActivity,
-        attendees: [attendee],
-      };
-      activityRepository.findOne.mockResolvedValue(activityWithAttendee);
-
-      await expect(
-        service.addAttendee('activity-123', attendee),
-      ).rejects.toThrow(new BadRequestException('Attendee already registered'));
-    });
-
-    it('should throw NotFoundException when activity not found', async () => {
-      activityRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.addAttendee('invalid-id', attendee)).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-
-    it('should throw HttpException for generic errors', async () => {
-      activityRepository.findOne.mockResolvedValue(mockActivity);
-      activityRepository.save.mockRejectedValue(new Error('Database error'));
-
-      await expect(
-        service.addAttendee('activity-123', attendee),
-      ).rejects.toThrow(
-        new HttpException(
-          'Error adding attendee',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        ),
-      );
-    });
-  });
-
-  describe('removeAttendee', () => {
-    const attendees: Attendee[] = [
-      { firstName: 'John', lastName: 'Doe' },
-      { firstName: 'Jane', lastName: 'Smith' },
-    ];
-
-    it('should remove attendee successfully', async () => {
-      const activityWithAttendees = {
-        ...mockActivity,
-        attendees: [...attendees],
-        attendanceCount: 2,
-      };
-      activityRepository.findOne.mockResolvedValue(activityWithAttendees);
-      const updatedActivity = {
-        ...activityWithAttendees,
-        attendees: [attendees[1]],
-        attendanceCount: 1,
-      };
-      activityRepository.save.mockResolvedValue(updatedActivity);
-
-      const result = await service.removeAttendee('activity-123', 0);
-
-      expect(result.attendees).toHaveLength(1);
-      expect(result.attendanceCount).toBe(1);
-    });
-
-    it('should throw BadRequestException when attendees array is null', async () => {
-      const activityWithoutAttendees = { ...mockActivity, attendees: null };
-      activityRepository.findOne.mockResolvedValue(activityWithoutAttendees);
-
-      await expect(service.removeAttendee('activity-123', 0)).rejects.toThrow(
-        new BadRequestException('Attendee not found'),
-      );
-    });
-
-    it('should throw BadRequestException when index is out of bounds', async () => {
-      const activityWithAttendees = { ...mockActivity, attendees };
-      activityRepository.findOne.mockResolvedValue(activityWithAttendees);
-
-      await expect(service.removeAttendee('activity-123', 5)).rejects.toThrow(
-        new BadRequestException('Attendee not found'),
-      );
-    });
-
-    it('should throw NotFoundException when activity not found', async () => {
-      activityRepository.findOne.mockResolvedValue(null);
-
-      await expect(service.removeAttendee('invalid-id', 0)).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-
-    it('should throw HttpException for generic errors', async () => {
-      const activityWithAttendees = { ...mockActivity, attendees };
-      activityRepository.findOne.mockResolvedValue(activityWithAttendees);
-      activityRepository.save.mockRejectedValue(new Error('Database error'));
-
-      await expect(service.removeAttendee('activity-123', 0)).rejects.toThrow(
-        new HttpException(
-          'Error removing attendee',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        ),
-      );
-    });
-  });
+  // NOTE: addAttendee and removeAttendee tests removed
+  // Attendee management is now handled via EventRegistrationService
 
   describe('searchActivities', () => {
     beforeEach(() => {
@@ -976,20 +862,39 @@ describe('ActivityService', () => {
     };
 
     it('should update cover image successfully', async () => {
-      const uploadedImageUrl = 'https://s3.amazonaws.com/bucket/new-image.jpg';
+      const mockMedia: Media = {
+        id: 'media-456',
+        filename: 'new-image.jpg',
+        originalName: 'test-image.jpg',
+        mimeType: 'image/jpeg',
+        size: 1024,
+        s3Key: 'cover-images/new-image.jpg',
+        s3Url: 'https://s3.amazonaws.com/bucket/new-image.jpg',
+        type: MediaType.IMAGE,
+        uploadedByUserId: 'user-123',
+        uploadedBy: null,
+        createdAt: new Date(),
+      };
       activityRepository.findOne.mockResolvedValue(mockActivity);
-      s3Service.uploadFile.mockResolvedValue(uploadedImageUrl);
+      mediaService.replaceMedia.mockResolvedValue(mockMedia);
       const updatedActivity = {
         ...mockActivity,
-        eventCoverPhoto: uploadedImageUrl,
+        coverPhotoId: mockMedia.id,
       };
       activityRepository.save.mockResolvedValue(updatedActivity);
 
-      const result = await service.updateCoverImage('activity-123', mockFile);
-
-      expect(result.eventCoverPhoto).toBe(uploadedImageUrl);
-      expect(s3Service.uploadFile).toHaveBeenCalledWith(
+      const result = await service.updateCoverImage(
+        'activity-123',
         mockFile,
+        'user-123',
+      );
+
+      expect(result.coverPhotoId).toBe(mockMedia.id);
+      expect(mediaService.replaceMedia).toHaveBeenCalledWith(
+        null, // old media ID (mockActivity has no existing cover photo)
+        mockFile,
+        'user-123',
+        MediaType.IMAGE,
         'cover-images',
         true, // Enable resize
       );
@@ -1000,29 +905,42 @@ describe('ActivityService', () => {
       activityRepository.findOne.mockResolvedValue(null);
 
       await expect(
-        service.updateCoverImage('invalid-id', mockFile),
+        service.updateCoverImage('invalid-id', mockFile, 'user-123'),
       ).rejects.toThrow(
         new NotFoundException('Activity with ID invalid-id not found'),
       );
     });
 
-    it('should throw BadRequestException when S3 upload fails', async () => {
+    it('should throw BadRequestException when media upload fails', async () => {
       activityRepository.findOne.mockResolvedValue(mockActivity);
       const badRequestError = new BadRequestException('Invalid file type');
-      s3Service.uploadFile.mockRejectedValue(badRequestError);
+      mediaService.replaceMedia.mockRejectedValue(badRequestError);
 
       await expect(
-        service.updateCoverImage('activity-123', mockFile),
+        service.updateCoverImage('activity-123', mockFile, 'user-123'),
       ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw HttpException for generic errors', async () => {
+      const mockMedia: Media = {
+        id: 'media-456',
+        filename: 'new-image.jpg',
+        originalName: 'test-image.jpg',
+        mimeType: 'image/jpeg',
+        size: 1024,
+        s3Key: 'cover-images/new-image.jpg',
+        s3Url: 'https://example.com/image.jpg',
+        type: MediaType.IMAGE,
+        uploadedByUserId: 'user-123',
+        uploadedBy: null,
+        createdAt: new Date(),
+      };
       activityRepository.findOne.mockResolvedValue(mockActivity);
-      s3Service.uploadFile.mockResolvedValue('https://example.com/image.jpg');
+      mediaService.replaceMedia.mockResolvedValue(mockMedia);
       activityRepository.save.mockRejectedValue(new Error('Database error'));
 
       await expect(
-        service.updateCoverImage('activity-123', mockFile),
+        service.updateCoverImage('activity-123', mockFile, 'user-123'),
       ).rejects.toThrow(
         new HttpException(
           'Error updating cover image',
@@ -1032,19 +950,69 @@ describe('ActivityService', () => {
     });
   });
 
-  describe('escapeRegex (private method - tested through getAllActivities)', () => {
-    it('should escape special regex characters in tags', async () => {
-      // Test with tags that contain special regex characters
-      await service.getAllActivities({ tags: ['test.*', 'data+', 'regex?'] });
+  describe('updateTags', () => {
+    it('should update activity tags successfully', async () => {
+      const mockTags = [
+        {
+          id: 'tag-1',
+          name: 'tech',
+          slug: 'tech',
+          activities: [],
+          createdAt: new Date(),
+        },
+        {
+          id: 'tag-2',
+          name: 'workshop',
+          slug: 'workshop',
+          activities: [],
+          createdAt: new Date(),
+        },
+      ];
+      activityRepository.findOne.mockResolvedValue({
+        ...mockActivity,
+        tags: [],
+      });
+      tagService.findOrCreateMany.mockResolvedValue(mockTags);
+      const updatedActivity = { ...mockActivity, tags: mockTags };
+      activityRepository.save.mockResolvedValue(updatedActivity);
 
-      // Verify that the regex was called with escaped characters
-      expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          tag0: expect.stringContaining('test\\.\\*'),
-          tag1: expect.stringContaining('data\\+'),
-          tag2: expect.stringContaining('regex\\?'),
-        }),
+      const result = await service.updateTags('activity-123', [
+        'tech',
+        'workshop',
+      ]);
+
+      expect(result.tags).toEqual(mockTags);
+      expect(tagService.findOrCreateMany).toHaveBeenCalledWith([
+        'tech',
+        'workshop',
+      ]);
+      expect(activityRepository.save).toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundException when activity not found', async () => {
+      activityRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.updateTags('invalid-id', ['tech'])).rejects.toThrow(
+        new NotFoundException('Activity with ID invalid-id not found'),
+      );
+    });
+
+    it('should throw HttpException for generic errors', async () => {
+      activityRepository.findOne.mockResolvedValue({
+        ...mockActivity,
+        tags: [],
+      });
+      tagService.findOrCreateMany.mockRejectedValue(
+        new Error('Database error'),
+      );
+
+      await expect(
+        service.updateTags('activity-123', ['tech']),
+      ).rejects.toThrow(
+        new HttpException(
+          'Error updating activity tags',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        ),
       );
     });
   });

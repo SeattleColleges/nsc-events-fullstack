@@ -15,15 +15,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ActivityService } from '../../../activity/services/activity/activity.service';
-import { Activity, Attendee } from '../../entities/activity.entity';
+import { Activity } from '../../entities/activity.entity';
 import { CreateActivityDto } from '../../dto/create-activity.dto';
 import { UpdateActivityDto } from '../../dto/update-activity.dto';
-// Removed unused: import { Query as ExpressQuery } from 'express-serve-static-core';
 import { Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { Role } from '../../../user/entities/user.entity';
-import { AttendEventDto } from '../../dto/attend-event.dto';
 import {
   ApiTags,
   ApiOperation,
@@ -172,35 +170,8 @@ export class ActivityController {
     return this.activityService.getActivitiesByUserId(userId);
   }
 
-  // NOTE: Event attendance is now handled by the EventRegistrationController
-  // This endpoint is deprecated and should be removed in favor of /event-registration/attend
-  @Post('attend/:id')
-  @UseGuards(AuthGuard())
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({
-    summary: 'Attend event (DEPRECATED)',
-    description: 'DEPRECATED: Use /api/event-registration/attend instead',
-    deprecated: true,
-  })
-  @ApiParam({ name: 'id', description: 'Event ID' })
-  @ApiBody({ type: AttendEventDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Event attendance recorded',
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Event not found' })
-  async attendEvent(
-    @Param('id') eventId: string,
-    @Body() attendEventDto: AttendEventDto,
-  ) {
-    // Extract attendee information from DTO
-    const attendee: Attendee = {
-      firstName: attendEventDto.attendee?.firstName || '',
-      lastName: attendEventDto.attendee?.lastName || '',
-    };
-    return await this.activityService.addAttendee(eventId, attendee);
-  }
+  // NOTE: Event attendance is handled by the EventRegistrationController
+  // Use /api/event-registration/attend instead
 
   @Post('new')
   @UseGuards(AuthGuard())
@@ -237,7 +208,7 @@ export class ActivityController {
         },
         eventHost: { type: 'string', example: 'Computer Science Club' },
         eventCapacity: { type: 'string', example: '50' },
-        eventTags: {
+        tagNames: {
           type: 'string',
           example: 'Technology, Workshop',
           description:
@@ -297,7 +268,6 @@ export class ActivityController {
         'eventLocation',
         'eventHost',
         'eventCapacity',
-        'eventTags',
         'eventContact',
       ],
     },
@@ -332,11 +302,9 @@ export class ActivityController {
       };
 
       // Helper function to parse tags - handles single string, comma-separated, or JSON array
-      const parseTags = (value: any): string[] => {
+      const parseTags = (value: any): string[] | undefined => {
         if (!value || value === '') {
-          throw new BadRequestException(
-            'eventTags is required and cannot be empty',
-          );
+          return undefined;
         }
 
         if (Array.isArray(value)) {
@@ -406,7 +374,7 @@ export class ActivityController {
       // Parse JSON fields from multipart/form-data
       const activityData: CreateActivityDto = {
         ...body,
-        eventTags: parseTags(body.eventTags),
+        tagNames: parseTags(body.tagNames) || parseTags(body.eventTags),
         eventSocialMedia: safeJsonParse(body.eventSocialMedia, undefined),
         eventSpeakers: parseStringArray(body.eventSpeakers),
       };
@@ -648,9 +616,6 @@ export class ActivityController {
     });
   }
 
-  // TODO: File upload functionality (cover images, documents) can be implemented here
-  // when needed for PostgreSQL version
-
   @Put(':id/cover-image')
   @UseGuards(AuthGuard())
   @ApiBearerAuth('JWT-auth')
@@ -701,7 +666,7 @@ export class ActivityController {
 
     // Admin can upload cover image for any event
     if (req.user.role === Role.admin) {
-      return await this.activityService.updateCoverImage(id, file);
+      return await this.activityService.updateCoverImage(id, file, req.user.id);
     }
 
     // Creator can only upload cover image for their own events
@@ -709,7 +674,7 @@ export class ActivityController {
       activity.createdByUserId === req.user.id &&
       req.user.role === Role.creator
     ) {
-      return await this.activityService.updateCoverImage(id, file);
+      return await this.activityService.updateCoverImage(id, file, req.user.id);
     } else {
       throw new UnauthorizedException(
         'You do not have permission to upload cover image for this event',

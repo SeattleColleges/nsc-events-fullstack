@@ -7,18 +7,21 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Activity, Attendee } from '../../entities/activity.entity';
+import { Activity } from '../../entities/activity.entity';
 import { CreateActivityDto } from '../../dto/create-activity.dto';
 import { UpdateActivityDto } from '../../dto/update-activity.dto';
 import { Express } from 'express';
-import { S3Service } from './s3.service';
+import { TagService } from '../../../tag/tag.service';
+import { MediaService } from '../../../media/media.service';
+import { MediaType } from '../../../media/entities/media.entity';
 
 @Injectable()
 export class ActivityService {
   constructor(
     @InjectRepository(Activity)
     private readonly activityRepository: Repository<Activity>,
-    private readonly s3Service: S3Service,
+    private readonly tagService: TagService,
+    private readonly mediaService: MediaService,
   ) {}
 
   // ----------------- Create Activity ----------------- \\
@@ -27,16 +30,26 @@ export class ActivityService {
     userId: string,
     coverImageFile?: Express.Multer.File,
   ): Promise<Activity> {
-    let uploadedImageUrl: string | undefined;
-
     try {
-      // Upload cover image to S3 if provided
+      // Handle tags - find or create Tag entities from tag names
+      let tags = [];
+      if (createActivityDto.tagNames && createActivityDto.tagNames.length > 0) {
+        tags = await this.tagService.findOrCreateMany(
+          createActivityDto.tagNames,
+        );
+      }
+
+      // Upload cover image to S3 if provided and create Media record
+      let coverPhotoId: string | undefined;
       if (coverImageFile) {
-        uploadedImageUrl = await this.s3Service.uploadFile(
+        const media = await this.mediaService.uploadFile(
           coverImageFile,
+          userId,
+          MediaType.IMAGE,
           'cover-images',
           true, // Enable resize
         );
+        coverPhotoId = media.id;
       }
 
       // Convert ISO 8601 strings to Date objects
@@ -45,21 +58,20 @@ export class ActivityService {
         startDate: new Date(createActivityDto.startDate),
         endDate: new Date(createActivityDto.endDate),
         createdByUserId: userId,
-        // Use uploaded image URL if available, otherwise use the one from DTO (empty string)
-        eventCoverPhoto:
-          uploadedImageUrl || createActivityDto.eventCoverPhoto || '',
+        coverPhotoId: coverPhotoId || createActivityDto.coverPhotoId,
+        documentId: createActivityDto.documentId,
+        tags,
         // Ensure eventSocialMedia is always an object, never null
         eventSocialMedia: createActivityDto.eventSocialMedia || {},
       };
+
+      // Remove tagNames from activity data (it's not a column)
+      delete (activityData as any).tagNames;
 
       const activity = this.activityRepository.create(activityData);
 
       return await this.activityRepository.save(activity);
     } catch (error) {
-      // If we uploaded an image but activity creation failed, we should delete the uploaded image
-      // However, for simplicity and to avoid orphaned data in edge cases, we'll let the S3 cleanup handle it
-      // In production, consider implementing a more robust cleanup mechanism
-
       if (error instanceof BadRequestException) {
         throw error;
       }
@@ -94,22 +106,22 @@ export class ActivityService {
       // switch to QueryBuilder so we can filter by tags safely
       const qb = this.activityRepository
         .createQueryBuilder('activity')
+        .leftJoinAndSelect('activity.tags', 'tag')
+        .leftJoinAndSelect('activity.coverPhoto', 'coverPhoto')
+        .leftJoinAndSelect('activity.document', 'document')
         .where('activity."isHidden" = false')
         .andWhere('activity."isArchived" = :isArchived', { isArchived });
 
-      // Tag filter: activity."eventTags" is a comma-separated text field.
-      // Match ANY selected tag using a case-insensitive regex with token boundaries:
-      // (^|,\s*)tag(,|$)
+      // Tag filter: filter by tag names using the join table
       if (tagsArray.length > 0) {
-        const orClauses: string[] = [];
-        const params: Record<string, any> = {};
-
-        tagsArray.forEach((t, i) => {
-          orClauses.push(`activity."eventTags" ~* :tag${i}`);
-          params[`tag${i}`] = `(^|,\\s*)${this.escapeRegex(t)}(,|$)`;
-        });
-
-        qb.andWhere(orClauses.map((c) => `(${c})`).join(' OR '), params);
+        qb.andWhere(
+          `activity.id IN (
+            SELECT at.activity_id FROM activity_tags at
+            JOIN tags t ON at.tag_id = t.id
+            WHERE LOWER(t.name) IN (:...tagNames)
+          )`,
+          { tagNames: tagsArray },
+        );
       }
 
       // Location filter
@@ -241,7 +253,13 @@ export class ActivityService {
   // ----------------- Delete Activity ----------------- \\
   async deleteActivity(id: string, userId: string): Promise<void> {
     try {
-      const activity = await this.getActivityById(id);
+      const activity = await this.activityRepository.findOne({
+        where: { id },
+      });
+
+      if (!activity) {
+        throw new NotFoundException('Activity not found');
+      }
 
       // Check if user owns the activity
       if (activity.createdByUserId !== userId) {
@@ -250,7 +268,36 @@ export class ActivityService {
         );
       }
 
+      // Store media IDs before deletion (foreign keys will be set to NULL on delete)
+      const coverPhotoId = activity.coverPhotoId;
+      const documentId = activity.documentId;
+
+      // Delete the activity first
       await this.activityRepository.remove(activity);
+
+      // Clean up associated media files from S3 and database
+      // Do this after activity deletion so we don't leave orphaned references
+      if (coverPhotoId) {
+        try {
+          await this.mediaService.delete(coverPhotoId);
+        } catch (error) {
+          // Log but don't fail - activity is already deleted
+          console.warn(
+            `Failed to delete cover photo ${coverPhotoId}: ${error.message}`,
+          );
+        }
+      }
+
+      if (documentId) {
+        try {
+          await this.mediaService.delete(documentId);
+        } catch (error) {
+          // Log but don't fail - activity is already deleted
+          console.warn(
+            `Failed to delete document ${documentId}: ${error.message}`,
+          );
+        }
+      }
     } catch (error) {
       if (
         error instanceof BadRequestException ||
@@ -328,74 +375,6 @@ export class ActivityService {
       }
       throw new HttpException(
         'Error unarchiving activity',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  // ----------------- Add Attendee ----------------- \\
-  async addAttendee(activityId: string, attendee: Attendee): Promise<Activity> {
-    try {
-      const activity = await this.getActivityById(activityId);
-
-      if (!activity.attendees) {
-        activity.attendees = [];
-      }
-
-      // Check if attendee already exists
-      const existingAttendee = activity.attendees.find(
-        (a) =>
-          a.firstName === attendee.firstName &&
-          a.lastName === attendee.lastName,
-      );
-
-      if (existingAttendee) {
-        throw new BadRequestException('Attendee already registered');
-      }
-
-      activity.attendees.push(attendee);
-      activity.attendanceCount = activity.attendees.length;
-
-      return await this.activityRepository.save(activity);
-    } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof NotFoundException
-      ) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error adding attendee',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  // ----------------- Remove Attendee ----------------- \\
-  async removeAttendee(
-    activityId: string,
-    attendeeIndex: number,
-  ): Promise<Activity> {
-    try {
-      const activity = await this.getActivityById(activityId);
-
-      if (!activity.attendees || attendeeIndex >= activity.attendees.length) {
-        throw new BadRequestException('Attendee not found');
-      }
-
-      activity.attendees.splice(attendeeIndex, 1);
-      activity.attendanceCount = activity.attendees.length;
-
-      return await this.activityRepository.save(activity);
-    } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof NotFoundException
-      ) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error removing attendee',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -484,6 +463,7 @@ export class ActivityService {
   async updateCoverImage(
     activityId: string,
     file: Express.Multer.File,
+    userId: string,
   ): Promise<Activity> {
     try {
       const activity = await this.activityRepository.findOne({
@@ -494,14 +474,17 @@ export class ActivityService {
         throw new NotFoundException(`Activity with ID ${activityId} not found`);
       }
 
-      // Upload the file to S3 and get the URL (with resizing)
-      const coverImageUrl = await this.s3Service.uploadFile(
+      // Use replaceMedia to upload new and delete old cover image
+      const newMedia = await this.mediaService.replaceMedia(
+        activity.coverPhotoId, // Old media ID (will be deleted if exists)
         file,
+        userId,
+        MediaType.IMAGE,
         'cover-images',
         true, // Enable resize
       );
 
-      activity.eventCoverPhoto = coverImageUrl;
+      activity.coverPhotoId = newMedia.id;
 
       return await this.activityRepository.save(activity);
     } catch (error) {
@@ -519,8 +502,75 @@ export class ActivityService {
     }
   }
 
-  /** Escape user-provided tag text for regex safety */
-  private escapeRegex(s: string): string {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // ----------------- Update Document ----------------- \\
+  async updateDocument(
+    activityId: string,
+    file: Express.Multer.File,
+    userId: string,
+  ): Promise<Activity> {
+    try {
+      const activity = await this.activityRepository.findOne({
+        where: { id: activityId },
+      });
+
+      if (!activity) {
+        throw new NotFoundException(`Activity with ID ${activityId} not found`);
+      }
+
+      // Use replaceMedia to upload new and delete old document
+      const newMedia = await this.mediaService.replaceMedia(
+        activity.documentId, // Old media ID (will be deleted if exists)
+        file,
+        userId,
+        MediaType.DOCUMENT,
+        'documents',
+        false, // No resize for documents
+      );
+
+      activity.documentId = newMedia.id;
+
+      return await this.activityRepository.save(activity);
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Error updating document',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ----------------- Update Tags ----------------- \\
+  async updateTags(activityId: string, tagNames: string[]): Promise<Activity> {
+    try {
+      const activity = await this.activityRepository.findOne({
+        where: { id: activityId },
+        relations: ['tags'],
+      });
+
+      if (!activity) {
+        throw new NotFoundException(`Activity with ID ${activityId} not found`);
+      }
+
+      // Find or create tags from the provided names
+      const tags = await this.tagService.findOrCreateMany(tagNames);
+      activity.tags = tags;
+
+      return await this.activityRepository.save(activity);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Error updating activity tags',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

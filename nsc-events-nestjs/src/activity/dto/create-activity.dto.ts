@@ -1,6 +1,5 @@
 import { SocialMedia } from '../entities/activity.entity';
 import {
-  ArrayNotEmpty,
   IsArray,
   IsEmail,
   IsEmpty,
@@ -49,17 +48,13 @@ export class CreateActivityDto {
   @IsString()
   readonly eventLocation: string;
 
-  @ValidateIf(
-    (obj) => obj.eventCoverPhoto !== undefined && obj.eventCoverPhoto !== '',
-  )
-  @IsUrl() // TODO: look into options to ensure it has a https prefix
-  readonly eventCoverPhoto?: string;
+  @IsOptional()
+  @IsString()
+  readonly coverPhotoId?: string;
 
-  @ValidateIf(
-    (obj) => obj.eventDocument !== undefined && obj.eventDocument !== '',
-  )
-  @IsUrl()
-  readonly eventDocument?: string;
+  @IsOptional()
+  @IsString()
+  readonly documentId?: string;
 
   @IsNotEmpty()
   @IsString()
@@ -80,10 +75,10 @@ export class CreateActivityDto {
   @IsNumberString()
   readonly eventCapacity: string;
 
+  @IsOptional()
   @IsArray()
-  @ArrayNotEmpty()
   @IsString({ each: true })
-  readonly eventTags: string[];
+  readonly tagNames?: string[];
 
   @IsOptional()
   @IsString()

@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 
 /**
@@ -63,10 +64,20 @@ export enum Role {
   user = 'user',
 }
 
+// Forward reference to avoid circular dependency
+import type { EventRegistration } from '../../event-registration/entities/event-registration.entity';
+import type { Activity } from '../../activity/entities/activity.entity';
+
 @Entity('users') // Table name in PostgreSQL
 export class User implements UserDocument {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @OneToMany('EventRegistration', 'user')
+  eventRegistrations: EventRegistration[];
+
+  @OneToMany('Activity', 'createdByUser')
+  createdActivities: Activity[];
 
   @Column()
   firstName: string;

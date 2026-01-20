@@ -78,9 +78,6 @@ describe('EventRegistrationController.registerForEvent', () => {
     const createDto = {
       activityId: 'activity-123',
       userId: 'user-456',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
       college: 'Engineering',
       yearOfStudy: '2nd Year',
       isAttended: false,
@@ -89,6 +86,12 @@ describe('EventRegistrationController.registerForEvent', () => {
     const expectedResult = {
       id: '1',
       ...createDto,
+      user: {
+        id: 'user-456',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -355,9 +358,12 @@ describe('EventRegistrationController.markAttendance', () => {
       id: registrationId,
       activityId: 'activity-123',
       userId: 'user-456',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
+      user: {
+        id: 'user-456',
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+      },
       college: 'Engineering',
       yearOfStudy: '2nd Year',
       isAttended: true,
