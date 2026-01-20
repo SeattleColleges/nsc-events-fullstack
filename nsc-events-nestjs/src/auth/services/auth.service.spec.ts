@@ -34,6 +34,8 @@ describe('AuthService', () => {
     role: Role.user,
     resetPasswordToken: null,
     resetPasswordExpires: null,
+    eventRegistrations: [],
+    createdActivities: [],
     createdAt: new Date(),
     updatedAt: new Date(),
   };

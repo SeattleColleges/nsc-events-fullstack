@@ -4,35 +4,44 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { User } from '../../user/entities/user.entity';
+import { Activity } from '../../activity/entities/activity.entity';
 
 @Entity('event_registrations')
 export class EventRegistration {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'activity_id' })
+  @Column({ name: 'activity_id', type: 'uuid' })
   activityId: string;
 
-  @Column({ name: 'user_id' })
+  @ManyToOne(() => Activity, (activity) => activity.registrations, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'activity_id' })
+  activity: Activity;
+
+  @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
-  @Column()
-  firstName: string;
+  @ManyToOne(() => User, (user) => user.eventRegistrations, {
+    onDelete: 'CASCADE',
+    eager: true, // Always load user data with registration
+  })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
-  @Column()
-  lastName: string;
-
-  @Column()
-  email: string;
-
-  @Column()
+  // Registration-specific fields (may differ from user profile per event)
+  @Column({ nullable: true })
   college: string;
 
-  @Column()
+  @Column({ nullable: true })
   yearOfStudy: string;
 
-  @Column()
+  @Column({ default: false })
   isAttended: boolean;
 
   @CreateDateColumn()

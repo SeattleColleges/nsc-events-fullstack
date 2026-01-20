@@ -12,6 +12,8 @@ import { ActivityModule } from './activity/activity.module';
 import { AuthModule } from './auth/auth.module';
 import { GoogleAuthModule } from './auth/google-auth/google-auth.module';
 import { EventRegistrationModule } from './event-registration/event-registration.module';
+import { TagModule } from './tag/tag.module';
+import { MediaModule } from './media/media.module';
 import { WinstonLoggerModule } from './logger/winston.logger';
 import { initializeConsoleSanitization } from './utils/logging-sanitizer';
 import { HttpLoggerMiddleware } from './middlewares/http-logger.middleware';
@@ -20,6 +22,8 @@ import { HttpLoggerMiddleware } from './middlewares/http-logger.middleware';
 import { User } from './user/entities/user.entity';
 import { Activity } from './activity/entities/activity.entity';
 import { EventRegistration } from './event-registration/entities/event-registration.entity';
+import { Tag } from './tag/entities/tag.entity';
+import { Media } from './media/entities/media.entity';
 
 @Module({
   imports: [
@@ -43,7 +47,7 @@ import { EventRegistration } from './event-registration/entities/event-registrat
             'POSTGRES_DATABASE',
             'nsc_events',
           ),
-          entities: [User, Activity, EventRegistration],
+          entities: [User, Activity, EventRegistration, Tag, Media],
           synchronize: configService.get<boolean>('TYPEORM_SYNCHRONIZE', true),
           logging: false, // Disable SQL query logging to prevent PII exposure
         };
@@ -54,6 +58,8 @@ import { EventRegistration } from './event-registration/entities/event-registrat
     AuthModule,
     GoogleAuthModule,
     EventRegistrationModule,
+    TagModule,
+    MediaModule,
   ],
   controllers: [],
   providers: [],

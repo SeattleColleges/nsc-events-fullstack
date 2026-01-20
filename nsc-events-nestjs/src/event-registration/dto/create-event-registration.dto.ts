@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsBoolean, IsOptional } from 'class-validator';
+import { IsString, IsBoolean, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateEventRegistrationDto {
@@ -25,59 +25,30 @@ export class CreateEventRegistrationDto {
   userId: string;
 
   /**
-   * First name
-   * @example 'Jane'
+   * College name (optional, registration-specific)
+   * @example 'North Seattle College'
    */
   @ApiProperty({
-    description: 'First name of the registrant',
-    example: 'Jane',
+    description: 'College name (optional)',
+    example: 'North Seattle College',
+    required: false,
   })
   @IsString()
-  firstName: string;
+  @IsOptional()
+  college?: string;
 
   /**
-   * Last name
-   * @example 'Smith'
-   */
-  @ApiProperty({
-    description: 'Last name of the registrant',
-    example: 'Smith',
-  })
-  @IsString()
-  lastName: string;
-
-  /**
-   * Email address
-   * @example 'jane.smith@example.com'
-   */
-  @ApiProperty({
-    description: 'Email address of the registrant',
-    example: 'jane.smith@example.com',
-  })
-  @IsEmail()
-  email: string;
-
-  /**
-   * College name
-   * @example 'Harvard University'
-   */
-  @ApiProperty({
-    description: 'College name',
-    example: 'Harvard University',
-  })
-  @IsString()
-  college: string;
-
-  /**
-   * Year of study
+   * Year of study (optional, registration-specific)
    * @example 'Sophomore'
    */
   @ApiProperty({
-    description: 'Year of study',
+    description: 'Year of study (optional)',
     example: 'Sophomore',
+    required: false,
   })
   @IsString()
-  yearOfStudy: string;
+  @IsOptional()
+  yearOfStudy?: string;
 
   /**
    * Attendance status
@@ -91,5 +62,5 @@ export class CreateEventRegistrationDto {
   })
   @IsBoolean()
   @IsOptional()
-  isAttended = false;
+  isAttended?: boolean = false;
 }

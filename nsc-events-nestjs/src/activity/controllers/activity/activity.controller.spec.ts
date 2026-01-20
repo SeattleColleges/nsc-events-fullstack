@@ -2,40 +2,40 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ActivityController } from './activity.controller';
 import { ActivityService } from '../../../activity/services/activity/activity.service';
 import { UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { Activity, Attendee } from '../../entities/activity.entity';
+import { Activity } from '../../entities/activity.entity';
 import { CreateActivityDto } from '../../dto/create-activity.dto';
 import { UpdateActivityDto } from '../../dto/update-activity.dto';
-import { AttendEventDto } from '../../dto/attend-event.dto';
 import { Role } from '../../../user/entities/user.entity';
 import { AuthGuard } from '@nestjs/passport';
 
 describe('ActivityController', () => {
   let controller: ActivityController;
-  let service: ActivityService;
 
   const mockActivity: Activity = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     createdByUserId: 'user-123',
+    createdByUser: null,
+    registrations: [],
     eventTitle: 'Test Event',
     eventDescription: 'Test Description',
     startDate: new Date('2025-12-01T10:00:00Z'),
     endDate: new Date('2025-12-01T12:00:00Z'),
     eventLocation: 'Test Location',
-    eventCoverPhoto: 'https://example.com/photo.jpg',
-    eventDocument: 'https://example.com/doc.pdf',
+    coverPhotoId: null,
+    coverPhoto: null,
+    documentId: null,
+    document: null,
     eventHost: 'Test Host',
     eventMeetingURL: 'https://meet.example.com',
     eventRegistration: 'https://register.example.com',
     eventCapacity: '100',
-    eventTags: ['club', 'study'],
+    tags: [],
     eventSchedule: '10:00 AM - 12:00 PM',
     eventSpeakers: ['Speaker 1', 'Speaker 2'],
     eventPrerequisites: 'None',
     eventCancellationPolicy: 'Refund available',
     eventContact: 'contact@example.com',
     eventSocialMedia: { twitter: '@example', facebook: 'example' },
-    attendanceCount: 0,
-    attendees: [],
     eventPrivacy: 'Public',
     eventAccessibility: 'Wheelchair accessible',
     eventNote: 'Test note',
@@ -49,11 +49,11 @@ describe('ActivityController', () => {
     getAllActivities: jest.fn(),
     getActivityById: jest.fn(),
     getActivitiesByUserId: jest.fn(),
-    addAttendee: jest.fn(),
     createActivity: jest.fn(),
     updateActivity: jest.fn(),
     deleteActivity: jest.fn(),
     archiveActivity: jest.fn(),
+    unarchiveActivity: jest.fn(),
     updateCoverImage: jest.fn(),
   };
 
@@ -72,7 +72,6 @@ describe('ActivityController', () => {
       .compile();
 
     controller = module.get<ActivityController>(ActivityController);
-    service = module.get<ActivityService>(ActivityService);
 
     jest.clearAllMocks();
   });
@@ -291,90 +290,8 @@ describe('ActivityController', () => {
     });
   });
 
-  describe('attendEvent', () => {
-    it('should add attendee with first and last name to event', async () => {
-      const attendEventDto: AttendEventDto = {
-        attendee: {
-          firstName: 'John',
-          lastName: 'Doe',
-        },
-      };
-
-      const updatedActivity = {
-        ...mockActivity,
-        attendees: [{ firstName: 'John', lastName: 'Doe' }],
-        attendanceCount: 1,
-      };
-
-      mockActivityService.addAttendee.mockResolvedValue(updatedActivity);
-
-      const mockRequest = {
-        user: { id: 'user-123', role: Role.creator },
-      };
-
-      const result = await controller.attendEvent('event-123', attendEventDto);
-
-      expect(result).toEqual(updatedActivity);
-      expect(mockActivityService.addAttendee).toHaveBeenCalledWith(
-        'event-123',
-        { firstName: 'John', lastName: 'Doe' },
-      );
-    });
-
-    it('should handle attendee with empty strings when attendee data is missing', async () => {
-      const attendEventDto: AttendEventDto = {
-        attendee: undefined,
-      };
-
-      const updatedActivity = {
-        ...mockActivity,
-        attendees: [{ firstName: '', lastName: '' }],
-        attendanceCount: 1,
-      };
-
-      mockActivityService.addAttendee.mockResolvedValue(updatedActivity);
-
-      const mockRequest = {
-        user: { id: 'user-123', role: Role.creator },
-      };
-
-      const result = await controller.attendEvent('event-123', attendEventDto);
-
-      expect(result).toEqual(updatedActivity);
-      expect(mockActivityService.addAttendee).toHaveBeenCalledWith(
-        'event-123',
-        { firstName: '', lastName: '' },
-      );
-    });
-
-    it('should handle partial attendee information', async () => {
-      const attendEventDto: AttendEventDto = {
-        attendee: {
-          firstName: 'Jane',
-        },
-      };
-
-      const updatedActivity = {
-        ...mockActivity,
-        attendees: [{ firstName: 'Jane', lastName: '' }],
-        attendanceCount: 1,
-      };
-
-      mockActivityService.addAttendee.mockResolvedValue(updatedActivity);
-
-      const mockRequest = {
-        user: { id: 'user-123', role: Role.creator },
-      };
-
-      const result = await controller.attendEvent('event-123', attendEventDto);
-
-      expect(result).toEqual(updatedActivity);
-      expect(mockActivityService.addAttendee).toHaveBeenCalledWith(
-        'event-123',
-        { firstName: 'Jane', lastName: '' },
-      );
-    });
-  });
+  // NOTE: attendEvent tests removed - endpoint is deprecated and removed
+  // Use EventRegistrationController.attendEvent instead
 
   describe('addEvent', () => {
     const createActivityDto: CreateActivityDto = {
@@ -384,13 +301,13 @@ describe('ActivityController', () => {
       startDate: '2025-12-01T10:00:00Z',
       endDate: '2025-12-01T12:00:00Z',
       eventLocation: 'Test Location',
-      eventCoverPhoto: 'https://example.com/photo.jpg',
-      eventDocument: 'https://example.com/doc.pdf',
+      coverPhotoId: undefined,
+      documentId: undefined,
       eventHost: 'Test Host',
       eventMeetingURL: 'https://meet.example.com',
       eventRegistration: 'https://register.example.com',
       eventCapacity: '100',
-      eventTags: ['club', 'study'],
+      tagNames: ['club', 'study'],
       eventSchedule: '10:00 AM - 12:00 PM',
       eventSpeakers: ['Speaker 1'],
       eventPrerequisites: 'None',
@@ -467,13 +384,13 @@ describe('ActivityController', () => {
       startDate: '2025-12-02T10:00:00Z',
       endDate: '2025-12-02T12:00:00Z',
       eventLocation: 'Updated Location',
-      eventCoverPhoto: 'https://example.com/new-photo.jpg',
-      eventDocument: 'https://example.com/new-doc.pdf',
+      coverPhotoId: undefined,
+      documentId: undefined,
       eventHost: 'Updated Host',
       eventMeetingURL: 'https://meet.example.com/new',
       eventRegistration: 'https://register.example.com/new',
       eventCapacity: '150',
-      eventTags: ['workshop', 'tech'],
+      tagNames: ['workshop', 'tech'],
       eventSchedule: '2:00 PM - 4:00 PM',
       eventSpeakers: ['New Speaker'],
       eventPrerequisites: 'Basic knowledge',
@@ -814,8 +731,7 @@ describe('ActivityController', () => {
 
       const updatedActivity = {
         ...mockActivity,
-        eventCoverPhoto:
-          'https://s3.amazonaws.com/bucket/cover-images/test-image.jpg',
+        coverPhotoId: 'media-123',
       };
 
       mockActivityService.getActivityById.mockResolvedValue(mockActivity);
@@ -834,6 +750,7 @@ describe('ActivityController', () => {
       expect(mockActivityService.updateCoverImage).toHaveBeenCalledWith(
         'activity-123',
         mockFile,
+        'admin-123',
       );
     });
 
@@ -844,8 +761,7 @@ describe('ActivityController', () => {
 
       const updatedActivity = {
         ...mockActivity,
-        eventCoverPhoto:
-          'https://s3.amazonaws.com/bucket/cover-images/test-image.jpg',
+        coverPhotoId: 'media-123',
       };
 
       mockActivityService.getActivityById.mockResolvedValue(mockActivity);
@@ -864,6 +780,7 @@ describe('ActivityController', () => {
       expect(mockActivityService.updateCoverImage).toHaveBeenCalledWith(
         'activity-123',
         mockFile,
+        'user-123',
       );
     });
 

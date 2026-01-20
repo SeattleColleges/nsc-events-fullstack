@@ -4,24 +4,39 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  OneToMany,
+  ManyToMany,
+  JoinColumn,
+  JoinTable,
 } from 'typeorm';
 
 export interface SocialMedia {
   [key: string]: string;
 }
 
-export interface Attendee {
-  firstName: string;
-  lastName: string;
-}
+// Forward reference to avoid circular dependency
+import type { EventRegistration } from '../../event-registration/entities/event-registration.entity';
+import type { User } from '../../user/entities/user.entity';
+import type { Tag } from '../../tag/entities/tag.entity';
+import type { Media } from '../../media/entities/media.entity';
 
 @Entity('activities')
 export class Activity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'created_by_user_id', nullable: true })
+  @Column({ name: 'created_by_user_id', type: 'uuid', nullable: true })
   createdByUserId: string;
+
+  @ManyToOne('User', 'createdActivities', {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'created_by_user_id' })
+  createdByUser: User;
+
+  @OneToMany('EventRegistration', 'activity')
+  registrations: EventRegistration[];
 
   @Column()
   eventTitle: string;
@@ -38,11 +53,19 @@ export class Activity {
   @Column()
   eventLocation: string;
 
-  @Column({ default: '' })
-  eventCoverPhoto?: string;
+  @Column({ name: 'cover_photo_id', type: 'uuid', nullable: true })
+  coverPhotoId?: string;
 
-  @Column({ default: '' })
-  eventDocument?: string;
+  @ManyToOne('Media', { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'cover_photo_id' })
+  coverPhoto?: Media;
+
+  @Column({ name: 'document_id', type: 'uuid', nullable: true })
+  documentId?: string;
+
+  @ManyToOne('Media', { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'document_id' })
+  document?: Media;
 
   @Column()
   eventHost: string;
@@ -56,8 +79,13 @@ export class Activity {
   @Column()
   eventCapacity: string;
 
-  @Column('simple-array')
-  eventTags: string[];
+  @ManyToMany('Tag', 'activities')
+  @JoinTable({
+    name: 'activity_tags',
+    joinColumn: { name: 'activity_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'tag_id', referencedColumnName: 'id' },
+  })
+  tags: Tag[];
 
   @Column({ nullable: true })
   eventSchedule?: string;
@@ -76,12 +104,6 @@ export class Activity {
 
   @Column('json', { nullable: false, default: {} })
   eventSocialMedia: SocialMedia;
-
-  @Column({ default: 0 })
-  attendanceCount?: number;
-
-  @Column('json', { nullable: true })
-  attendees?: Attendee[];
 
   @Column({ nullable: true })
   eventPrivacy?: string;

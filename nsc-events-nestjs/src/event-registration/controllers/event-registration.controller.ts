@@ -79,14 +79,10 @@ export class EventRegistrationController {
   ): Promise<EventRegistration> {
     try {
       // Create registration data from the attend DTO
+      // User details (firstName, lastName, email) are now accessed via the user relation
       const registrationDto: CreateEventRegistrationDto = {
         activityId: attendDto.eventId,
         userId: attendDto.userId,
-        firstName: attendDto.firstName || '',
-        lastName: attendDto.lastName || '',
-        email: '', // This would ideally be fetched from the user service
-        college: '',
-        yearOfStudy: '',
         isAttended: true, // Mark as attended automatically
       };
 
@@ -143,17 +139,17 @@ export class EventRegistrationController {
     // Since we don't have an isAnonymous field, we'll set anonymousCount to 0
     const anonymousCount = 0;
 
-    // Generate attendee names from firstName and lastName
+    // Generate attendee names from user relation
     const attendeeNames = registrations.map((reg) => {
+      // Access user data via the relation
+      const firstName = reg.user?.firstName || '';
+      const lastName = reg.user?.lastName || '';
       // If both firstName and lastName are empty or null, return "Anonymous"
-      if (
-        (!reg.firstName || reg.firstName.trim() === '') &&
-        (!reg.lastName || reg.lastName.trim() === '')
-      ) {
+      if (firstName.trim() === '' && lastName.trim() === '') {
         return 'Anonymous';
       }
       // Otherwise, return the concatenated name
-      return `${reg.firstName || ''} ${reg.lastName || ''}`.trim();
+      return `${firstName} ${lastName}`.trim();
     });
 
     return {
