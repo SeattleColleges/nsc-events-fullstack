@@ -29,10 +29,10 @@ export class Activity {
   @Column('text')
   eventDescription: string;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'datetime' })
   startDate: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'datetime' })
   endDate: Date;
 
   @Column()
@@ -74,7 +74,7 @@ export class Activity {
   @Column()
   eventContact: string;
 
-  @Column('json', { nullable: false, default: {} })
+  @Column('json', { nullable: false })
   eventSocialMedia: SocialMedia;
 
   @Column({ default: 0 })
@@ -98,9 +98,9 @@ export class Activity {
   @Column({ default: false })
   isArchived: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
+  @UpdateDateColumn()
   updatedAt: Date;
 }

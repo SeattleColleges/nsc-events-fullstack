@@ -1,0 +1,86 @@
+services:
+  ###################################################
+  # Service: proxy
+  #
+  ###################################################
+  proxy:
+    image: traefik:v3.6
+    command: --providers.docker
+    ports:
+      - 80:80
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  ###################################################
+  # Service: backend
+  ###################################################
+  backend:
+    build:
+      context: ./
+      target: backend-dev
+    command: npm run start:dev
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: mysqlpassword
+      MYSQL_DB: nsc-events-database
+      JWT_SECRET: secret
+    depends_on:
+      mysql:
+        condition: service_healthy
+    labels:
+      traefik.http.routers.backend.rule: Host(`localhost`) && PathPrefix(`/api`)
+      traefik.http.services.backend.loadbalancer.server.port: 3000
+
+  ###################################################
+  # Service: client
+  ###################################################
+  client:
+    build:
+      context: ./
+      target: client-dev
+    ports:
+      - "3000:8080"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost/api
+
+  ###################################################
+  # Service: mysql
+  ###################################################
+  mysql:
+    image: mysql:9.3
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: mysqlpassword
+      MYSQL_DATABASE: nsc-events-database
+    ports:
+      - "3307:3306"
+    volumes:
+      - nsc-events-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ###################################################
+  # Service: phpmyadmin
+  ###################################################
+  phpmyadmin:
+    image: phpmyadmin:latest
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: mysqlpassword
+      UPLOAD_LIMIT: 256M
+    ports:
+      - "8080:80"
+    labels:
+      traefik.http.routers.phpmyadmin.rule: Host(`db.localhost`)
+      traefik.http.services.phpmyadmin.loadbalancer.server.port: 80
+
+volumes:
+  nsc-events-mysql-data:
