@@ -28,20 +28,23 @@ import { EventRegistration } from './event-registration/entities/event-registrat
       isGlobal: true,
     }),
     WinstonLoggerModule,
-    // Configure TypeORM for PostgreSQL
+    // Configure TypeORM for MySQL
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         return {
-          type: 'postgres',
-          host: configService.get<string>('POSTGRES_HOST', 'localhost'),
-          port: configService.get<number>('POSTGRES_PORT', 5432),
-          username: configService.get<string>('POSTGRES_USER', 'postgres'),
-          password: configService.get<string>('POSTGRES_PASSWORD', 'postgres'),
+          type: 'mysql',
+          host: configService.get<string>('MYSQL_HOST', 'localhost'),
+          port: configService.get<number>('MYSQL_PORT', 3306),
+          username: configService.get<string>('MYSQL_USER', 'root'),
+          password: configService.get<string>(
+            'MYSQL_PASSWORD',
+            'mysqlpassword',
+          ),
           database: configService.get<string>(
-            'POSTGRES_DATABASE',
-            'nsc_events',
+            'MYSQL_DB',
+            'nsc-events-database',
           ),
           entities: [User, Activity, EventRegistration],
           synchronize: configService.get<boolean>('TYPEORM_SYNCHRONIZE', true),
