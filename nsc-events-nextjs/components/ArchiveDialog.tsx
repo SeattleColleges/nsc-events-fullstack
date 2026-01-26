@@ -23,7 +23,8 @@ const ArchiveDialog = ({ isOpen, event, dialogToggle }: ArchiveDialogProps) => {
   const toggleArchiveEvent = async (id: string, isArchived: boolean) => {
     const token = localStorage.getItem("token");
     try {
-      const apiUrl = process.env.NSC_EVENTS_PUBLIC_API_URL;
+      // IMPORTANT: Must use NEXT_PUBLIC_ prefix for browser-accessible env vars
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
       const endpoint = isArchived ? 'unarchive' : 'archive';
       const response = await fetch(`${apiUrl}/events/${endpoint}/${id}`, {
         method: "PUT",
@@ -51,7 +52,8 @@ const ArchiveDialog = ({ isOpen, event, dialogToggle }: ArchiveDialogProps) => {
       await queryClient.refetchQueries({ queryKey: ["events", "myEvents", "archivedEvents"] });
       setTimeout(() => {
         router.refresh();
-        router.push(variables.isArchived ? "/" : "/archived-events");
+        // Unarchive redirects to my-events, archive redirects to archived-events
+        router.push(variables.isArchived ? "/my-events" : "/archived-events");
       }, 1200);
     },
     onError: (error: Error, variables) => {

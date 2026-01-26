@@ -93,8 +93,6 @@ npm run start:dev
 cd nsc-events-nextjs
 npm run dev
 ```
-RM_SYNCHRONIZE=true
-```
 
 ### Building
 
@@ -120,7 +118,15 @@ npm run test:frontend
 
 # Test only backend
 npm run test:backend
+
+# Run E2E tests (requires both services running)
+npm run test:e2e
+
+# Run E2E tests with interactive UI
+npm run test:e2e:ui
 ```
+
+For more details on E2E testing, see [e2e/README.md](./e2e/README.md).
 
 ## CI/CD
 
