@@ -3,6 +3,10 @@
 ###################################################
 FROM node:22-alpine AS development
 WORKDIR /app
+
+# Install wget for healthcheck
+RUN apk add --no-cache wget
+
 COPY package*.json ./
 RUN npm install
 COPY . .
