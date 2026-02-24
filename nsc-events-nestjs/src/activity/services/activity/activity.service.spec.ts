@@ -330,10 +330,11 @@ describe('ActivityService', () => {
 
       expect(result).toEqual([mockActivity]);
       expect(queryBuilder.where).toHaveBeenCalledWith(
-        'activity."isHidden" = false',
+        'activity.isHidden = :isHidden',
+        { isHidden: false },
       );
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'activity."isArchived" = :isArchived',
+        'activity.isArchived = :isArchived',
         { isArchived: false },
       );
       expect(queryBuilder.take).toHaveBeenCalledWith(12);
@@ -354,7 +355,7 @@ describe('ActivityService', () => {
       await service.getAllActivities({ isArchived: 'true' });
 
       expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-        'activity."isArchived" = :isArchived',
+        'activity.isArchived = :isArchived',
         { isArchived: true },
       );
     });

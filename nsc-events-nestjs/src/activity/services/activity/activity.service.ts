@@ -109,8 +109,8 @@ export class ActivityService {
         .leftJoinAndSelect('activity.tags', 'tag')
         .leftJoinAndSelect('activity.coverPhoto', 'coverPhoto')
         .leftJoinAndSelect('activity.document', 'document')
-        .where('activity."isHidden" = false')
-        .andWhere('activity."isArchived" = :isArchived', { isArchived });
+        .where('activity.isHidden = :isHidden', { isHidden: false })
+        .andWhere('activity.isArchived = :isArchived', { isArchived });
 
       // Tag filter: filter by tag names using the join table
       if (tagsArray.length > 0) {
@@ -126,33 +126,33 @@ export class ActivityService {
 
       // Location filter
       if (queryParams?.location && queryParams.location.trim()) {
-        qb.andWhere('activity."eventLocation" ILIKE :location', {
+        qb.andWhere('activity.eventLocation ILIKE :location', {
           location: `%${queryParams.location.trim()}%`,
         });
       }
 
       // Host filter
       if (queryParams?.host && queryParams.host.trim()) {
-        qb.andWhere('activity."eventHost" ILIKE :host', {
+        qb.andWhere('activity.eventHost ILIKE :host', {
           host: `%${queryParams.host.trim()}%`,
         });
       }
 
       // Date range filters
       if (queryParams?.startDate) {
-        qb.andWhere('activity."startDate" >= :startDate', {
+        qb.andWhere('activity.startDate >= :startDate', {
           startDate: new Date(queryParams.startDate),
         });
       }
 
       if (queryParams?.endDate) {
-        qb.andWhere('activity."endDate" <= :endDate', {
+        qb.andWhere('activity.endDate <= :endDate', {
           endDate: new Date(queryParams.endDate),
         });
       }
 
       // Order by startDate instead of eventDate
-      qb.orderBy('activity."startDate"', 'ASC')
+      qb.orderBy('activity.startDate', 'ASC')
         .take(take)
         .skip((page - 1) * take);
 

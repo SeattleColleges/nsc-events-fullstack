@@ -119,6 +119,17 @@ export class AuthService {
       throw new BadRequestException('User not found');
     }
 
+    // check to see if new password is the same as the current password
+    const isSameAsCurrentPassword = await bcrypt.compare(
+      newPassword,
+      fullUser.password,
+    );
+    if (isSameAsCurrentPassword) {
+      throw new BadRequestException(
+        'New password must be different from your current password',
+      );
+    }
+
     // Hash the new password
     const hashedPassword = await bcrypt.hash(newPassword, 12);
 
@@ -244,6 +255,17 @@ export class AuthService {
     );
     if (!isCurrentPasswordValid) {
       throw new BadRequestException('Current password is incorrect');
+    }
+
+    // check to see if new password is the same as the current password
+    const isSameAsCurrentPassword = await bcrypt.compare(
+      newPassword,
+      user.password,
+    );
+    if (isSameAsCurrentPassword) {
+      throw new BadRequestException(
+        'New password must be different from your current password',
+      );
     }
 
     // Hash new password

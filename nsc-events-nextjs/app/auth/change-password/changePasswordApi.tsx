@@ -44,10 +44,12 @@ export const changePassword = async (
         message: "Password Changed successful!",
       };
     } else {
+      console.log(data.error)
+      console.log(data.message)
       // Other errors with a specific message from the backend
       return {
         status: "error",
-        message: data.error || "An error occurred during password change.",
+        message: data.message || "An error occurred during password change.",
       };
     }
   } catch (error) {
