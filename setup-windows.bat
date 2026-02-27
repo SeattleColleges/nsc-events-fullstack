@@ -22,6 +22,10 @@ if %errorlevel% neq 0 (
 
 echo Prerequisites met.
 
+REM --- Root env variables
+echo Copying the env.example file in root directory.
+copy .env.example .env >nul
+
 REM --- Dependency Installation ---
 echo Installing dependencies for all workspaces...
 call npm install
