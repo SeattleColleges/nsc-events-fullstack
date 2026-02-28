@@ -41,8 +41,8 @@ export default defineConfig({
     },
   ],
 
-  // Start Docker Compose services if not already running
-  // Services are accessible at http://localhost (port 80) via Traefik proxy
+  // Start Docker Compose services if not already running,
+  // services are accessible at http://localhost (port 80) via Traefik proxy
   webServer: {
     command: "docker compose up -d && tail -f /dev/null",
     url: "http://localhost",
