@@ -28,8 +28,14 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: nestjs-dev
-    env_file:
-      - ./nsc-events-nestjs/.env
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE:-nsc_events}
+      JWT_SECRET: ${JWT_SECRET:-secret}
     volumes:
       - ./nsc-events-nestjs:/app
       - /app/node_modules
@@ -58,8 +64,8 @@ services:
       dockerfile: Dockerfile
       target: development
     container_name: nextjs-dev
-    env_file:
-      - ./nsc-events-nextjs/.env
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost/api}
     volumes:
       - ./nsc-events-nextjs:/app
       - /app/node_modules
@@ -83,11 +89,11 @@ services:
     container_name: postgres-dev
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DATABASE:-nsc_events}
     ports:
-      - "3307:5432"
+      - "5432:5432"
     volumes:
       - nsc-events-postgres-data:/var/lib/postgresql/data
     healthcheck:
