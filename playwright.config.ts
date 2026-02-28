@@ -47,7 +47,7 @@ export default defineConfig({
     command: "docker compose up -d && tail -f /dev/null",
     url: "http://localhost",
     reuseExistingServer: true, // Don't restart if services are already running
-    timeout: 120000,
+    timeout: 240000,
   },
 
   // Global setup/teardown commented out because webServer already handles service readiness
