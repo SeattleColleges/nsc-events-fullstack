@@ -77,7 +77,10 @@ const EventDetail = () => {
 
   
   const { palette } = useTheme();
-  const containerColor = palette.background.paper;
+  // Use a slightly elevated surface in dark mode to stand out from the page background
+  const containerColor = palette.mode === "dark"
+    ? palette.grey[800]
+    : palette.background.paper;
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const isMobile = useMediaQuery(theme.breakpoints.between('xs', 'sm'));
