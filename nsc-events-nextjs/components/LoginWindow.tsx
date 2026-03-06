@@ -172,7 +172,7 @@ const LoginWindow = () => {
                         type="submit"
                         fullWidth
                         variant="contained"
-                        sx={{ mt: 3, mb: 2, color: "black", backgroundColor: palette.secondary.light, fontFamily: "font-serif" }}
+                        sx={{ mt: 3, mb: 2, color: palette.secondary.contrastText, backgroundColor: palette.secondary.light, fontFamily: "font-serif" }}
                     >
                         Login
                     </Button>

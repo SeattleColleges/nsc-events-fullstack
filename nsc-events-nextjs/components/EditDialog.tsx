@@ -4,7 +4,7 @@ import Dialog from "@mui/material/Dialog";
 // NOTE: We specify the generic type for the pickers to resolve type errors
 import { DatePicker, LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography, useTheme } from "@mui/material";
 import TextField from "@mui/material/TextField";
 import { textFieldStyle } from "@/components/InputFields";
 import TagSelector from "@/components/TagSelector";
@@ -19,6 +19,7 @@ interface EditDialogProps {
 }
 
 const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
+    const theme = useTheme();
     const {
         handleDateChange,
         onStartTimeChange,
@@ -87,7 +88,7 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
             <Dialog open={isOpen} maxWidth={"md"} fullWidth={true}>
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <Box component="form" onSubmit={handleSubmit} noValidate autoComplete="off" sx={{ p: 3 }}>
-                        <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'black', mb: 2 }}>
+                        <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: theme.palette.text.primary, mb: 2 }}>
                             Edit Event
                         </Typography>
                         <Stack spacing={2}>
@@ -340,13 +341,13 @@ const EditDialog = ({ isOpen, event, toggleEditDialog }: EditDialogProps) => {
                                     {/* Display non-nested errors */}
                                     {Object.entries(errors).map(([key, value]) => {
                                         if (typeof value === 'string' && value) {
-                                            return <p key={key} className="error-text" style={{ color: "red" }}>{value}</p>;
+                                            return <p key={key} className="error-text" style={{ color: theme.palette.error.main }}>{value}</p>;
                                         }
                                         return null;
                                     })}
                                     {/* Display nested social media errors */}
                                      {errors.eventSocialMedia && Object.entries(errors.eventSocialMedia).map(([nestedKey, nestedError]) => (
-                                                nestedError ? <p key={`social-${nestedKey}`} className="error-text" style={{ color: "red" }}>
+                                                nestedError ? <p key={`social-${nestedKey}`} className="error-text" style={{ color: theme.palette.error.main }}>
                                                     {`${nestedKey}: ${nestedError}`}
                                                 </p> : null
                                             ))}

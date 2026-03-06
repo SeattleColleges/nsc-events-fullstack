@@ -77,7 +77,7 @@ const EventDetail = () => {
 
   
   const { palette } = useTheme();
-  const containerColor = palette.mode === "dark" ? "#333" : "#fff";
+  const containerColor = palette.background.paper;
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   const isMobile = useMediaQuery(theme.breakpoints.between('xs', 'sm'));
@@ -569,8 +569,8 @@ const EventDetail = () => {
                           <Button
                             variant="contained"
                             sx={{
-                              color: "white",
-                              backgroundColor: "#2074d4",
+                              color: theme.palette.primary.contrastText,
+                              backgroundColor: theme.palette.primary.main,
                               ml: isMobile ? 0 : 2,
                               padding: "8px 16px",
                               minWidth: "120px",
@@ -590,8 +590,8 @@ const EventDetail = () => {
                           <Button
                             variant="contained"
                             sx={{
-                              color: "white",
-                              backgroundColor: "#2074d4",
+                              color: theme.palette.primary.contrastText,
+                              backgroundColor: theme.palette.primary.main,
                               padding: "8px 16px",
                               minWidth: "120px",
                               width: isMobile ? "120" : "auto",
@@ -610,8 +610,8 @@ const EventDetail = () => {
                           <Button
                             variant="contained"
                             sx={{
-                              color: "white",
-                              backgroundColor: "#2074d4",
+                              color: theme.palette.primary.contrastText,
+                              backgroundColor: theme.palette.primary.main,
                               padding: "8px 16px",
                               minWidth: "120px",
                               width: isMobile ? "120" : "auto",
@@ -642,8 +642,8 @@ const EventDetail = () => {
                   <Button
                     variant="contained"
                     sx={{
-                      color: "white",
-                      backgroundColor: "#2074d4",
+                      color: theme.palette.primary.contrastText,
+                      backgroundColor: theme.palette.primary.main,
                       width: isMobile ? "120" : "auto",
                       padding: "8px 16px",
                       overflow: "hidden",
@@ -664,8 +664,8 @@ const EventDetail = () => {
                   <Button
                     variant="contained"
                     sx={{
-                      color: "white",
-                      backgroundColor: isRegistered ? "red" : "#2074d4",
+                      color: theme.palette.primary.contrastText,
+                      backgroundColor: isRegistered ? theme.palette.error.main : theme.palette.primary.main,
                       width: isMobile ? "120" : "auto",
                       padding: "8px 16px",
                       overflow: "hidden",
@@ -697,12 +697,12 @@ const EventDetail = () => {
               >
                 {events.length > 1 && events.findIndex(e => e === event?.id) > 0 && (
                   <Button onClick={getPrevEvent} sx={{ filter: isMobile ? "drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2))" : "", p: 0, ml: 0 }}>
-                    <ArrowLeftIcon sx={{ fontSize: isMobile ? "40px" : "70px", backgroundColor: isMobile ? "white" : "", color: isMobile ? "grey" : "", filter: isMobile ? "" : "drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2))", borderRadius: "2px" }} />
+                    <ArrowLeftIcon sx={{ fontSize: isMobile ? "40px" : "70px", backgroundColor: isMobile ? theme.palette.background.paper : "", color: isMobile ? theme.palette.text.secondary : "", filter: isMobile ? "" : "drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2))", borderRadius: "2px" }} />
                   </Button>
                 )}
                 {events.length > 1 && events.findIndex(e => e === event?.id) < events.length - 1 && (
                   <Button onClick={getNextEvent} sx={{ filter: isMobile ? "drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2))" : "", p: 0, mr: -2 }}>
-                    <ArrowRightIcon sx={{ fontSize: isMobile ? "40px" : "70px", backgroundColor: isMobile ? "white" : "", color: isMobile ? "grey" : "", filter: isMobile ? "" : "drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2))", borderRadius: "2px" }} />
+                    <ArrowRightIcon sx={{ fontSize: isMobile ? "40px" : "70px", backgroundColor: isMobile ? theme.palette.background.paper : "", color: isMobile ? theme.palette.text.secondary : "", filter: isMobile ? "" : "drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.2))", borderRadius: "2px" }} />
                   </Button>
                 )}
               </Box>
@@ -747,7 +747,7 @@ const EventDetail = () => {
             autoHideDuration={1200}
             anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
           >
-            <SnackbarContent message={snackbarMessage} sx={{ backgroundColor: "white", color: "black" }} />
+            <SnackbarContent message={snackbarMessage} sx={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }} />
           </Snackbar>
         </Box>
       </Box>

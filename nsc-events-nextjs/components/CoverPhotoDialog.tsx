@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, SnackbarContent, Typography } from '@mui/material'
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, SnackbarContent, Typography, useTheme } from '@mui/material'
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import React, { useState } from 'react'
 import { useMutation } from '@tanstack/react-query';
@@ -14,7 +14,7 @@ interface CoverPhotoDialogProps {
 }
 
 function CoverPhotoDialog({ isOpen, dialogToggle, eventId, setEvent }: CoverPhotoDialogProps) {
-
+    const theme = useTheme();
     const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
     const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -147,7 +147,7 @@ function CoverPhotoDialog({ isOpen, dialogToggle, eventId, setEvent }: CoverPhot
         >
             <SnackbarContent
                 message={snackbarMessage}
-                sx={{ backgroundColor: "white", color: "black" }}
+                sx={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }}
             />
         </Snackbar>
     </>

@@ -11,6 +11,7 @@ import {
   SnackbarContent,
   Tooltip,
   Typography,
+  useTheme,
 } from "@mui/material";
 import DialogActions from "@mui/material/DialogActions";
 import Snackbar from "@mui/material/Snackbar";
@@ -28,7 +29,7 @@ interface AttendDialogProps {
 }
 
 const AttendDialog = ({ isOpen, eventId, dialogToggle, onSuccess }: AttendDialogProps) => {
-    
+    const theme = useTheme();
     const [checked, setChecked] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
     const [heardFrom, setHeardFrom] = useState<string[]>([]); // New state for "Heard From"
@@ -263,7 +264,7 @@ const AttendDialog = ({ isOpen, eventId, dialogToggle, onSuccess }: AttendDialog
       >
         <SnackbarContent
           message={snackbarMessage}
-          sx={{ backgroundColor: "white", color: "black" }}
+          sx={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary }}
         />
       </Snackbar>
     </>
