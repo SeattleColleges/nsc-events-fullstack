@@ -9,7 +9,6 @@ import { useTheme } from "@mui/material";
 import Link from "next/link";
 
 const URL = process.env.NSC_EVENTS_PUBLIC_API_URL;
-console.log('LoginWindow Dev API Address: ', URL);
 
 const LoginWindow = () => {
     const { palette } = useTheme();
@@ -95,7 +94,6 @@ const LoginWindow = () => {
             }
         } catch (err) {
             setError("An error occurred during login");
-            console.error("Login error:", err);
         }
     };
 

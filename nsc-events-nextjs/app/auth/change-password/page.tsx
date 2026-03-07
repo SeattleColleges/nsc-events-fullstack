@@ -103,7 +103,6 @@ const ChangePassword = () => {
     if (userToken) {
       changePassword(passwordChangeForm, userToken)
         .then((response) => {
-          console.log(response.message);
           setSnackBarMessage(response.message);
           // Handle success
           if (response.status === "success") {
@@ -116,12 +115,11 @@ const ChangePassword = () => {
         })
         .catch((error) => {
           // Handle error
-          console.error(error);
           setSnackBarMessage("An error occurred."); // Update with a generic or specific error message
         });
     } else {
-      console.error("No user token available");
       // Handle the case when there's no user token (e.g., show an error message)
+      setSnackBarMessage("No user token available");
     }
   };
 

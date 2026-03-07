@@ -30,7 +30,6 @@ const Home = () => {
   const { palette } = useTheme();
 
   const { data, isLoading } = useFilteredEvents(page, true, activeTags);
-  console.log("data", data);
 
   // Reference the image paths directly instead of using imports
   const googlePlayImage = "/images/google_play.png";

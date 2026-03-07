@@ -57,7 +57,6 @@ const EditUserDetailsDialog: React.FC<EditUserDetailsDialogProps> = ({ open, onC
         },
         body: JSON.stringify({ firstName, lastName, pronouns })
       });
-      console.log(response.body)
       if (response.ok) {
         const updatedUser = await response.json();
         setTimeout(() => onClose(updatedUser), 1000);
@@ -65,13 +64,11 @@ const EditUserDetailsDialog: React.FC<EditUserDetailsDialogProps> = ({ open, onC
         setSnackbarMessage('Profile updated successfully!');
         setSnackbarOpen(true);
       } else {
-        console.error('Failed to update profile:', response.statusText);
         setSnackbarSeverity('error');
         setSnackbarMessage('Failed to update profile');
         setSnackbarOpen(true);
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
       setSnackbarSeverity('error');
       setSnackbarMessage('Error updating profile');
     }

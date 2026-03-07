@@ -24,10 +24,6 @@ type SignUpResponse = SignUpSuccessResponse | SignUpErrorResponse;
 export const signUp = async (
   payload: SignUpPayload
 ): Promise<SignUpResponse> => {
-    if (apiUrl?.includes('localhost')) {
-    console.log('Dev API Address: ',apiUrl)
-  }
-
   try {
     const response = await fetch(`${apiUrl}/auth/signup`, {
       method: "POST",
@@ -57,7 +53,6 @@ export const signUp = async (
       };
     }
   } catch (error) {
-    console.error("Error signing up:", error);
     // Handling unexpected errors, possibly network issues
     return {
       status: "error",

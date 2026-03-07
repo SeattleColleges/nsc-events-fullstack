@@ -8,7 +8,6 @@ import { textFieldStyle } from "@/components/InputFields";
 import { useTheme } from "@mui/material";
 
 const URL = process.env.NSC_EVENTS_PUBLIC_API_URL;
-console.log('Sign-in Dev API Address: ', URL);
 
 const Signin = () => {
   const { palette } = useTheme();
@@ -94,7 +93,6 @@ const Signin = () => {
       }
     } catch (err) {
       setError("An error occurred during login");
-      console.error("Login error:", err);
     }
   };
 

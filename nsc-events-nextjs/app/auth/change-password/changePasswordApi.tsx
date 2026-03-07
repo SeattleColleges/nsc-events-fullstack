@@ -44,8 +44,6 @@ export const changePassword = async (
         message: "Password Changed successful!",
       };
     } else {
-      console.log(data.error)
-      console.log(data.message)
       // Other errors with a specific message from the backend
       return {
         status: "error",
@@ -53,7 +51,6 @@ export const changePassword = async (
       };
     }
   } catch (error) {
-    console.error("Error changing password:", error);
     return {
       status: "error",
       message: "Failed to connect to the change password function.",

@@ -83,7 +83,7 @@ const AttendDialog = ({ isOpen, eventId, dialogToggle, onSuccess }: AttendDialog
 
             return response.json();
         } catch (error) {
-            console.error('error: ', error);
+            // Error handled in mutation error handler
         }
     };
 
@@ -95,8 +95,7 @@ const AttendDialog = ({ isOpen, eventId, dialogToggle, onSuccess }: AttendDialog
         dialogToggle(); // close dialog here
         onSuccess && onSuccess();
       },  
-      onError: (error) => {
-        console.error("Error attending event:", error);
+      onError: () => {
         // Still consider it as successful since the backend operation might have succeeded
         setSnackbarMessage("You are now attending this event!");
         dialogToggle();

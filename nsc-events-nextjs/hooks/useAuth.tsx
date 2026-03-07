@@ -27,7 +27,6 @@ const useAuth = () => {
       // Validate JWT format (must have 3 parts)
       const parts = trimmedToken.split('.');
       if (parts.length !== 3) {
-        console.error('Invalid JWT format');
         setUser(null);
         return;
       }
@@ -40,7 +39,6 @@ const useAuth = () => {
       setUser(user);
     } catch (error) {
       // Handle any decoding or parsing errors gracefully
-      console.error('Error decoding token:', error);
       setIsAuth(false);
       setUser(null);
     }

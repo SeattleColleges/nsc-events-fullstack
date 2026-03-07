@@ -159,7 +159,6 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Event Data: ", eventData);
     // validate the form data
     const newErrors = validateFormData(eventData);
     // additionally validate date and time selections
@@ -218,8 +217,6 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
         dataToSend.eventSpeakers = [dataToSend.eventSpeakers];
       }
 
-      console.log("Event data after applying transformation: ", dataToSend);
-
       // Create FormData for multipart/form-data submission
       const formData = new FormData();
 
@@ -253,7 +250,6 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
 
       const data = await response.json();
       if (response.ok) {
-        console.log("Activity created:", data);
         await queryClient.refetchQueries({ queryKey: ['events', 'myEvents', 'archivedEvents'] });
         setSuccessMessage(data.message || "Event successfully created!");
         setErrorMessage("");
@@ -279,17 +275,14 @@ export const useEventForm = (initialData: Activity | ActivityDatabase) => {
           } else {
             // If no ID is available, just go to the main page
             router.push('/');
-            console.error("Activity ID not found in response:", normalizedData);
           }
         }, 1200);
       } else {
-        console.log("Failed to create activity:", response.status);
         throw new Error(data.message || "Failed to create the event.");
       }
     } catch (error) {
       // type guard to check if error is an instance of Error
       if (error instanceof Error) {
-        console.error("Error creating activity:", error);
         setErrorMessage(error.message);
       } else {
         setErrorMessage("An unexpected error occurred.");

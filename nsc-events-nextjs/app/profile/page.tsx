@@ -29,7 +29,6 @@ const ProfileContent = () => {
             const storedToken = localStorage.getItem("token");
     
             if (!storedToken) {
-                console.error("Token is missing");
                 return;
             }
     
@@ -44,8 +43,6 @@ const ProfileContent = () => {
             if (response.ok) {
                 const data = await response.json();
                 setUser(data);
-            } else {
-                console.error("Error:", response.status, response.statusText);
             }
         };
     

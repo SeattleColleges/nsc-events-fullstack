@@ -54,7 +54,6 @@ export const apiClient = {
 
 // Legacy function for backward compatibility
 const startDb = async () => {
-  console.log('Database connection is now handled by the backend API');
   // No-op since frontend should use API calls instead of direct DB connections
 };
 

@@ -14,7 +14,6 @@ export const getCurrentUserId = () => {
   
       return payload?.id ?? null;
     } catch (error) {
-      console.error("Invalid JWT token:", error);
       return null;
     }
   };

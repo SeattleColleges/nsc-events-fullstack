@@ -43,7 +43,6 @@ export const useEditForm = (initialData: ActivityDatabase) => {
         setStartTimeDate(start);
         setEndTimeDate(end);
       } catch (error) {
-        console.error("Failed to parse initial dates:", error);
         // Set to null or default if parsing fails
         setSelectedDate(null);
         setStartTimeDate(null);
@@ -141,8 +140,6 @@ export const useEditForm = (initialData: ActivityDatabase) => {
         dataToSend.eventSpeakers = [dataToSend.eventSpeakers];
       }
 
-      console.log("Event data being sent for update:", dataToSend);
-
       // IMPORTANT: Must use NEXT_PUBLIC_ prefix for browser-accessible env vars
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
       // Use id for the API endpoint
@@ -160,13 +157,11 @@ export const useEditForm = (initialData: ActivityDatabase) => {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Event updated:", data);
         return response.status;
       } else {
         throw new Error(data.message || "Failed to update event.");
       }
     } catch (error) {
-      console.error(error);
       throw error;
     }
   };
@@ -182,7 +177,6 @@ export const useEditForm = (initialData: ActivityDatabase) => {
     },
     onError: (error: any) => {
       if (error instanceof Error) {
-        console.error("Error updating event:", error);
         setErrorMessage(error.message);
       } else {
         setErrorMessage("An unexpected error occurred.");

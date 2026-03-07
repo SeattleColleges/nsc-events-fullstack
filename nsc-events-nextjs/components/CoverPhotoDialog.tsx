@@ -27,7 +27,6 @@ function CoverPhotoDialog({ isOpen, dialogToggle, eventId, setEvent }: CoverPhot
         }
         
         const formData = new FormData();
-        console.log("File:", file);
         formData.append("coverImage", file);
 
         let options = {
@@ -48,7 +47,6 @@ function CoverPhotoDialog({ isOpen, dialogToggle, eventId, setEvent }: CoverPhot
             }
             return response.json();
         } catch (error) {
-            console.error("Error uploading cover photo:", error);
             throw error;
         }
     }
@@ -63,12 +61,10 @@ function CoverPhotoDialog({ isOpen, dialogToggle, eventId, setEvent }: CoverPhot
                     eventCoverPhoto: data.eventCoverPhoto
                 }));
             } else {
-                console.warn("Upload succeeded but no cover photo URL returned:", data);
                 setSnackbarMessage("Cover photo uploaded, but URL not received. Please refresh the page.");
             }
         },
         onError: (error) => {
-            console.error("Error:", error);
             setSnackbarMessage(`Error: ${error.message}`);
         }
     });

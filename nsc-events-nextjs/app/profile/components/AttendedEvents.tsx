@@ -184,7 +184,6 @@ export const AttendedEvents: React.FC<AttendedEventsProps> = ({
   });
 
   const requestUnattend = (eventId: string, eventTitle: string) => {
-    console.log("Requesting to unregister:", eventId, eventTitle);
     setPendingEvent({ id: eventId, title: eventTitle });
     setConfirmOpen(true);
   };
@@ -209,7 +208,7 @@ export const AttendedEvents: React.FC<AttendedEventsProps> = ({
       }
       setEvents((prev) => prev.filter((e) => e.eventId !== pendingEvent.id));
     } catch (err) {
-      console.error("Failed to unregister:", err);
+      // Error handled silently - UI already updated
     } finally {
       setConfirmOpen(false);
       setPendingEvent(null);

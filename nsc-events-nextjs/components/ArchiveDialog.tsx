@@ -38,7 +38,6 @@ const ArchiveDialog = ({ isOpen, event, dialogToggle }: ArchiveDialogProps) => {
       }
       return response.json();
     } catch (error) {
-      console.error("error: ", error);
       throw error;
     }
   };
@@ -56,10 +55,9 @@ const ArchiveDialog = ({ isOpen, event, dialogToggle }: ArchiveDialogProps) => {
         router.push(variables.isArchived ? "/my-events" : "/archived-events");
       }, 1200);
     },
-    onError: (error: Error, variables) => {
+    onError: (_error: Error, variables) => {
       const action = variables.isArchived ? "unarchive" : "archive";
       setSnackbarMessage(`Failed to ${action} event.`);
-      console.error(`Failed to ${action} event: `, error);
     },
   });
 

@@ -129,7 +129,7 @@ const ArchivedEvents = () => {
                 }
             }
         } catch (error) {
-            console.error('Error fetching archived events:', error);
+            // Error handled silently
         } finally {
             setLoading(false);
         }

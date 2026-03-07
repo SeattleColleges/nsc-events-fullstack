@@ -193,7 +193,6 @@ const EventDetail = () => {
       }
       return response.json();
     } catch (error) {
-      console.error("error: ", error);
       throw error;
     }
   };
@@ -209,7 +208,6 @@ const EventDetail = () => {
       }, 1200);
     },
     onError: (error) => {
-      console.log("Error deleting event, but continuing anyway:", error);
       // Still navigate away since the delete might have succeeded despite the error
       setSnackbarMessage("Successfully deleted event.");
       setTimeout(() => {
@@ -310,7 +308,7 @@ const EventDetail = () => {
         setAttendees(data.attendees || []);
       }
     } catch (err) {
-      console.error("Failed to fetch attendee data", err);
+      // Error fetching attendee data - silently handled
     }
   }, [event?.id, event?.createdByUserId, token, userId, userRole]);
 
@@ -347,7 +345,6 @@ const EventDetail = () => {
   
     if (currentIndex >= 0 && currentIndex < events.length - 1) {
       const nextEvent = events[currentIndex + 1];
-      console.log("Navigating to:", nextEvent);
       router.push(`/event-detail?id=${nextEvent}`);
     }
   };
@@ -356,16 +353,9 @@ const EventDetail = () => {
     const currentIndex = events.findIndex(e => e === event?.id);
     if (currentIndex > 0) {
       const prevEvent = events[currentIndex - 1];
-      console.log("Navigating to:", prevEvent);
       router.push(`/event-detail?id=${prevEvent}`);
     }
   };
-
-  // Debugging console logs
-  useEffect(() => {
-    console.log("Events: ", events);
-    console.log("Current Event: ", event);
-  }, [events, event]);
 
   const unattendEvent = async ({ eventId, userId }: { eventId: string; userId: string }) => {
     let options = {
@@ -386,7 +376,6 @@ const EventDetail = () => {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error("Error unregistering:", error);
       throw error;
     }
   }

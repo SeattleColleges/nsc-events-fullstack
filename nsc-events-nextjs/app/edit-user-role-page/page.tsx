@@ -76,7 +76,6 @@ const EditUserRolePage = () => {
 
     // Check if the API URL is defined
     if (!apiUrl) {
-      console.error("API URL is not defined");
       return;
     }
 
@@ -116,7 +115,7 @@ const EditUserRolePage = () => {
         setUserInfo(data);
       }
     } catch (error) {
-      console.error("Error getting user info:", error);
+      // Error getting user info - silently handled
     }
   }
 
@@ -128,7 +127,6 @@ const EditUserRolePage = () => {
 
       // Check if the API URL is defined
       if (!apiUrl) {
-        console.error("API URL is not defined");
         return;
       }
       const response = await fetch(`${apiUrl}/users/update/${userId}`, {
