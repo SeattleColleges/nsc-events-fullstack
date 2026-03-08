@@ -62,6 +62,25 @@ test.describe("Event Management", () => {
     createdEventIds = [];
   });
 
+  test.afterAll(async () => {
+    // Delete the test creator user via admin account
+    if (!userId) return;
+    try {
+      const adminClient = new ApiClient();
+      const loginRes = await adminClient.login(
+        "admin@nsc.dev",
+        "admin@admin123",
+      );
+      const adminToken = loginRes.data?.token || loginRes.data?.data?.token;
+      if (adminToken) {
+        adminClient.setToken(adminToken);
+        await adminClient.deleteUser(userId);
+      }
+    } catch {
+      // Best-effort — global teardown will handle any remaining test users
+    }
+  });
+
   test("should create a new event via UI and redirect to event detail", async ({ page, browserName }) => {
     // Skip on Mobile Chrome due to MUI DatePicker mobile dialog interaction complexity
     test.skip(browserName === "chromium" && test.info().project.name === "Mobile Chrome",

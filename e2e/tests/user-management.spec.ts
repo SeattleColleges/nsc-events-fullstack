@@ -26,6 +26,7 @@ async function setAuthToken(page: Page, token: string): Promise<void> {
 test.describe('User Management & Admin Functions', () => {
   let adminToken: string;
   let testUserId: string;
+  let testAdminUserId: string;
 
   test.beforeAll(async ({ browser }) => {
     // Setup: Create admin user
@@ -43,6 +44,7 @@ test.describe('User Management & Admin Functions', () => {
     if (signupResponse.ok()) {
       const data = await signupResponse.json();
       adminToken = data.token;
+      testAdminUserId = data.user?.id || data.data?.user?.id;
 
       // Create a regular user for role management tests
       const regularUser = generateTestUser();
@@ -57,6 +59,43 @@ test.describe('User Management & Admin Functions', () => {
     }
 
     await page.close();
+  });
+
+  test.afterAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    try {
+      const adminRes = await page.request.post(
+        "http://localhost:3000/api/auth/login",
+        {
+          data: { email: "admin@nsc.dev", password: "admin@admin123" },
+        },
+      );
+      if (adminRes.ok()) {
+        const adminData = await adminRes.json();
+        const seedAdminToken = adminData.token || adminData.data?.token;
+        if (seedAdminToken) {
+          const headers = { Authorization: `Bearer ${seedAdminToken}` };
+          // Delete regular test user
+          if (testUserId) {
+            await page.request.delete(
+              `http://localhost:3000/api/users/remove/${testUserId}`,
+              { headers },
+            );
+          }
+          // Delete the test admin user created by this suite
+          if (testAdminUserId) {
+            await page.request.delete(
+              `http://localhost:3000/api/users/remove/${testAdminUserId}`,
+              { headers },
+            );
+          }
+        }
+      }
+    } catch {
+      // Best-effort — global teardown will handle stragglers
+    } finally {
+      await page.close();
+    }
   });
 
   test('should view user profile', async ({ page, browserName }) => {

@@ -4,7 +4,10 @@ export class ApiClient {
   private client: AxiosInstance;
   private token: string | null = null;
 
-  constructor(baseURL: string = process.env.PLAYWRIGHT_API_URL || "http://localhost:3000/api") {
+  constructor(
+    baseURL: string = process.env.PLAYWRIGHT_API_URL ||
+      "http://localhost:3000/api",
+  ) {
     this.client = axios.create({
       baseURL,
       headers: {
@@ -28,7 +31,7 @@ export class ApiClient {
     firstName: string,
     lastName: string,
     pronouns: string = "they/them",
-    role: string = "user"
+    role: string = "user",
   ) {
     return this.client.post("/auth/signup", {
       email,
@@ -90,6 +93,24 @@ export class ApiClient {
   async logOut() {
     this.token = null;
     delete this.client.defaults.headers.common["Authorization"];
+  }
+
+  // ─── Admin helpers ───────────────────────────────────────────────────────────
+
+  async getAllUsers() {
+    return this.client.get("/users");
+  }
+
+  async getUserByEmail(email: string) {
+    return this.client.get(`/users/email/${encodeURIComponent(email)}`);
+  }
+
+  async deleteUser(id: string) {
+    return this.client.delete(`/users/remove/${id}`);
+  }
+
+  async getAllEvents(limit = 500) {
+    return this.client.get(`/events?numberOfEventsToGet=${limit}`);
   }
 }
 
