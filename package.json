@@ -28,7 +28,8 @@
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:codegen": "playwright codegen http://localhost:8080",
     "test:all": "npm run test && npm run test:e2e",
-    "seed": "node scripts/events-seed.js"
+    "seed": "node scripts/events-seed.js",
+    "seed:users": "node scripts/users-seed.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
