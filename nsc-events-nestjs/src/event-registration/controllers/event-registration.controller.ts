@@ -15,6 +15,8 @@ import { EventRegistrationService } from '../services/event-registration.service
 import { CreateEventRegistrationDto } from '../dto/create-event-registration.dto';
 import { AttendEventDto } from '../dto/attend-event.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RoleGuard } from '../../auth/role.guard';
+import { Roles } from '../../auth/roles.decorator';
 import { EventRegistration } from '../entities/event-registration.entity';
 import { ActivityService } from '../../activity/services/activity/activity.service';
 import {
@@ -61,6 +63,8 @@ export class EventRegistrationController {
   }
 
   // New endpoint for attending an event
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @Post('attend')
   @ApiOperation({
     summary: 'Attend an event',
@@ -73,6 +77,7 @@ export class EventRegistrationController {
     type: EventRegistration,
   })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error attending event' })
   async attendEvent(
     @Body() attendDto: AttendEventDto,
@@ -420,10 +425,13 @@ export class EventRegistrationController {
     return this.registrationService.markAttendance(id, body.isAttended);
   }
 
-  // Get attendees for an event
+  // Get attendees for an event (admin/creator only)
+  @Roles('admin', 'creator')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('attendees/:activityId')
   @ApiOperation({
-    summary: 'Get event attendees',
+    summary: 'Get event attendees (Admin/Creator only)',
     description:
       'Retrieves all attendees who have marked attendance for an event',
   })
@@ -433,6 +441,11 @@ export class EventRegistrationController {
     description: 'List of attendees',
     type: [EventRegistration],
   })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin/Creator role required',
+  })
   @ApiResponse({ status: 404, description: 'Event not found' })
   async getAttendeesForEvent(
     @Param('activityId') activityId: string,
@@ -440,10 +453,13 @@ export class EventRegistrationController {
     return this.registrationService.getAttendeesForActivity(activityId);
   }
 
-  // Get registration statistics for an event
+  // Get registration statistics for an event (admin/creator only)
+  @Roles('admin', 'creator')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @ApiBearerAuth('JWT-auth')
   @Get('stats/:activityId')
   @ApiOperation({
-    summary: 'Get registration statistics',
+    summary: 'Get registration statistics (Admin/Creator only)',
     description:
       'Retrieves registration and attendance statistics for an event',
   })
@@ -459,6 +475,11 @@ export class EventRegistrationController {
         attendanceRate: { type: 'number', example: 0.9 },
       },
     },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin/Creator role required',
   })
   @ApiResponse({ status: 404, description: 'Event not found' })
   async getRegistrationStats(@Param('activityId') activityId: string): Promise<{
