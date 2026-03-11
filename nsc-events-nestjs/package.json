@@ -32,6 +32,7 @@
     "@nestjs/passport": "10.0.3",
     "@nestjs/platform-express": "10.4.20",
     "@nestjs/swagger": "^7.4.2",
+    "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.0",
     "@sendgrid/mail": "8.1.4",
     "@types/multer": "^1.4.12",

@@ -1,6 +1,7 @@
 import { Body, Controller, Post, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { LoginDto } from '../dto/login.dto';
 import { SignUpDto } from '../dto/signup.dto';
 import { ForgotPasswordDto } from '../dto/forgot-password.dto';
@@ -16,11 +17,13 @@ import {
 
 @ApiTags('Authentication')
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
 export class AuthController {
   // private so it is only accessed within this class
   constructor(private readonly authService: AuthService) {}
 
   @Post('/signup')
+  @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 signups per minute per IP
   @ApiOperation({
     summary: 'Register a new user',
     description: 'Creates a new user account and returns a JWT token',
@@ -46,6 +49,7 @@ export class AuthController {
   }
 
   @Post('/login')
+  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 login attempts per minute per IP
   @ApiOperation({
     summary: 'Login user',
     description: 'Authenticates a user and returns a JWT token',
@@ -71,6 +75,7 @@ export class AuthController {
 
   // forgot password route
   @Post('/forgot-password')
+  @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 password reset requests per minute per IP
   @ApiOperation({
     summary: 'Request password reset',
     description: 'Sends a password reset link to the user email',
@@ -97,6 +102,7 @@ export class AuthController {
 
   // reset password route
   @Post('/reset-password')
+  @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 reset attempts per minute per IP
   resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
     return this.authService.resetPassword(dto.token, dto.password);
   }

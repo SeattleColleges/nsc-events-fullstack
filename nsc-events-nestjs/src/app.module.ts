@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { UserModule } from './user/user.module';
 import { ActivityModule } from './activity/activity.module';
 import { AuthModule } from './auth/auth.module';
@@ -32,6 +33,24 @@ import { Media } from './media/entities/media.entity';
       isGlobal: true,
       ignoreEnvFile: process.env.NODE_ENV === 'test',
     }),
+    // Rate limiting configuration - applied globally with per-endpoint overrides
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000, // 1 second
+        limit: 3, // 3 requests per second (general protection)
+      },
+      {
+        name: 'medium',
+        ttl: 10000, // 10 seconds
+        limit: 20, // 20 requests per 10 seconds
+      },
+      {
+        name: 'long',
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests per minute
+      },
+    ]),
     WinstonLoggerModule,
     // Configure TypeORM for PostgreSQL
     TypeOrmModule.forRootAsync({
