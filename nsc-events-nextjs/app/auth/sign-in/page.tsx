@@ -6,9 +6,11 @@ import Image from "next/image";
 import { Container, Paper, Box, TextField, Button, Typography, Link as MuiLink, useMediaQuery } from "@mui/material";
 import { textFieldStyle } from "@/components/InputFields";
 import { useTheme } from "@mui/material";
+import { createClient } from "@/lib/supabaseClient";
+const supabase = createClient();
 
-const URL = process.env.NSC_EVENTS_PUBLIC_API_URL;
-console.log('Sign-in Dev API Address: ', URL);
+// const URL = process.env.NSC_EVENTS_PUBLIC_API_URL;
+// console.log('Sign-in Dev API Address: ', URL);
 
 const Signin = () => {
   const { palette } = useTheme();
@@ -17,7 +19,7 @@ const Signin = () => {
   const lightImagePath = '/images/blue_nsc_logo.png';
   const imagePath = palette.mode === "dark" ? darkImagePath : lightImagePath;
 
-  
+
   const [error, setError] = useState("");
   const [userInfo, setUserInfo] = useState({
     email: "",
@@ -25,7 +27,7 @@ const Signin = () => {
   });
 
   const router = useRouter();
-  
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
@@ -40,51 +42,43 @@ const Signin = () => {
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
-    
+    setError("")
     try {
-      if (!URL) {
-        setError("API URL not configured");
-        return;
-      }
-      
-      const loginEndpoint = `${URL}/auth/login`;
-      
-      const res = await fetch(loginEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        setError("Invalid email or password");
+
+      if (error) {
+        setError(error.message || "Invalid email or password");
         return;
       }
-      
-      const data = await res.json();
-      
-      if (!data.token) {
-        setError("Login response missing token");
-        return;
+
+      if (!data.session) {
+        setError("Login was sucessful, but no session was returned")
       }
-      
-      const { token } = data;
-      let userRole;
-      
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        userRole = payload.role;
-      } catch (parseError) {
-        setError("Invalid token format");
-        return;
-      }
-      
+
+      const token = data.session.access_token;
       localStorage.setItem("token", token);
       window.dispatchEvent(new CustomEvent('auth-change'));
-      
+
+      let userRole: string | undefined;
+
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        userRole = payload.app_metadata?.role;
+
+        if (!userRole) {
+          userRole = 'user';
+        }
+        localStorage.setItem("role", userRole);
+
+      } catch (parseError) {
+        console.error("Could not parse JWT:", parseError);
+        userRole = 'user';
+      }
+
       if (userRole === "admin") {
         router.push("/admin");
       } else if (userRole === "creator") {
@@ -92,41 +86,42 @@ const Signin = () => {
       } else {
         router.push("/");
       }
-    } catch (err) {
+    }
+    catch (err) {
       setError("An error occurred during login");
       console.error("Login error:", err);
     }
   };
 
   return (
-    <Container 
-      maxWidth="xs" 
-      sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        height: '100vh', 
+    <Container
+      maxWidth="xs"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        height: '100vh',
         justifyContent: 'center',
         mt: isMobile ? -8 : isTablet ? -6 : -10
       }}
     >
-      <Paper 
-        elevation={6} 
-        sx={{ 
-          padding: 4, 
-          width: '100%', 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          borderRadius: 2, 
-          mb: 2 
+      <Paper
+        elevation={6}
+        sx={{
+          padding: 4,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          borderRadius: 2,
+          mb: 2
         }}
       >
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            marginBottom: 2 
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: 2
           }}
         >
           <Image

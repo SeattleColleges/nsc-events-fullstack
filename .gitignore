@@ -71,3 +71,4 @@ e2e/.env.local
 
 # Playwright generated files
 .auth/
+notes.md 

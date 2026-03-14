@@ -1,8 +1,11 @@
-{/* Custom React hook to manage and track user authentication state.*/}
+{/* Custom React hook to manage and track user authentication state.*/ }
 import { useState, useEffect } from 'react';
+import { createClient } from "@/lib/supabaseClient";
 
+const supabase = createClient();
+type Role = 'user' | 'creator' | 'admin' | null;
 interface User {
-  role: string; 
+  role: string;
 }
 
 const useAuth = () => {
@@ -11,11 +14,12 @@ const useAuth = () => {
 
   const checkAuth = () => {
     try {
+      // console.log("local storage in use auth hook", localStorage)
       const token = localStorage.getItem('token');
-      
+
       // Trim whitespace and check if token exists
       const trimmedToken = token?.trim();
-      
+
       if (!trimmedToken) {
         setIsAuth(false);
         setUser(null);
@@ -26,6 +30,7 @@ const useAuth = () => {
 
       // Validate JWT format (must have 3 parts)
       const parts = trimmedToken.split('.');
+
       if (parts.length !== 3) {
         console.error('Invalid JWT format');
         setUser(null);
@@ -33,10 +38,12 @@ const useAuth = () => {
       }
 
       // Decode token payload
-      const payload = parts[1];
-      const decoded = atob(payload);
-      const user = JSON.parse(decoded);
-      
+      const payload = JSON.parse(atob(trimmedToken.split(".")[1]));;
+      // const decoded = atob(payload);
+      const user = payload.app_metadata;
+      // console.log("payload", payload)
+      // console.log("decoded", decoded)
+      // console.log("user", user)
       setUser(user);
     } catch (error) {
       // Handle any decoding or parsing errors gracefully
