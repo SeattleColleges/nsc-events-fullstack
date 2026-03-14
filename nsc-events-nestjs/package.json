@@ -41,6 +41,7 @@
     "date-fns": "3.6.0",
     "google-auth-library": "^9.15.1",
     "googleapis": "^146.0.0",
+    "helmet": "^8.1.0",
     "jwt-decode": "^4.0.0",
     "nest-winston": "^1.10.0",
     "passport": "0.6.0",
