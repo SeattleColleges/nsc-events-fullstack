@@ -1,1 +1,1 @@
-select * from public.users;
+SELECT * from public.users
