@@ -1,7 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost";
-const apiURL = process.env.PLAYWRIGHT_API_URL || "http://localhost";
 
 export default defineConfig({
   testDir: "./e2e/tests",
@@ -50,7 +49,8 @@ export default defineConfig({
     timeout: 240000,
   },
 
-  // Global setup/teardown commented out because webServer already handles service readiness
-  // globalSetup: require.resolve('./e2e/utils/global-setup.ts'),
+  // webServer starts Docker Compose; globalSetup waits for the full dependency chain
+  // postgres (10s) → nestjs (60s) → nextjs (40s)
+  globalSetup: require.resolve("./e2e/utils/global-setup.ts"),
   // globalTeardown: require.resolve('./e2e/utils/global-teardown.ts'),
 });

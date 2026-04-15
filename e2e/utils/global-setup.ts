@@ -1,40 +1,43 @@
 import axios from 'axios';
 
 const apiURL = process.env.PLAYWRIGHT_API_URL || 'http://localhost/api';
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost";
 
-async function globalSetup() {
-  console.log('Starting global setup...');
+async function waitForService(
+  url: string,
+  label: string,
+  retries = 30,
+): Promise<void> {
+  let remaining = retries;
 
-  try {
-    // Wait for API to be ready
-    let retries = 30;
-    let apiReady = false;
-
-    while (retries > 0 && !apiReady) {
-      try {
-        const response = await axios.get(`${apiURL}/`, {
-          timeout: 5000,
-        });
-        if (response.status === 200 || response.status === 404) {
-          apiReady = true;
-          console.log('API is ready');
-        }
-      } catch (error) {
-        retries--;
-        if (retries > 0) {
-          console.log(`Waiting for API... (${retries} retries left)`);
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-        }
+  while (remaining > 0) {
+    try {
+      const response = await axios.get(url, { timeout: 5000 });
+      if (response.status === 200) {
+        console.log(`${label} is ready`);
+        return;
+      }
+    } catch {
+      remaining--;
+      if (remaining > 0) {
+        console.log(`Waiting for ${label}... (${remaining} retries left)`);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }
+  }
 
-    if (!apiReady) {
-      throw new Error('API did not become ready in time');
-    }
+  throw new Error(`${label} did not become ready in time`);
+}
 
-    console.log('Global setup completed successfully');
+async function globalSetup() {
+  console.log("Starting global setup...");
+
+  try {
+    await waitForService(`${apiURL}/health`, "API (NestJS)");
+    await waitForService(`${baseURL}/`, "Frontend (Next.js)");
+    console.log("Global setup completed successfully");
   } catch (error) {
-    console.error('Global setup failed:', error);
+    console.error("Global setup failed:", error);
     throw error;
   }
 }
