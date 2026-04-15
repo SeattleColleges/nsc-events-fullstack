@@ -40,17 +40,16 @@ export default defineConfig({
     },
   ],
 
-  // Start Docker Compose services if not already running,
-  // services are accessible at http://localhost (port 80) via Traefik proxy
+  // Ensures a clean environment before every run — wipes volumes, rebuilds from scratch
   webServer: {
-    command: "docker compose up -d && tail -f /dev/null",
+    command: "docker compose down --volumes --remove-orphans && docker compose up -d && tail -f /dev/null",
     url: "http://localhost",
-    reuseExistingServer: true, // Don't restart if services are already running
+    reuseExistingServer: !process.env.CI, // CI always starts fresh; local dev may reuse
     timeout: 240000,
   },
 
   // webServer starts Docker Compose; globalSetup waits for the full dependency chain
   // postgres (10s) → nestjs (60s) → nextjs (40s)
   globalSetup: require.resolve("./e2e/utils/global-setup.ts"),
-  // globalTeardown: require.resolve('./e2e/utils/global-teardown.ts'),
+  globalTeardown: require.resolve("./e2e/utils/global-teardown.ts"),
 });
