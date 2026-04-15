@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="760" viewBox="0 0 900 760">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#4a5568"/>
+    </marker>
+    <marker id="arr-tl" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#a0aec0"/>
+    </marker>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#00000018"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="900" height="760" fill="#f7fafc" rx="14"/>
+
+  <!-- Title -->
+  <text x="450" y="30" text-anchor="middle"
+        font-family="system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+        font-size="17" font-weight="700" fill="#1a202c">Health Check Dependency Chain</text>
+  <text x="450" y="48" text-anchor="middle"
+        font-family="system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
+        font-size="10" fill="#718096">nsc-events-fullstack · compose.yaml</text>
+
+  <!-- ─────────────────────────────────────────────────
+       ROW 1: TRAEFIK (x=30) and POSTGRES (x=420)
+       Card: w=200 h=130
+       ───────────────────────────────────────────────── -->
+
+  <!-- TRAEFIK -->
+  <g filter="url(#shadow)">
+    <rect x="30" y="65" width="200" height="130" rx="10" fill="white" stroke="#fc8181" stroke-width="1.5"/>
+    <rect x="30" y="65" width="200" height="34"  rx="10" fill="#c53030"/>
+    <rect x="30" y="88" width="200" height="11"       fill="#c53030"/>
+  </g>
+  <text x="130" y="87"
+        text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="12" font-weight="700" fill="white">🔀  traefik</text>
+  <text x="48" y="114" font-family="'Courier New',Courier,monospace" font-size="9"  fill="#4a5568">traefik healthcheck --ping</text>
+  <text x="48" y="129" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">interval: 10s  ·  timeout: 5s</text>
+  <text x="48" y="143" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">retries: 5  ·  start_period: 10s</text>
+  <rect x="48" y="153" width="164" height="17" rx="4" fill="#fff5f5"/>
+  <text x="130" y="165" text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="8.5" font-weight="600" fill="#c53030">⟳  independent — no depends_on</text>
+
+  <!-- POSTGRES -->
+  <g filter="url(#shadow)">
+    <rect x="420" y="65" width="200" height="130" rx="10" fill="white" stroke="#90cdf4" stroke-width="1.5"/>
+    <rect x="420" y="65" width="200" height="34"  rx="10" fill="#2b6cb0"/>
+    <rect x="420" y="88" width="200" height="11"       fill="#2b6cb0"/>
+  </g>
+  <text x="520" y="87"
+        text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="12" font-weight="700" fill="white">🐘  postgres-dev</text>
+  <text x="438" y="114" font-family="'Courier New',Courier,monospace" font-size="9"  fill="#4a5568">pg_isready -p 5432</text>
+  <text x="438" y="129" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">interval: 5s  ·  timeout: 5s</text>
+  <text x="438" y="143" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">retries: 5  ·  start_period: 10s</text>
+  <rect x="438" y="153" width="164" height="17" rx="4" fill="#ebf8ff"/>
+  <text x="520" y="165" text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="8.5" font-weight="600" fill="#2b6cb0">compose.yaml : 130–138</text>
+
+  <!-- ─────────────────────────────────────────────────
+       ARROWS: postgres → nestjs and postgres → pgadmin
+       postgres bottom-center: (520, 195)
+       nestjs top-center:      (390, 280)
+       pgadmin top-center:     (645, 280)
+       ───────────────────────────────────────────────── -->
+
+  <!-- postgres → nestjs -->
+  <line x1="500" y1="195" x2="392" y2="278"
+        stroke="#4a5568" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="370" y="220" width="158" height="15" rx="3" fill="#f7fafc" opacity="0.93"/>
+  <text x="449" y="231" text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="8.5" font-weight="600" fill="#4a5568">condition: service_healthy</text>
+
+  <!-- postgres → pgadmin -->
+  <line x1="540" y1="195" x2="643" y2="278"
+        stroke="#4a5568" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="554" y="220" width="158" height="15" rx="3" fill="#f7fafc" opacity="0.93"/>
+  <text x="633" y="231" text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="8.5" font-weight="600" fill="#4a5568">condition: service_healthy</text>
+
+  <!-- ─────────────────────────────────────────────────
+       ROW 2: NESTJS (x=290) and PGADMIN (x=545)
+       ───────────────────────────────────────────────── -->
+
+  <!-- NESTJS -->
+  <g filter="url(#shadow)">
+    <rect x="290" y="280" width="200" height="130" rx="10" fill="white" stroke="#feb2c0" stroke-width="1.5"/>
+    <rect x="290" y="280" width="200" height="34"  rx="10" fill="#e0234e"/>
+    <rect x="290" y="303" width="200" height="11"       fill="#e0234e"/>
+  </g>
+  <text x="390" y="302"
+        text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="12" font-weight="700" fill="white">🪺  nestjs-dev</text>
+  <text x="308" y="329" font-family="'Courier New',Courier,monospace" font-size="9"  fill="#4a5568">127.0.0.1:3000/api/health</text>
+  <text x="308" y="344" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">interval: 10s  ·  timeout: 5s</text>
+  <text x="308" y="358" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">retries: 5  ·  start_period: 60s</text>
+  <rect x="308" y="368" width="164" height="17" rx="4" fill="#fff5f5"/>
+  <text x="390" y="380" text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="8.5" font-weight="600" fill="#e0234e">compose.yaml : 59–70</text>
+
+  <!-- PGADMIN -->
+  <g filter="url(#shadow)">
+    <rect x="545" y="280" width="200" height="130" rx="10" fill="white" stroke="#90cdf4" stroke-width="1.5"/>
+    <rect x="545" y="280" width="200" height="34"  rx="10" fill="#2b6cb0"/>
+    <rect x="545" y="303" width="200" height="11"       fill="#2b6cb0"/>
+  </g>
+  <text x="645" y="302"
+        text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="12" font-weight="700" fill="white">🛠  pgadmin-dev</text>
+  <text x="563" y="329" font-family="'Courier New',Courier,monospace" font-size="9"  fill="#4a5568">127.0.0.1:80/misc/ping</text>
+  <text x="563" y="344" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">interval: 15s  ·  timeout: 5s</text>
+  <text x="563" y="358" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">retries: 5  ·  start_period: 30s</text>
+  <rect x="563" y="368" width="164" height="17" rx="4" fill="#ebf8ff"/>
+  <text x="645" y="380" text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="8.5" font-weight="600" fill="#2b6cb0">compose.yaml : 159–170</text>
+
+  <!-- ─────────────────────────────────────────────────
+       ARROW: nestjs → nextjs
+       nestjs bottom-center:  (390, 410)
+       nextjs top-center:     (390, 475)
+       ───────────────────────────────────────────────── -->
+
+  <line x1="390" y1="410" x2="390" y2="473"
+        stroke="#4a5568" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="302" y="430" width="178" height="15" rx="3" fill="#f7fafc" opacity="0.93"/>
+  <text x="390" y="441" text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="8.5" font-weight="600" fill="#4a5568">condition: service_healthy</text>
+
+  <!-- ─────────────────────────────────────────────────
+       ROW 3: NEXTJS (x=290)
+       ───────────────────────────────────────────────── -->
+
+  <!-- NEXTJS -->
+  <g filter="url(#shadow)">
+    <rect x="290" y="475" width="200" height="130" rx="10" fill="white" stroke="#e2e8f0" stroke-width="1.5"/>
+    <rect x="290" y="475" width="200" height="34"  rx="10" fill="#1a202c"/>
+    <rect x="290" y="498" width="200" height="11"       fill="#1a202c"/>
+  </g>
+  <text x="390" y="497"
+        text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="12" font-weight="700" fill="white">▲  nextjs-dev</text>
+  <text x="308" y="524" font-family="'Courier New',Courier,monospace" font-size="9"  fill="#4a5568">127.0.0.1:3000/api/health</text>
+  <text x="308" y="539" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">interval: 10s  ·  timeout: 5s</text>
+  <text x="308" y="553" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">retries: 5  ·  start_period: 40s</text>
+  <rect x="308" y="563" width="164" height="17" rx="4" fill="#f7fafc"/>
+  <text x="390" y="575" text-anchor="middle"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="8.5" font-weight="600" fill="#4a5568">compose.yaml : 96–107</text>
+
+  <!-- ─────────────────────────────────────────────────
+       TIMELINE SECTION
+       ───────────────────────────────────────────────── -->
+
+  <rect x="30" y="630" width="840" height="105" rx="10" fill="white" stroke="#e2e8f0" stroke-width="1" filter="url(#shadow)"/>
+  <text x="50" y="652"
+        font-family="system-ui,-apple-system,sans-serif"
+        font-size="11" font-weight="700" fill="#1a202c">Worst-case startup sequence</text>
+
+  <!-- Baseline -->
+  <line x1="75" y1="685" x2="845" y2="685" stroke="#e2e8f0" stroke-width="2"/>
+
+  <!-- t=0s · postgres starts -->
+  <circle cx="95"  cy="685" r="7" fill="#2b6cb0" stroke="white" stroke-width="2"/>
+  <text x="95"  y="700" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#718096">t = 0s</text>
+  <text x="95"  y="712" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9.5" font-weight="700" fill="#2b6cb0">postgres starts</text>
+  <line x1="102" y1="685" x2="258" y2="685" stroke="#2b6cb0" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-tl)"/>
+
+  <!-- t=10s · postgres healthy -->
+  <circle cx="265" cy="685" r="7" fill="#2b6cb0" stroke="white" stroke-width="2"/>
+  <text x="265" y="700" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#718096">t = 10s</text>
+  <text x="265" y="712" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9.5" font-weight="700" fill="#2b6cb0">postgres healthy</text>
+  <text x="265" y="724" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8"   fill="#718096">nestjs + pgadmin start</text>
+  <line x1="272" y1="685" x2="538" y2="685" stroke="#e0234e" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-tl)"/>
+
+  <!-- t=70s · nestjs healthy -->
+  <circle cx="545" cy="685" r="7" fill="#e0234e" stroke="white" stroke-width="2"/>
+  <text x="545" y="700" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#718096">t = 70s</text>
+  <text x="545" y="712" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9.5" font-weight="700" fill="#e0234e">nestjs healthy</text>
+  <text x="545" y="724" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8"   fill="#718096">nextjs starts</text>
+  <line x1="552" y1="685" x2="818" y2="685" stroke="#1a202c" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-tl)"/>
+
+  <!-- t=110s · stack ready -->
+  <circle cx="825" cy="685" r="7" fill="#1a202c" stroke="white" stroke-width="2"/>
+  <text x="825" y="700" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#718096">t = 110s</text>
+  <text x="825" y="712" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9.5" font-weight="700" fill="#1a202c">nextjs healthy</text>
+  <text x="825" y="724" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8"   fill="#718096">stack ready</text>
+
+</svg>
