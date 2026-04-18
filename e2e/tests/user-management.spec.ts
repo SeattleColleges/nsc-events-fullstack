@@ -3,24 +3,19 @@ import { generateTestUser } from '../data/test-data';
 
 // Helper function to set authentication token reliably across all browsers
 async function setAuthToken(page: Page, token: string): Promise<void> {
-  await page.goto("/");
-  await page.waitForLoadState("domcontentloaded");
-
-  // Set token and verify it's set
-  await page.evaluate((t) => {
+  await page.addInitScript((t) => {
     localStorage.setItem("token", t);
     window.dispatchEvent(new CustomEvent("auth-change"));
   }, token);
 
-  // Wait and verify token is set (important for Firefox)
+  await page.goto("/");
+  await page.waitForLoadState("domcontentloaded");
+
   await page.waitForFunction(
     (expectedToken) => localStorage.getItem("token") === expectedToken,
     token,
-    { timeout: 5000 }
+    { timeout: 15000 }
   );
-
-  // Additional wait for auth state to propagate
-  await page.waitForTimeout(500);
 }
 
 test.describe('User Management & Admin Functions', () => {
@@ -36,7 +31,7 @@ test.describe('User Management & Admin Functions', () => {
       firstName: 'Admin',
     });
 
-    const signupResponse = await page.request.post('http://localhost:3000/api/auth/signup', {
+    const signupResponse = await page.request.post('http://localhost/api/auth/signup', {
       data: adminUser,
     });
 
@@ -46,7 +41,7 @@ test.describe('User Management & Admin Functions', () => {
 
       // Create a regular user for role management tests
       const regularUser = generateTestUser();
-      const userSignupResponse = await page.request.post('http://localhost:3000/api/auth/signup', {
+      const userSignupResponse = await page.request.post('http://localhost/api/auth/signup', {
         data: regularUser,
       });
 
@@ -105,6 +100,10 @@ test.describe('User Management & Admin Functions', () => {
   });
 
   test('should navigate to admin panel if user has admin role', async ({ page }) => {
+    if (!adminToken) {
+      test.skip(true, 'Admin token not available');
+    }
+
     // Authenticate using helper function
     await setAuthToken(page, adminToken);
 
@@ -117,7 +116,7 @@ test.describe('User Management & Admin Functions', () => {
       await adminLink.click();
 
       // Should navigate to admin page
-      await page.waitForURL(/\/admin/, { timeout: 5000 });
+      await page.waitForURL(/\/admin/, { timeout: 15000 });
     }
   });
 

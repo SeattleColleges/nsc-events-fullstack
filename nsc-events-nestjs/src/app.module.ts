@@ -17,6 +17,7 @@ import { MediaModule } from './media/media.module';
 import { WinstonLoggerModule } from './logger/winston.logger';
 import { initializeConsoleSanitization } from './utils/logging-sanitizer';
 import { HttpLoggerMiddleware } from './middlewares/http-logger.middleware';
+import { HealthController } from './health/health.controller';
 
 // Import your entities
 import { User } from './user/entities/user.entity';
@@ -62,7 +63,7 @@ import { Media } from './media/entities/media.entity';
     TagModule,
     MediaModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule implements NestModule {

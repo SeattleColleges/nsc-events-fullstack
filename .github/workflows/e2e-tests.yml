@@ -123,21 +123,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_DB: nsc_events
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - uses: actions/checkout@v4
 
@@ -150,10 +135,6 @@ jobs:
 
       - name: Clean install dependencies
         run: HUSKY=0 npm ci --include=optional
-
-      - name: Install sharp for Linux platform
-        run: npm install --os=linux --cpu=x64 sharp
-        working-directory: ./nsc-events-nestjs
 
       - name: Get Playwright version
         id: playwright-version
@@ -174,38 +155,14 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
-      - name: Build backend
-        run: npm run build:backend
-
-      - name: Build frontend
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:3000/api
-        run: npm run build:frontend
-
-      - name: Wait for database
-        run: |
-          for i in {1..30}; do
-            if pg_isready -h localhost -p 5432 -U postgres; then
-              echo "Database is ready"
-              exit 0
-            fi
-            echo "Attempt $i: Database not ready yet..."
-            sleep 2
-          done
-          echo "Database did not become ready in time"
-          exit 1
-
       - name: Run Smoke Tests (Chromium only, critical paths)
         env:
-          PLAYWRIGHT_BASE_URL: http://localhost:8080
-          PLAYWRIGHT_API_URL: http://localhost:3000/api
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DATABASE: nsc_events
+          # These are inherited by docker compose (via playwright webServer) using ${VAR:-default} in compose.yaml
           NODE_ENV: test
           JWT_SECRET: e2e-test-jwt-secret-key
+          # PLAYWRIGHT_BASE_URL defaults to http://localhost (Traefik port 80) in playwright.config.ts
+          # PLAYWRIGHT_API_URL defaults to http://localhost (routed through Traefik to /api)
+          PLAYWRIGHT_API_URL: http://localhost/api
         run: npx playwright test --project=chromium --grep @smoke
 
       - name: Archive Playwright report
@@ -259,21 +216,6 @@ jobs:
         # Run browsers in parallel shards
         shard: [1, 2]
 
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_DB: nsc_events
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
       - uses: actions/checkout@v4
 
@@ -286,10 +228,6 @@ jobs:
 
       - name: Clean install dependencies
         run: HUSKY=0 npm ci --include=optional
-
-      - name: Install sharp for Linux platform
-        run: npm install --os=linux --cpu=x64 sharp
-        working-directory: ./nsc-events-nestjs
 
       - name: Get Playwright version
         id: playwright-version
@@ -310,38 +248,14 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
-      - name: Build backend
-        run: npm run build:backend
-
-      - name: Build frontend
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:3000/api
-        run: npm run build:frontend
-
-      - name: Wait for database
-        run: |
-          for i in {1..30}; do
-            if pg_isready -h localhost -p 5432 -U postgres; then
-              echo "Database is ready"
-              exit 0
-            fi
-            echo "Attempt $i: Database not ready yet..."
-            sleep 2
-          done
-          echo "Database did not become ready in time"
-          exit 1
-
       - name: Run E2E tests (Shard ${{ matrix.shard }}/2)
         env:
-          PLAYWRIGHT_BASE_URL: http://localhost:8080
-          PLAYWRIGHT_API_URL: http://localhost:3000/api
-          POSTGRES_HOST: localhost
-          POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DATABASE: nsc_events
+          # These are inherited by docker compose (via playwright webServer) using ${VAR:-default} in compose.yaml
           NODE_ENV: test
           JWT_SECRET: e2e-test-jwt-secret-key
+          # PLAYWRIGHT_BASE_URL defaults to http://localhost (Traefik port 80) in playwright.config.ts
+          # PLAYWRIGHT_API_URL defaults to http://localhost (routed through Traefik to /api)
+          PLAYWRIGHT_API_URL: http://localhost/api
         run: npx playwright test --shard=${{ matrix.shard }}/2
 
       - name: Archive Playwright report

@@ -4,7 +4,7 @@ export class ApiClient {
   private client: AxiosInstance;
   private token: string | null = null;
 
-  constructor(baseURL: string = process.env.PLAYWRIGHT_API_URL || "http://localhost:3000/api") {
+  constructor(baseURL: string = process.env.PLAYWRIGHT_API_URL || "http://localhost/api") {
     this.client = axios.create({
       baseURL,
       headers: {
