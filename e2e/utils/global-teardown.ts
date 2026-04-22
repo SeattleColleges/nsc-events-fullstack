@@ -1,3 +1,5 @@
+import { execSync } from "child_process";
+
 import axios from "axios";
 
 /**
@@ -22,9 +24,7 @@ const ADMIN_CREDENTIALS = {
 const TEST_EMAIL_DOMAIN = "@example.com";
 
 async function globalTeardown() {
-  console.log(
-    "\nRunning global teardown — cleaning up Playwright test data...",
-  );
+  console.log("Starting global teardown...");
 
   // ── 1. Obtain admin token ──────────────────────────────────────────────────
   let adminToken: string;
@@ -113,6 +113,21 @@ async function globalTeardown() {
   console.log(
     `  ✓ Removed ${deletedEvents} event(s) and ${deletedUsers}/${testUsers.length} user(s)`,
   );
+
+  // (optional) -- Remove docker containers -----------------------------------------------
+  // try {
+  //   execSync("docker compose down --volumes --remove-orphans", {
+  //     stdio: "inherit",
+  //   });
+  //   console.log("Global teardown completed successfully");
+  // } catch (error) {
+  //   console.error("Global teardown failed:", error);
+  //   throw error;
+  // }
+  // console.log(
+  //   "\nRunning global teardown — cleaning up Playwright test data...",
+  // );
+
   console.log("Global teardown completed\n");
 }
 

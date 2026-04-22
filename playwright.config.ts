@@ -1,7 +1,6 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:8080';
-const apiURL = process.env.PLAYWRIGHT_API_URL || 'http://localhost:3000';
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost";
 
 export default defineConfig({
   testDir: "./e2e/tests",
@@ -41,36 +40,17 @@ export default defineConfig({
     },
   ],
 
-  webServer: [
-    {
-      command: process.env.CI
-        ? "npm run start:prod --workspace=nsc-events-nestjs"
-        : "npm run start:dev --workspace=nsc-events-nestjs",
-      port: 3000,
-      reuseExistingServer: !process.env.CI,
-      timeout: 120000,
-      env: {
-        PATH: process.env.PATH || "",
-        NODE_ENV: process.env.NODE_ENV || "test",
-        JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key",
-        POSTGRES_HOST: process.env.POSTGRES_HOST || "localhost",
-        POSTGRES_PORT: process.env.POSTGRES_PORT || "5432",
-        POSTGRES_USER: process.env.POSTGRES_USER || "postgres",
-        POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD || "postgres",
-        POSTGRES_DATABASE: process.env.POSTGRES_DATABASE || "nsc_events",
-      },
-    },
-    {
-      command: process.env.CI
-        ? "npm run start --workspace=nsc-events-nextjs"
-        : "npm run dev --workspace=nsc-events-nextjs",
-      port: 8080,
-      reuseExistingServer: !process.env.CI,
-      timeout: 120000,
-    },
-  ],
+  // Ensures a clean environment before every run — wipes volumes, rebuilds from scratch
+  webServer: {
+    command:
+      "docker compose down --volumes --remove-orphans && docker compose up -d && tail -f /dev/null",
+    url: "http://localhost",
+    reuseExistingServer: !process.env.CI, // CI always starts fresh; local dev may reuse
+    timeout: 240000,
+  },
 
-  // Global setup/teardown commented out because webServer already handles service readiness
-  // globalSetup: require.resolve('./e2e/utils/global-setup.ts'),
+  // webServer starts Docker Compose; globalSetup waits for the full dependency chain
+  // postgres (10s) → nestjs (60s) → nextjs (40s)
+  globalSetup: require.resolve("./e2e/utils/global-setup.ts"),
   globalTeardown: require.resolve("./e2e/utils/global-teardown.ts"),
 });

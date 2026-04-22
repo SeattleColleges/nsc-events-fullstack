@@ -28,6 +28,10 @@ fi
 
 echo "Prerequisites met."
 
+# --- Root env variables ---
+echo "Copying the env.example file in root directory."
+cp .env.example .env
+
 # --- Dependency Installation ---
 echo "Installing dependencies for all workspace..."
 cd "$PROJECT_ROOT"

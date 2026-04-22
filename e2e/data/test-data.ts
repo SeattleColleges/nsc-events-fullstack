@@ -1,12 +1,13 @@
 export const generateTestUser = (overrides = {}) => {
   const timestamp = Date.now();
+  const nonce = Math.random().toString(36).slice(2, 8);
   return {
-    email: `test-user-${timestamp}@example.com`,
-    password: 'Test@Password123',
-    firstName: 'Test',
-    lastName: 'User',
-    pronouns: 'theythem',
-    role: 'user',
+    email: `test-user-${timestamp}-${nonce}@example.com`,
+    password: "Test@Password123",
+    firstName: "Test",
+    lastName: "User",
+    pronouns: "theythem",
+    role: "user",
     ...overrides,
   };
 };
