@@ -102,9 +102,9 @@ The seed scripts connect to the NestJS API (default: `http://localhost:3000/api`
 | `admin@nsc.dev` | `admin@admin123` | admin |
 | `admin2@nsc.dev` | `Admin2@dev456` | admin |
 | `seed-creator@nsc.dev` | `Seed@Creator123` | creator |
-| `user@nsc.dev` | `user@user123` | user |
-| `user2@nsc.dev` | `user@user123` | user |
-| `user3@nsc.dev` | `user@user123` | user |
+| `user@nsc.dev` | `User@Alex123` | user |
+| `user2@nsc.dev` | `User@Sam456` | user |
+| `user3@nsc.dev` | `User@Jordan789` | user |
 
 > **Note:** These accounts are for local development only. Do not use these credentials in production environments.
 
