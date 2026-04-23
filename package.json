@@ -31,7 +31,8 @@
     "docker": "docker compose down --rmi all --volumes --remove-orphans && docker compose build --no-cache && docker compose up -d",
     "docker:watch": "npm run docker && docker compose logs -f nestjs",
     "seed": "node scripts/events-seed.js",
-    "seed:users": "node scripts/users-seed.js"
+    "seed:users": "node scripts/users-seed.js",
+    "seed:all": "npm run seed:users && npm run seed"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
