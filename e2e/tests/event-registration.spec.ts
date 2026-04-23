@@ -26,6 +26,7 @@ async function signupWithRetry(page, data, attempts = 3) {
 test.describe('Event Registration', () => {
   let userToken: string;
   let eventId: string;
+  let userId: string;
 
   test.beforeAll(async ({ browser }) => {
     // Setup: Create user and event for registration tests
@@ -38,6 +39,7 @@ test.describe('Event Registration', () => {
     if (signupResponse.ok()) {
       const data = await signupResponse.json();
       userToken = data.token;
+      userId = data.user?.id || data.data?.user?.id;
 
       // Create an event
       const createEventResponse = await page.request.post('http://localhost/api/event-registration', {
@@ -61,6 +63,46 @@ test.describe('Event Registration', () => {
     }
 
     await page.close();
+  });
+
+  test.afterAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    try {
+      // Delete the test event
+      if (eventId && userToken) {
+        await page.request.delete(
+          `http://localhost:3000/api/events/remove/${eventId}`,
+          {
+            headers: { Authorization: `Bearer ${userToken}` },
+          },
+        );
+      }
+      // Delete the test user via admin
+      if (userId) {
+        const adminRes = await page.request.post(
+          "http://localhost:3000/api/auth/login",
+          {
+            data: { email: "admin@nsc.dev", password: "admin@admin123" },
+          },
+        );
+        if (adminRes.ok()) {
+          const adminData = await adminRes.json();
+          const adminToken = adminData.token || adminData.data?.token;
+          if (adminToken) {
+            await page.request.delete(
+              `http://localhost:3000/api/users/remove/${userId}`,
+              {
+                headers: { Authorization: `Bearer ${adminToken}` },
+              },
+            );
+          }
+        }
+      }
+    } catch {
+      // Best-effort — global teardown will handle stragglers
+    } finally {
+      await page.close();
+    }
   });
 
   test('should register for an event', async ({ page }) => {

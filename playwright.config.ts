@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost";
 
@@ -42,7 +42,8 @@ export default defineConfig({
 
   // Ensures a clean environment before every run — wipes volumes, rebuilds from scratch
   webServer: {
-    command: "docker compose down --volumes --remove-orphans && docker compose up -d && tail -f /dev/null",
+    command:
+      "docker compose down --volumes --remove-orphans && docker compose up -d && tail -f /dev/null",
     url: "http://localhost",
     reuseExistingServer: !process.env.CI, // CI always starts fresh; local dev may reuse
     timeout: 240000,
