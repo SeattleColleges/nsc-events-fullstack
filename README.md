@@ -78,6 +78,36 @@ npm install
 2. Update the `.env` file in `nsc-events-nestjs` with your PostgreSQL credentials
 3. The database tables will be automatically created when you start the backend
 
+### Database Seeding
+
+Once both the backend and the database are running, you can populate the database with sample data for development:
+
+```bash
+# Seed both users and events (recommended — runs users first, then events)
+npm run seed:all
+
+# Seed only sample users (admin, creator, and regular user accounts)
+npm run seed:users
+
+# Seed only sample events (requires the seed creator account to exist)
+npm run seed
+```
+
+The seed scripts connect to the NestJS API (default: `http://localhost:3000/api`). Override the target with the `PLAYWRIGHT_API_URL` environment variable if your backend is on a different port.
+
+**Seeded accounts**
+
+| Email | Password | Role |
+|-------|----------|------|
+| `admin@nsc.dev` | `admin@admin123` | admin |
+| `admin2@nsc.dev` | `Admin2@dev456` | admin |
+| `seed-creator@nsc.dev` | `Seed@Creator123` | creator |
+| `user@nsc.dev` | `user@user123` | user |
+| `user2@nsc.dev` | `user@user123` | user |
+| `user3@nsc.dev` | `user@user123` | user |
+
+> **Note:** These accounts are for local development only. Do not use these credentials in production environments.
+
 ### Running the Applications
 
 **Backend:**

@@ -39,7 +39,7 @@ const SEED_USERS = [
   },
   {
     email: "admin2@nsc.dev",
-    password: "admin@admin123",
+    password: "Admin2@dev456",
     firstName: "Admin2",
     lastName: "TestAccount",
     pronouns: "they/them",
