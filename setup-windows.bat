@@ -63,7 +63,6 @@ cd e2e
 if exist ".env.example" (
     copy .env.example .env >nul
     echo Created .env file from .env.example
-    echo ACTION REQUIRED: Please configure your e2e .env file if needed.
 ) else (
     echo Warning: e2e\.env.example not found. Please create .env file manually.
 )
