@@ -25,11 +25,11 @@ const TagSelector: React.FC<TagSelectorProps> = ({ selectedTags, allTags, onTagC
                     size="small"
                     style={{ textTransform: 'capitalize' }}
                     sx={{ 
-                        color: selectedTags.includes(tag) ? 'white' : 'black',
-                        background: selectedTags.includes(tag) ? palette.primary.main : 'white',
+                        color: selectedTags.includes(tag) ? palette.primary.contrastText : palette.text.primary,
+                        background: selectedTags.includes(tag) ? palette.primary.main : 'transparent',
                         '&:hover': {
                             backgroundColor: palette.primary.main,
-                            color: 'white'
+                            color: palette.primary.contrastText
                         },
                      }}
                 >
