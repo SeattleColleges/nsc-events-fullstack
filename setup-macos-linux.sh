@@ -65,6 +65,19 @@ fi
 
 cd "$PROJECT_ROOT"
 
+# --- E2E Setup ---
+echo "Setting up E2E tests (e2e)..."
+cd "$PROJECT_ROOT/e2e"
+
+if [ -f ".env.example" ]; then
+    cp .env.example .env
+    echo "Created .env file from .env.example"
+else
+    echo "Warning: e2e/.env.example not found. Please create .env file manually."
+fi
+
+cd "$PROJECT_ROOT"
+
 # --- Husky Git Hooks Setup ---
 echo "Setting up Git hooks (Husky)..."
 if [ -d ".git" ]; then

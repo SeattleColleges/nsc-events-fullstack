@@ -57,6 +57,18 @@ if exist ".env.example" (
 
 cd ..
 
+REM --- E2E Setup ---
+echo Setting up E2E tests (e2e)...
+cd e2e
+if exist ".env.example" (
+    copy .env.example .env >nul
+    echo Created .env file from .env.example
+) else (
+    echo Warning: e2e\.env.example not found. Please create .env file manually.
+)
+
+cd ..
+
 REM --- Husky Git Hooks Setup ---
 echo Setting up Git hooks (Husky)...
 if exist ".git" (
