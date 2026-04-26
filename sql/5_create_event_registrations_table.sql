@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS public.event_registrations (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    activity_id uuid NOT NULL REFERENCES public.activities(id) ON DELETE SET NULL,
-    user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE SET NULL,
+    activity_id uuid NOT NULL REFERENCES public.activities(id) ,
+    user_id uuid NOT NULL REFERENCES public.users(id),
     college varchar NOT NULL,
     year_of_study varchar NOT NULL,
     is_attended boolean DEFAULT false,

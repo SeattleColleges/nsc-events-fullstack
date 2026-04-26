@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS public.activities (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    created_by_user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE SET NULL,
+    created_by_user_id uuid NOT NULL REFERENCES public.users(id),
     event_title varchar NOT NULL,
     event_description text NOT NULL,
     start_date timestamptz NOT NULL,

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public.media (
     s3_key varchar,
     s3_url varchar,
     type varchar,
-    uploaded_by_user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE SET NULL,
+    uploaded_by_user_id uuid NOT NULL REFERENCES public.users(id),
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
