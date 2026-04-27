@@ -14,7 +14,6 @@ This is a monorepo containing both the frontend (Next.js) and backend (Nest.js) 
 - Node.js 20.x or higher
 - npm
 - PostgreSQL 14 or higher
-- pgAdmin
 
 ### Installation
 

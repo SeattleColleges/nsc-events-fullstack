@@ -64,10 +64,9 @@
         font-size="8.5" font-weight="600" fill="#2b6cb0">compose.yaml : 130–138</text>
 
   <!-- ─────────────────────────────────────────────────
-       ARROWS: postgres → nestjs and postgres → pgadmin
+       ARROW: postgres → nestjs
        postgres bottom-center: (520, 195)
        nestjs top-center:      (390, 280)
-       pgadmin top-center:     (645, 280)
        ───────────────────────────────────────────────── -->
 
   <!-- postgres → nestjs -->
@@ -78,16 +77,8 @@
         font-family="system-ui,-apple-system,sans-serif"
         font-size="8.5" font-weight="600" fill="#4a5568">condition: service_healthy</text>
 
-  <!-- postgres → pgadmin -->
-  <line x1="540" y1="195" x2="643" y2="278"
-        stroke="#4a5568" stroke-width="1.5" marker-end="url(#arr)"/>
-  <rect x="554" y="220" width="158" height="15" rx="3" fill="#f7fafc" opacity="0.93"/>
-  <text x="633" y="231" text-anchor="middle"
-        font-family="system-ui,-apple-system,sans-serif"
-        font-size="8.5" font-weight="600" fill="#4a5568">condition: service_healthy</text>
-
   <!-- ─────────────────────────────────────────────────
-       ROW 2: NESTJS (x=290) and PGADMIN (x=545)
+       ROW 2: NESTJS (x=290)
        ───────────────────────────────────────────────── -->
 
   <!-- NESTJS -->
@@ -107,24 +98,6 @@
   <text x="390" y="380" text-anchor="middle"
         font-family="system-ui,-apple-system,sans-serif"
         font-size="8.5" font-weight="600" fill="#e0234e">compose.yaml : 59–70</text>
-
-  <!-- PGADMIN -->
-  <g filter="url(#shadow)">
-    <rect x="545" y="280" width="200" height="130" rx="10" fill="white" stroke="#90cdf4" stroke-width="1.5"/>
-    <rect x="545" y="280" width="200" height="34"  rx="10" fill="#2b6cb0"/>
-    <rect x="545" y="303" width="200" height="11"       fill="#2b6cb0"/>
-  </g>
-  <text x="645" y="302"
-        text-anchor="middle"
-        font-family="system-ui,-apple-system,sans-serif"
-        font-size="12" font-weight="700" fill="white">🛠  pgadmin-dev</text>
-  <text x="563" y="329" font-family="'Courier New',Courier,monospace" font-size="9"  fill="#4a5568">127.0.0.1:80/misc/ping</text>
-  <text x="563" y="344" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">interval: 15s  ·  timeout: 5s</text>
-  <text x="563" y="358" font-family="system-ui,-apple-system,sans-serif"             font-size="9"  fill="#718096">retries: 5  ·  start_period: 30s</text>
-  <rect x="563" y="368" width="164" height="17" rx="4" fill="#ebf8ff"/>
-  <text x="645" y="380" text-anchor="middle"
-        font-family="system-ui,-apple-system,sans-serif"
-        font-size="8.5" font-weight="600" fill="#2b6cb0">compose.yaml : 159–170</text>
 
   <!-- ─────────────────────────────────────────────────
        ARROW: nestjs → nextjs
@@ -183,7 +156,7 @@
   <circle cx="265" cy="685" r="7" fill="#2b6cb0" stroke="white" stroke-width="2"/>
   <text x="265" y="700" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.5" fill="#718096">t = 10s</text>
   <text x="265" y="712" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="9.5" font-weight="700" fill="#2b6cb0">postgres healthy</text>
-  <text x="265" y="724" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8"   fill="#718096">nestjs + pgadmin start</text>
+  <text x="265" y="724" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8"   fill="#718096">nestjs starts</text>
   <line x1="272" y1="685" x2="538" y2="685" stroke="#e0234e" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-tl)"/>
 
   <!-- t=70s · nestjs healthy -->
