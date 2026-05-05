@@ -13,7 +13,7 @@ This is a frontend (Next.js) application for NSC EVENTS, fully migrated from Mon
 - Node.js 20.x or higher
 - npm
 - PostgreSQL 14 or higher
-- pgAdmin
+
 
 ### Installation
 
@@ -23,7 +23,7 @@ To get started, you can use the automated setup script for your operating system
 
 ```bash
 # Clone the repository
-git clone https://github.com/SeattleColleges/nsc-events-fullstack
+git clone https://github.com/SeattleColleges/nsc-events-fullstack/tree/supabase-backend-setup
 cd nsc-events-fullstack
 
 # Run the setup script
@@ -35,7 +35,7 @@ or ./setup-macos-linux.sh
 
 ```bash
 # Clone the repository
-git clone https://github.com/SeattleColleges/nsc-events-fullstack
+git clone https://github.com/SeattleColleges/nsc-events-fullstack/tree/supabase-backend-setup
 cd nsc-events-fullstack
 
 # Run the setup script
