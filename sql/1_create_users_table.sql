@@ -4,12 +4,12 @@
 CREATE TYPE public.user_role_type AS ENUM ('user', 'creator', 'admin');
 
 CREATE TABLE IF NOT EXISTS public.users (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    first_name varchar NOT NULL, 
-    last_name varchar NOT NULL, 
-    pronouns varchar, 
+    id uuid REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY DEFAULT gen_random_uuid(),
+    first_name varchar(100) NOT NULL, 
+    last_name varchar(100) NOT NULL, 
+    pronouns varchar(100), 
     user_role user_role_type NOT NULL DEFAULT 'user',
-    email varchar NOT NULL UNIQUE, 
+    email varchar(255) NOT NULL UNIQUE, 
     google_credentials jsonb,
     reset_password_token varchar UNIQUE,
     reset_password_expires timestamptz,
@@ -19,6 +19,12 @@ CREATE TABLE IF NOT EXISTS public.users (
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public profiles are viewable by authenticated users" ON public.users
+    FOR SELECT USING(TRUE);
+
+CREATE POLICY "Users can insert their own profile." ON profiles
+    FOR INSERT WITH CHECK (auth.uid() = profile_id);
 
 CREATE POLICY "Admins manage all users"
     ON public.users 
